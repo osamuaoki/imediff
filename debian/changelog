@@ -1,3 +1,12 @@
+imediff2 (1.1.0+20041113-1) unstable; urgency=low
+
+  * New upstream release (from SVN)
+    - typo correction in help file
+
+  * Changed watch file to point to Alioth
+
+ -- Jarno Elonen <elonen@debian.org>  Sat, 13 Nov 2004 01:18:42 +0200
+
 imediff2 (1.1.0-1) unstable; urgency=low
 
   * New upstream release

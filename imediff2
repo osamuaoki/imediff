@@ -61,7 +61,7 @@ def usagetext():
 Usage:  imediff2 [options] -o <outputfile> <file1> <file2>
 
 Where options include:
-  -o=, --output=<file>  write to given file (required)
+  -o, --output=<file>   write to given file (required)
   -h, --help            show this help
   -m, --mono            force monochrome display
   -u, --unresolved      enable 'unresolved' in toggling

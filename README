@@ -7,3 +7,6 @@ see COPYING for details
 The program is written in Python using the curses module.
 For usage instructions, type "imediff -h" and/or hit
 'h' or '?' in the interactive mode.
+
+Visit the project website at
+http://alioth.debian.org/projects/imediff2/

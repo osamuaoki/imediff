@@ -1,5 +1,5 @@
 version=2
 
 # Homepage  Pattern  [Version  [Action]]
-http://iki.fi/elonen/code/imediff/ \
-  imediff2-([\d\.]*).tar.(gz|bz2)
+http://alioth.debian.org/project/showfiles.php?group_id=30544 \
+  .*imediff2-([\d\.]*).tar.(gz|bz2)
