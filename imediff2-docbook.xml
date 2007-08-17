@@ -3,7 +3,7 @@
 
   <!ENTITY dhfirstname "<firstname>Jarno</firstname>">
   <!ENTITY dhsurname   "<surname>Elonen</surname>">
-  <!ENTITY dhdate      "<date>2004-10-22</date>">
+  <!ENTITY dhdate      "<date>2006-03-10</date>">
   <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
   <!ENTITY dhemail     "<email>elonen@iki.fi</email>">
   <!ENTITY dhusername  "elonen">
@@ -22,7 +22,7 @@
       &dhsurname;
     </author>
     <copyright>
-      <year>2003</year>
+      <year>2003-2006</year>
       <holder>&dhusername;</holder>
     </copyright>
     &dhdate;
@@ -44,7 +44,8 @@
       <arg><option>-a</option></arg>
       <arg><option>-b</option></arg>
       <arg><option>-c</option></arg>
-      <arg choice="req"><option>-o <replaceable>outputfile</replaceable></option></arg>
+      <arg><option>-N <replaceable>new-file</replaceable></option></arg>
+      <arg><option>-o <replaceable>outputfile</replaceable></option></arg>
       <arg choice="req"><replaceable>file1</replaceable></arg>
       <arg choice="req"><replaceable>file2</replaceable></arg>
     </cmdsynopsis>
@@ -55,35 +56,47 @@
    <para>Merge two (slightly different) files interactively with a user
    friendly fullscreen interface in text mode.</para>
 
-   <para><application>imediff2</application> shows the differences of given two files
+   <para><application>Imediff2</application> shows the differences of given two files
    (in color if the terminal supports them), lets you scroll the file
    and toggle changes between old and new version one by one. If the 'unresolved'
    mode is enabled, you can optionally save both versions.</para>
 
-   <para>Empty lines are shown in reverse so you see that you can select
+   <para>Additionally, if the <varname>$EDITOR</varname>
+   environment variable is set or if <command>/usr/bin/editor</command> exists and
+   is executable, you can also launch an external editor and manually edit the
+   half-merged file before saving it, perhaps to resolve the 'unresolved' parts.</para>
+
+   <para>Empty lines are shown in reverse colors so you see that you can select
    them. If a line is missing completely from one file, <application>imediff2</application>
    displays it as a reversed '<guilabel>?</guilabel>'. While it seems to take one line in the
-   editing phase, it is naturally not saved in the output file.</para>
+   editing phase, it is naturally not saved into the output file.</para>
 
-   <para>To see list of keyboard commands, hit <keycap>h</keycap> or <keycap>?</keycap> in
+   <para>To see a list of keyboard commands, hit <keycap>h</keycap> or <keycap>?</keycap> in
    the editor.</para>
+
+   <para>The program exits with status 0 if the changes were saved, 1 if the merging
+   was aborted and 2 if the parameters were invalid.</para>
 
   </refsect1>
 
   <refsect1>
     <title>OPTIONS</title>
 
-    <para>The program follow the usual &gnu; command line syntax,
-      with long options starting with two dashes (`-').</para>
-
     <variablelist>
 
       <varlistentry>
         <term><option>-o <replaceable>outputfile</replaceable></option>, <option>--output=<replaceable>outputfile</replaceable></option></term>
         <listitem>
-          <para>Write output to given file.</para>
+          <para>Write output to given file. If missing, changes will not be saved.</para>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term><option>-N</option>, <option>--new-file</option></term>
+        <listitem>
+          <para>Treat absent files as empty.</para>
+        </listitem>
+     </varlistentry>
 
       <varlistentry>
         <term><option>-m</option>, <option>--mono</option></term>
@@ -272,26 +285,20 @@
   </refsect1>
 
   <refsect1>
-    <title>EXTERNAL EDITOR</title>
-
-    <para>The <keysym>e</keysym> command is only available if <varname>$EDITOR</varname>
-    variable is set or if <command>/usr/bin/editor</command> exists and is executable.</para>
-
-  </refsect1>
-
-  <refsect1>
     <title>SEE ALSO</title>
 
-    <para>sdiff (1), diff (1).</para>
+    <para>sdiff (1), diff (1), merge (1), diff3 (1).</para>
 
   </refsect1>
   <refsect1>
-    <title>AUTHOR</title>
+    <title>COPYRIGHT</title>
 
     <para>This manual page as well as the program itself was written
       by <author>&dhfirstname; &dhsurname;</author> (&dhemail;).
-      Unlike the program itself, this document has been placed into
-      the Public Domain.
+      Unlike the program itself, which is licensed under the GNU
+      General Public License (GPL) version 2 (or any later version,
+      at your option), this document has been placed into the
+      Public Domain.
     </para>
 
   </refsect1>

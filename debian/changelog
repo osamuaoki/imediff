@@ -1,3 +1,44 @@
+imediff2 (1.1.2-1) unstable; urgency=low
+
+  * New upstream release.
+  * New maintainer. Closes: #425240.
+  * Changed debian/copyright to include standard paragraph about GPL.
+  * debian/control:
+    + Bumped Standards-Version to 3.7.2. No changes.
+    + Bumped debhelper to >= 5.0.38.
+    + Added homepage.
+    + Changed Build-Depends-Indep to Build-Depends.
+    + Added Build-Depends on python-central and python-all-dev.
+    + Added XB-Python-Version and XS-Python-Version.
+  * Bumped debian/compat to 5.
+  * Edited debian/watch to look for current versioning style in upstream. Also
+    updated to version 3.
+  * debian/rules:
+    + Changed to dh_pycentral.
+    + Removed dh_python.
+    + Cleaned up cruft.
+  * Added debian/pycompat.
+
+ -- Kevin Coyner <kcoyner@debian.org>  Thu, 16 Aug 2007 21:02:40 -0400
+
+imediff2 (1.1.1-2) unstable; urgency=low
+
+  * Orphaning the package.
+
+ -- Jarno Elonen <elonen@debian.org>  Fri, 18 May 2007 12:18:09 +0300
+
+imediff2 (1.1.1-1) unstable; urgency=low
+
+  * New upstream release
+    - Applied some patches by Wolfram Sang. Thank you!
+      + Adds '--new-file' option (like 'diff')
+      + Better error messages
+      + KEY_BACKSPACE goes to previous chunk
+      + '-o file' is not required anymore (for preview, no saving)
+      + help screen shows which color means which file
+
+ -- Jarno Elonen <elonen@debian.org>  Fri, 10 Feb 2006 19:13:57 +0200
+
 imediff2 (1.1.0+20041113-1) unstable; urgency=low
 
   * New upstream release (from SVN)

@@ -18,7 +18,7 @@
 # License along with the program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-VERSION = '1.1.0'
+VERSION = '1.1.1'
 PACKAGE = 'imediff2'
 
 import curses.wrapper
@@ -33,6 +33,7 @@ import time
 import pty
 import sys
 import os
+import errno
 
 gettext.bindtextdomain('imediff2', '/path/to/my/language/directory')
 gettext.textdomain('imediff2')
@@ -43,9 +44,10 @@ start_section_a_str = "# <<<<<<<<<<<<<<<< A <<<<<<<<<<<<<<<<<<\n"
 start_section_b_str = "# >>>>>>>>>>>>>>>> B >>>>>>>>>>>>>>>>>>\n"
 end_section_str =     "# >>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<\n"
 
-global colors, allow_unresolved
+global colors, allow_unresolved, assume_empty
 colors = True
 allow_unresolved = False
+assume_empty = False
 
 last_old_chunks = None
 
@@ -58,29 +60,29 @@ elif os.path.isfile(default_editor) or os.path.islink(default_editor):
 
 def usagetext():
   return _("""
-Usage:  imediff2 [options] -o <outputfile> <file1> <file2>
+Usage:  imediff2 [options] <file1> <file2>
 
 Where options include:
-  -o, --output=<file>   write to given file (required)
+  -o, --output=<file>   write to given file
   -h, --help            show this help
   -m, --mono            force monochrome display
   -u, --unresolved      enable 'unresolved' in toggling
   -a                    start with version A (default)
   -b                    start with version B
   -c                    start with unresolved changes (implies -u)
+  -N, --new-file        Treat absent files as empty
   -V, --version		show version and exit
   """)
 
 def helptext():
-  global allow_unresolved, editor
+  global allow_unresolved, editor, colors
   txt = _("""  KEYBOARD COMMANDS
 
   arrows          move in document
-  page up/down    move a screenfull
-
+  page up/down    move a screenful
   enter           toggle selected change
   n, tab, space   jump to next change
-  p               jump to previous change
+  p, backspace    jump to previous change
 
   a               set current chunk to version A
   b               set current chunk to version B
@@ -97,29 +99,38 @@ def helptext():
     txt += "\n" + _("  r               discard editor-made changes")
 
   txt += _("""
-
   x, s            save and exit
   q, ^C           exit without saving
   home/end        jump to start/end
-
   h, ?            show this help
 
   '?' on bright background is a place holder for
   an empty string so you can select them. It is only a
   visualization and will not be written to the output.
+""")
 
-  Press any key to continue""")
+  if colors:
+    txt += _("\n  CURRENT COLORS") + "\n"
+    txt += (_("\n  blue = '%s'") + "\n") % args[0]
+    txt += (_("  red  = '%s'")) % args[1]
+  
+  #txt += _("""
+  #Press any key to continue""")
   return txt
 
 def read_lines( filename ):
+  global assume_empty
   try:
     fp = file( filename )
     l = fp.readlines()
     fp.close()
     return l
-  except IOError:
-    sys.stderr.write((_("Could not read '%s'") + "\n") % filename)
-    sys.exit(3)
+  except IOError, (error, message):
+    if error == errno.ENOENT and assume_empty:
+      return ""
+    else:
+      sys.stderr.write(_("Could not read '%s': %s\n") % (filename, message))
+      sys.exit(3)
 
 def strip_end_lines( txt ):
   return string.replace(string.replace(txt,"%c"%10,""),"%c"%13,"")
@@ -366,7 +377,8 @@ def main(stdscr, lines_a, lines_b, start_mode):
         ac = active_chunks[sel]
         if chunks[ac[2]][0] == 'a':
           chunks[ac[2]][0] = 'b'
-        elif allow_unresolved and chunks[ac[2]][0] == 'b':
+        elif allow_unresolved and chunks[ac[2]][0] == 'b' and \
+             chunks[ac[2]][1] != None and chunks[ac[2]][2] != None:
           chunks[ac[2]][0] = 'c'
         else:
           chunks[ac[2]][0] = 'a'
@@ -418,7 +430,7 @@ def main(stdscr, lines_a, lines_b, start_mode):
         cy=active_chunks[sel][0] - 2
         if cy<y or cy>=y+winh-2:
           y=cy
-    elif c==curses.KEY_PREVIOUS or c == ord('p'):
+    elif c==curses.KEY_PREVIOUS or c == ord('p') or c==curses.KEY_BACKSPACE:
       if sel-1 >= 0:
         sel-=1
         cy=active_chunks[sel][0] - 2
@@ -498,8 +510,8 @@ start_mode = 'a'
 
 # Parse options and arguments
 try:
-  opts, args = getopt.getopt(sys.argv[1:], "hmuo:abcV",
-    ["help","mono","unresolved","output=", "version"])
+  opts, args = getopt.getopt(sys.argv[1:], "hmuo:abcNV",
+    ["help","mono","unresolved","output=", "version", "new-file"])
 except getopt.GetoptError, e:
   print _("Error: ") + str(e)
   print usagetext()
@@ -531,10 +543,9 @@ for o, a in opts:
   elif o == "-c":
     allow_unresolved = True
     start_mode = 'c'
-
-if ofile == None:
-  sys.stderr.write(_("Error: output file required (-o)") + "\n")
-  sys.exit(2)
+  elif o in ("-N", "--new-file"):
+    assume_empty = True
+    
 
 lines_a = read_lines(args[0])
 lines_b = read_lines(args[1])
@@ -596,8 +607,8 @@ while True:
         else:
           chunks = 'old'
       os.unlink(of_name)
-    except IOError:
-      sys.stderr.write(_("Could not write to '%s'") % of_name);
+    except IOError, (error, message):
+      sys.stderr.write(_("Could not write to '%s': %s\n") % (of_name, message));
 
   if not launch_editor:
     break
@@ -607,11 +618,12 @@ if aborted:
   sys.exit(1)
 else:
   try:
-    of = file(ofile, 'wb')
-    of.write( output )
-    of.close()
+    if ofile is not None:
+      of = file(ofile, 'wb')
+      of.write( output )
+      of.close()
     sys.exit(0)
-  except IOError:
-    sys.stderr.write(_("Could not write to '%s'") % ofile);
+  except IOError, (error, message):
+    sys.stderr.write(_("Could not write to '%s': %s\n") % (ofile, message));
 
 sys.exit(3)

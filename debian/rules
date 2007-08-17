@@ -1,15 +1,14 @@
 #!/usr/bin/make -f
-# Sample debian/rules that uses debhelper.
-# GNU copyright 1997 to 1999 by Joey Hess.
 
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
+
+PYDEF   := $(shell pyversions -d)
 
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
 	touch configure-stamp
-
 
 build: build-stamp
 
@@ -38,27 +37,15 @@ binary-indep: build install
 binary-arch: build install
 	dh_testdir
 	dh_testroot
-	dh_installchangelogs 
+	dh_installchangelogs
 	dh_installdocs
 	dh_installexamples
 	dh_install
-#	dh_installmenu
-#	dh_installdebconf	
-#	dh_installlogrotate
-#	dh_installemacsen
-#	dh_installpam
-#	dh_installmime
-#	dh_installinit
-#	dh_installcron
-#	dh_installinfo
 	dh_installman imediff2.1
 	dh_link
-#	dh_strip
 	dh_compress
 	dh_fixperms
-#	dh_perl
-	dh_python
-#	dh_makeshlibs
+	dh_pycentral
 	dh_installdeb
 	dh_shlibdeps
 	dh_gencontrol
