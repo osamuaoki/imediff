@@ -1,3 +1,11 @@
+imediff2 (1.1.2-1.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Convert to dh_python2 (Closes: #616847).
+  * Define homepage field (Closes: #615420).
+
+ -- Luca Falavigna <dktrkranz@debian.org>  Thu, 30 May 2013 20:25:45 +0200
+
 imediff2 (1.1.2-1) unstable; urgency=low
 
   * New upstream release.
