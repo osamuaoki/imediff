@@ -1,3 +1,18 @@
+imediff2 (1.1.2-2) unstable; urgency=medium
+
+  * debian/rules: 
+    + Changed build architecture line to fix RC bug FTBFS binary build with no
+      binary artifacts found. Closes: $831966.
+    + Changed call to dh_clean -k to dh_prep.
+    + Added build commands to build-arch build-indep.
+  * debian/control:
+    + Bumped Standards-Version to 3.9.8. No changes.
+    + Bumped debhelper to >= 9.
+    + Add ${misc:Depends}.
+  * Bumped debian/compat to 9.
+
+ -- Kevin Coyner <kcoyner@debian.org>  Tue, 11 Oct 2016 06:46:12 -0400
+
 imediff2 (1.1.2-1.1) unstable; urgency=low
 
   * Non-maintainer upload.

@@ -2,13 +2,13 @@ Source: imediff2
 Section: text
 Priority: optional
 Maintainer: Kevin Coyner <kcoyner@debian.org>
-Build-Depends: debhelper (>= 5.0.38), xsltproc, docbook-xsl, python-all-dev (>=2.6.6-3~)
-Standards-Version: 3.7.2
+Build-Depends: debhelper (>= 9), xsltproc, docbook-xsl, python-all-dev (>=2.6.6-3~)
+Standards-Version: 3.9.8
 Homepage: http://alioth.debian.org/projects/imediff2/
 
 Package: imediff2
 Architecture: all
-Depends: ${python:Depends}
+Depends: ${python:Depends}, ${misc:Depends}
 Description: interactive full screen 2-way merge tool
  Imediff2 lets you merge two (slightly different) files
  interactively with a user friendly full screen interface
