@@ -1,8 +1,16 @@
+imediff2 (1.1.2-3) unstable; urgency=medium
+
+  * Add dh-python, python-setuptools and python-all-dev to Build-Depends.
+  * Correct typo in bug number reference in previous version (1.1.2-2)
+    of changelog.  Closes: #831966.
+
+ -- Kevin Coyner <kcoyner@debian.org>  Wed, 12 Oct 2016 16:22:53 -0400
+
 imediff2 (1.1.2-2) unstable; urgency=medium
 
   * debian/rules: 
     + Changed build architecture line to fix RC bug FTBFS binary build with no
-      binary artifacts found. Closes: $831966.
+      binary artifacts found. Closes: #831966.
     + Changed call to dh_clean -k to dh_prep.
     + Added build commands to build-arch build-indep.
   * debian/control:
