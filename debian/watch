@@ -1,0 +1,5 @@
+version=2
+
+# Homepage  Pattern  [Version  [Action]]
+http://iki.fi/elonen/code/imediff/ \
+  imediff2-([\d\.]*).tar.(gz|bz2)

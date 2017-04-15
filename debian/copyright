@@ -1,0 +1,23 @@
+Imediff2 was debianized by Jarno Elonen <elonen@debian.org> in 2003
+from source files available at
+
+  http://iki.fi/elonen/code/imediff/
+
+The packager has placed his own packaging works into the Public
+Domain and licenses those works that are modifications to
+existing copyrighted works (some packaging scripts, modified
+upstream sources etc) under the same license as the original ones.
+
+
+Upstream authors:
+  Jarno Elonen <elonen@debian.org>
+
+Upstream copyright:
+  2003,2004  Jarno Elonen
+
+
+The program is distributed under the terms of the
+GNU General Public License.
+
+On Debian GNU/Linux system you can find a copy of GPL in
+/usr/share/common-licenses/GPL

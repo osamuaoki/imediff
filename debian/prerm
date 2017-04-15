@@ -1,0 +1,7 @@
+#!/bin/sh -e
+
+if [ "$1" != "upgrade" ]; then
+  update-alternatives --remove merge2 /usr/bin/imediff2
+fi
+
+#DEBHELPER#

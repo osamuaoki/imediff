@@ -1,0 +1,617 @@
+#!/usr/bin/python
+
+# IMEDIFF2 - an interactive fullscreen 2-way merge tool
+#
+# Copyright (C) 2003, 2004 Jarno Elonen <elonen@iki.fi>
+#
+# This is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2,
+# or (at your option) any later version.
+#
+# This is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public
+# License along with the program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+VERSION = '1.1.0'
+PACKAGE = 'imediff2'
+
+import curses.wrapper
+import curses
+import tempfile
+import gettext
+import difflib
+import getopt
+import string
+import types
+import time
+import pty
+import sys
+import os
+
+gettext.bindtextdomain('imediff2', '/path/to/my/language/directory')
+gettext.textdomain('imediff2')
+_ = gettext.gettext
+
+global start_section_a_str, start_section_b_str, end_section_str
+start_section_a_str = "# <<<<<<<<<<<<<<<< A <<<<<<<<<<<<<<<<<<\n"
+start_section_b_str = "# >>>>>>>>>>>>>>>> B >>>>>>>>>>>>>>>>>>\n"
+end_section_str =     "# >>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<\n"
+
+global colors, allow_unresolved
+colors = True
+allow_unresolved = False
+
+last_old_chunks = None
+
+default_editor = '/usr/bin/editor'
+editor = None
+if 'EDITOR' in os.environ:
+  editor = os.environ['EDITOR']
+elif os.path.isfile(default_editor) or os.path.islink(default_editor):
+  editor = default_editor
+
+def usagetext():
+  return _("""
+Usage:  imediff2 [options] -o <outputfile> <file1> <file2>
+
+Where options include:
+  -o=, --output=<file>  write to given file (required)
+  -h, --help            show this help
+  -m, --mono            force monochrome display
+  -u, --unresolved      enable 'unresolved' in toggling
+  -a                    start with version A (default)
+  -b                    start with version B
+  -c                    start with unresolved changes (implies -u)
+  -V, --version		show version and exit
+  """)
+
+def helptext():
+  global allow_unresolved, editor
+  txt = _("""  KEYBOARD COMMANDS
+
+  arrows          move in document
+  page up/down    move a screenfull
+
+  enter           toggle selected change
+  n, tab, space   jump to next change
+  p               jump to previous change
+
+  a               set current chunk to version A
+  b               set current chunk to version B
+  shift-a         set all changes to version A
+  shitf-b         set all changes to version B
+
+  u               set current chunk to unresolved
+  shift-u         set all changes to unresolved""")
+
+  if not editor is None:
+    txt += "\n\n" + _("  e               launch external editor")
+
+  if last_old_chunks is not None:
+    txt += "\n" + _("  r               discard editor-made changes")
+
+  txt += _("""
+
+  x, s            save and exit
+  q, ^C           exit without saving
+  home/end        jump to start/end
+
+  h, ?            show this help
+
+  '?' on bright background is a place holder for
+  an empty string so you can select them. It is only a
+  visualization and will not be written to the output.
+
+  Press any key to continue""")
+  return txt
+
+def read_lines( filename ):
+  try:
+    fp = file( filename )
+    l = fp.readlines()
+    fp.close()
+    return l
+  except IOError:
+    sys.stderr.write((_("Could not read '%s'") + "\n") % filename)
+    sys.exit(3)
+
+def strip_end_lines( txt ):
+  return string.replace(string.replace(txt,"%c"%10,""),"%c"%13,"")
+
+def main(stdscr, lines_a, lines_b, start_mode):
+  global sel, active_chunks, x,y, lines, textpad, contw,conth
+  global colors, allow_unresolved, last_old_chunks
+
+  curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK )
+  curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK )
+  curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK )
+
+  curses.init_pair(4, curses.COLOR_WHITE, curses.COLOR_BLUE )
+  curses.init_pair(5, curses.COLOR_WHITE, curses.COLOR_RED )
+  curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_YELLOW )
+
+  curses.init_pair(7, curses.COLOR_BLUE, curses.COLOR_WHITE )
+  curses.init_pair(8, curses.COLOR_RED, curses.COLOR_WHITE )
+  curses.init_pair(9, curses.COLOR_YELLOW, curses.COLOR_WHITE )
+
+  curses.init_pair(10, curses.COLOR_CYAN, curses.COLOR_BLUE )
+  curses.init_pair(11, curses.COLOR_CYAN, curses.COLOR_RED )
+  curses.init_pair(12, curses.COLOR_CYAN, curses.COLOR_YELLOW )
+
+  curses.curs_set(0)
+  if curses.has_colors() == False:
+    colors = False
+
+  # Make the diff
+  if start_mode == 'old':
+    chunks = last_old_chunks
+  else:
+    chunks = list()
+    s = difflib.SequenceMatcher(None, lines_a, lines_b)
+    for tag, i1, i2, j1, j2 in s.get_opcodes():
+      if tag == 'equal':
+        chunks.append( ['e', lines_a[i1:i2]] )
+      elif tag == 'insert':
+        chunks.append( [start_mode, None, lines_b[j1:j2]] )
+      elif tag == 'delete':
+        chunks.append( [start_mode, lines_a[i1:i2], None] )
+      else: # tag == 'replace'
+        chunks.append( [start_mode, lines_a[i1:i2], lines_b[j1:j2]] )
+
+  winh,winw = stdscr.getmaxyx()
+
+  # Parse chunks and depending on their type,
+  # show with different visual attributes and
+  # add the active items to the list of actice chunks
+  def build_contents():
+    global start_section_a_str, start_section_b_str, end_section_str
+    global active_chunks, lines, textpad, contw,conth
+    global colors,allow_unresolved
+
+    j=i=0
+    active_chunks = list()
+    lines = list()
+
+    for c in chunks:
+      active = 1
+      decor = curses.A_NORMAL
+      color_pair = 0
+
+      if c[0]=='e':
+        active = 0
+        line_list = c[1]
+      elif c[0]=='a':
+        decor = curses.A_BOLD
+        color_pair = 1
+        line_list = c[1]
+      elif c[0]=='b':
+        decor = curses.A_BOLD
+        color_pair = 2
+        line_list = c[2]
+      elif c[0]=='c':
+        decor = curses.A_BOLD
+        color_pair = 3
+        line_list = list()
+        if c[1] != None:
+          line_list += [start_section_a_str] + c[1]
+        if c[2] != None:
+          line_list += [start_section_b_str] + c[2]
+        if len(line_list) == 0:
+          line_list = None
+        else:
+          line_list += [end_section_str]
+
+      if line_list == None:
+        if colors:
+          color_pair += 6
+        else:
+          decor |= curses.A_REVERSE
+        line_list = [_("?") + "\n"];
+
+      if active == 1:
+        all_empty_lines = 1
+        for l in line_list:
+          if len(strip_end_lines(l)) > 0:
+            all_empty_lines = 0
+            break
+        if all_empty_lines:
+          line_list = list(' '*len(line_list))
+          decor = curses.A_REVERSE|curses.A_BOLD
+        active_chunks.append( [j, j+len(line_list), i] )
+
+      for l in line_list:
+        lines.append( [string.expandtabs(strip_end_lines(l)),
+          decor, color_pair] )
+        j+=1
+
+      i+=1
+
+    conth = len(lines)+1
+    contw = 0
+    for l in lines:
+      contw = max(contw, len(l[0]))
+    textpad = curses.newpad(conth, contw)
+
+    for j in range(0, len(lines)):
+      if colors:
+        textpad.addstr( j,0,lines[j][0],lines[j][1] |
+          curses.color_pair(lines[j][2]) )
+      else:
+        textpad.addstr( j,0,lines[j][0],lines[j][1] )
+
+  # Return the merged file in a string
+  def build_result_str():
+    output = ""
+    for c in chunks:
+      if c[0]=='e':
+        line_list = c[1]
+      elif c[0]=='a':
+        line_list = c[1]
+      elif c[0]=='b':
+        line_list = c[2]
+      elif c[0]=='c':
+        line_list = list()
+        if c[1] != None:
+          line_list += [start_section_a_str] + c[1]
+        if c[2] != None:
+          line_list += [start_section_b_str] + c[2]
+        if len(line_list) == 0:
+          line_list = None
+        else:
+          line_list += [end_section_str]
+
+      if line_list != None:
+        for l in line_list:
+          output += l
+    return output
+
+  # Jump to next or previous active chunk
+  def sel_next( dir ):
+    global sel, active_chunks
+    if dir == 'up':
+      rng = range(sel-1, -1, -1)
+    else:
+      rng = range(sel+1, len(active_chunks))
+    for j in rng:
+      if active_chunks[j][1] > y and active_chunks[j][0] < y+winh:
+        sel = j
+        break;
+
+  # Clamp current position in document
+  def clamp_xy():
+    global x,y,contw,conth
+    if y+winh > conth-1:
+      y = conth-1-winh
+    if y<0:
+      y=0
+    if x+winw > contw-1:
+      x = contw-1-winw
+    if x<0:
+      x=0
+
+  # Change all active chunks to given mode
+  def change_all_chunks(new_mode):
+    for i in range(0,len(active_chunks)):
+      chunks[active_chunks[i][2]][0] = new_mode
+
+  # Repaint selection highlighting
+  def highlight_sel(new_sel, old_sel):
+    global active_chunks, textpad, lines, colors
+    if old_sel > -1:
+      ac = active_chunks[old_sel]
+      for j in range(ac[0], ac[1]):
+        if colors:
+          textpad.addstr( j,0,lines[j][0],lines[j][1] |
+            curses.color_pair(lines[j][2]) )
+        else:
+          textpad.addstr( j,0,lines[j][0],lines[j][1] )
+    if len(active_chunks):
+      ac = active_chunks[new_sel]
+      for j in range(ac[0], ac[1]):
+        if colors:
+          c = lines[j][2]+3
+          textpad.addstr(j,0, lines[j][0], curses.color_pair(c)|curses.A_BOLD)
+        else:
+          textpad.addstr(j,0, lines[j][0], lines[j][1]|curses.A_REVERSE)
+
+
+  build_contents()
+  textpad.refresh( 0,0, 0,0, winh-1,winw-1 )
+  stdscr.refresh()
+
+  y=x=0
+  sel=-1
+  sel_next('down') # select first active chunk
+  highlight_sel( sel, -1 )
+
+  # Key reading loop
+  while True:
+
+    # Redraw screen
+    curses.curs_set(0)
+    winh,winw = stdscr.getmaxyx()
+    textpad.refresh( y,x, 0,0, winh-1,winw-1 )
+
+    # clear to the right and down to remove garbage characters
+    for i in range( contw-x, winw ):
+      stdscr.vline( 0,i, ' ', winh )
+    for i in range( conth-y, winh ):
+      stdscr.hline( i,0, ' ', winw )
+    stdscr.refresh()
+
+    # Move cursor to show current selection
+    if sel>-1:
+      cy=active_chunks[sel][0]-y
+      winh,winw = stdscr.getmaxyx()
+      cx = min(len(lines[active_chunks[sel][0]][0]), winw-1)
+      if cy>=0 and cy<winh and cx>=0:
+        curses.curs_set(1)
+        stdscr.move(cy, cx)
+      else:
+        curses.curs_set(0)
+
+    old_sel = sel
+    redraw_sel = False
+    c = stdscr.getch()
+
+    # Toggle chunk
+    if c == 10 or c == curses.KEY_COMMAND:
+      if sel > -1:
+        ac = active_chunks[sel]
+        if chunks[ac[2]][0] == 'a':
+          chunks[ac[2]][0] = 'b'
+        elif allow_unresolved and chunks[ac[2]][0] == 'b':
+          chunks[ac[2]][0] = 'c'
+        else:
+          chunks[ac[2]][0] = 'a'
+      build_contents()
+      redraw_sel = True
+
+    # Explicitly select chunk state
+    elif (sel > -1) and (c == ord('a')):
+      chunks[active_chunks[sel][2]][0] = 'a'
+      build_contents()
+      redraw_sel = True
+    elif (sel > -1) and (c == ord('b')):
+      chunks[active_chunks[sel][2]][0] = 'b'
+      build_contents()
+      redraw_sel = True
+    elif (sel > -1) and (c == ord('u')):
+      allow_unresolved = True
+      chunks[active_chunks[sel][2]][0] = 'c'
+      build_contents()
+      redraw_sel = True
+
+    # Change mode for all chunks
+    elif (c == ord('A')):
+      change_all_chunks( 'a' );
+      build_contents()
+      redraw_sel = True
+    elif (c == ord('B')):
+      change_all_chunks( 'b' );
+      build_contents()
+      redraw_sel = True
+    elif c == ord('U') and allow_unresolved:
+      allow_unresolved = True
+      change_all_chunks( 'c' );
+      build_contents()
+      redraw_sel = True
+    elif c == ord('r') and last_old_chunks is not None:
+      chunks = last_old_chunks
+      last_old_chunks = None
+      sel = -1
+      if len(chunks)>0:
+        sel=0
+      build_contents()
+      redraw_sel = True
+
+    # Jump to next/previous chunk
+    elif c==curses.KEY_NEXT or c == ord(' ') or c == ord('\t') or c == ord('n'):
+      if sel+1 < len(active_chunks):
+        sel+=1
+        cy=active_chunks[sel][0] - 2
+        if cy<y or cy>=y+winh-2:
+          y=cy
+    elif c==curses.KEY_PREVIOUS or c == ord('p'):
+      if sel-1 >= 0:
+        sel-=1
+        cy=active_chunks[sel][0] - 2
+        if cy<y or cy>=y+winh-2:
+          y=cy
+
+    # Show help screen
+    elif c == ord('h') or c == ord('?') or c == curses.KEY_HELP:
+      helpw = 0
+      helph = 0
+      for l in string.split(helptext(), "%c"%10):
+        helpw = max(helpw, len(l))
+        helph += 1
+      helppad = curses.newpad(helph+2, helpw+2)
+      helppad.addstr(1,0,helptext())
+      helppad.border()
+      helppad.refresh( 0,0, 0,0, min(helph+1,winh-1),min(helpw+1,winw-1) )
+      stdscr.refresh()
+      curses.curs_set(0)
+      stdscr.getch()
+
+    # Exit without saving (same as ^C)
+    elif c == ord('q') or c == curses.KEY_CANCEL:
+      raise KeyboardInterrupt
+
+    # Save and exit
+    elif c == ord('x') or c == ord('s') or \
+         c == curses.KEY_EXIT or c == curses.KEY_SAVE:
+      last_old_chunks = chunks
+      return (build_result_str(), False)
+
+    # Launch editor
+    elif c == ord('e'):
+      last_old_chunks = chunks
+      return (build_result_str(), True)
+
+    # Move in document
+    elif c == curses.KEY_SR or c == curses.KEY_UP:
+      sel_next('up')
+      if sel == old_sel: y-=1
+    elif c == curses.KEY_SF or c == curses.KEY_DOWN:
+      sel_next('down')
+      if sel == old_sel: y+=1
+    elif c == curses.KEY_LEFT:
+      x-=8
+    elif c == curses.KEY_RIGHT:
+      x+=8
+    elif c == curses.KEY_PPAGE:
+      y-=winh
+      clamp_xy()
+      sel_next('up')
+    elif c == curses.KEY_NPAGE:
+      y+=winh
+      clamp_xy()
+      sel_next('down')
+    elif c == curses.KEY_HOME:
+      y = 0
+    elif c == curses.KEY_END:
+      y = len(lines)
+      clamp_xy()
+
+    # Terminal resize signal
+    elif c == curses.KEY_RESIZE:
+      winh,winw = stdscr.getmaxyx()
+
+    clamp_xy()
+    if redraw_sel or sel != old_sel:
+      highlight_sel( sel, old_sel )
+
+  last_old_chunks = chunks
+  return (build_result_str(), False)
+
+# --- EXECUTION STARTS HERE
+
+ofile = None
+start_mode = 'a'
+
+# Parse options and arguments
+try:
+  opts, args = getopt.getopt(sys.argv[1:], "hmuo:abcV",
+    ["help","mono","unresolved","output=", "version"])
+except getopt.GetoptError, e:
+  print _("Error: ") + str(e)
+  print usagetext()
+  sys.exit(2)
+
+for o, a in opts:
+  if o in ("-h", "--help"):
+    print usagetext()
+    sys.exit()
+  elif o in ("-V", "--version"):
+    print "%s %s" % (PACKAGE, VERSION)
+    sys.exit()
+
+if len(args)<2:
+  print usagetext()
+  sys.exit(2)
+
+for o, a in opts:
+  if o in ("-m", "--mono"):
+    colors = False
+  elif o in ("-u", "--unresolved"):
+    allow_unresolved = True
+  elif o in ("-o", "--output"):
+    ofile = a
+  elif o == "-a":
+    start_mode = 'a'
+  elif o == "-b":
+    start_mode = 'b'
+  elif o == "-c":
+    allow_unresolved = True
+    start_mode = 'c'
+
+if ofile == None:
+  sys.stderr.write(_("Error: output file required (-o)") + "\n")
+  sys.exit(2)
+
+lines_a = read_lines(args[0])
+lines_b = read_lines(args[1])
+
+aborted=False
+launch_editor = False
+chunk_mode = start_mode
+
+while True:
+  # Init curses
+  try:
+    stdscr = curses.initscr()
+    curses.start_color()
+    curses.noecho()
+    curses.cbreak()
+    stdscr.keypad(1)
+    stdscr.clear()
+    stdscr.refresh()
+    old_cursor = curses.curs_set(0)
+  except curses.error:
+    sys.stderr.write( _("Failed to initialize Curses") + "\n" )
+    sys.exit(1)
+
+  # Merge
+  try:
+    (output, launch_editor) = main( stdscr, lines_a, lines_b, chunk_mode )
+  except KeyboardInterrupt:
+    launch_editor = False
+    aborted = True
+
+  chunks = None
+
+  # Deinit curses
+  try:
+    curses.curs_set( old_cursor )
+    stdscr.keypad(0);
+    curses.echo()
+    curses.nocbreak();
+    curses.endwin()
+  except curses.error:
+    pass
+
+  if launch_editor:
+    assert( not editor is None )
+    try:
+      (of, of_name) = tempfile.mkstemp(prefix='imediff2')
+      os.write( of, output )
+      os.close(of)
+      time.sleep(0.1) # make the change visible - many editor look a lot like imediff2
+      editor_ret = os.system('%s %s' % (editor, of_name))
+      time.sleep(0.1)
+      if editor_ret == 0:
+        new_b_lines = read_lines(of_name)
+        if string.join(new_b_lines, '') == output:
+          chunk_mode = 'old'
+        elif new_b_lines != lines_a:
+          lines_b = new_b_lines
+          chunk_mode = 'b'
+        else:
+          chunks = 'old'
+      os.unlink(of_name)
+    except IOError:
+      sys.stderr.write(_("Could not write to '%s'") % of_name);
+
+  if not launch_editor:
+    break
+
+# Save output
+if aborted:
+  sys.exit(1)
+else:
+  try:
+    of = file(ofile, 'wb')
+    of.write( output )
+    of.close()
+    sys.exit(0)
+  except IOError:
+    sys.stderr.write(_("Could not write to '%s'") % ofile);
+
+sys.exit(3)

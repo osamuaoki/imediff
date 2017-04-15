@@ -1,0 +1,298 @@
+<!DOCTYPE refentry PUBLIC "-//Norman Walsh/DTD DocBk XML V4.1.2//EN"
+"http://www.docbook.org/xml/4.1.2/docbookx.dtd" [
+
+  <!ENTITY dhfirstname "<firstname>Jarno</firstname>">
+  <!ENTITY dhsurname   "<surname>Elonen</surname>">
+  <!ENTITY dhdate      "<date>2004-10-22</date>">
+  <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
+  <!ENTITY dhemail     "<email>elonen@iki.fi</email>">
+  <!ENTITY dhusername  "elonen">
+  <!ENTITY dhucpackage "<refentrytitle>imediff2</refentrytitle>">
+  <!ENTITY dhpackage   "imediff2">
+
+  <!ENTITY gnu         "<acronym>GNU</acronym>">
+]>
+<refentry>
+  <refentryinfo>
+    <address>
+      &dhemail;
+    </address>
+    <author>
+      &dhfirstname;
+      &dhsurname;
+    </author>
+    <copyright>
+      <year>2003</year>
+      <holder>&dhusername;</holder>
+    </copyright>
+    &dhdate;
+  </refentryinfo>
+  <refmeta>
+    &dhucpackage;
+
+    &dhsection;
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+    <refpurpose>An interactive fullscreen 2-way merge tool</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      <arg><option>-m</option></arg>
+      <arg><option>-u</option></arg>
+      <arg><option>-a</option></arg>
+      <arg><option>-b</option></arg>
+      <arg><option>-c</option></arg>
+      <arg choice="req"><option>-o <replaceable>outputfile</replaceable></option></arg>
+      <arg choice="req"><replaceable>file1</replaceable></arg>
+      <arg choice="req"><replaceable>file2</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>DESCRIPTION</title>
+
+   <para>Merge two (slightly different) files interactively with a user
+   friendly fullscreen interface in text mode.</para>
+
+   <para><application>imediff2</application> shows the differences of given two files
+   (in color if the terminal supports them), lets you scroll the file
+   and toggle changes between old and new version one by one. If the 'unresolved'
+   mode is enabled, you can optionally save both versions.</para>
+
+   <para>Empty lines are shown in reverse so you see that you can select
+   them. If a line is missing completely from one file, <application>imediff2</application>
+   displays it as a reversed '<guilabel>?</guilabel>'. While it seems to take one line in the
+   editing phase, it is naturally not saved in the output file.</para>
+
+   <para>To see list of keyboard commands, hit <keycap>h</keycap> or <keycap>?</keycap> in
+   the editor.</para>
+
+  </refsect1>
+
+  <refsect1>
+    <title>OPTIONS</title>
+
+    <para>The program follow the usual &gnu; command line syntax,
+      with long options starting with two dashes (`-').</para>
+
+    <variablelist>
+
+      <varlistentry>
+        <term><option>-o <replaceable>outputfile</replaceable></option>, <option>--output=<replaceable>outputfile</replaceable></option></term>
+        <listitem>
+          <para>Write output to given file.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-m</option>, <option>--mono</option></term>
+        <listitem>
+          <para>Force monochrome display.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-u</option>, <option>--unresolved</option></term>
+        <listitem>
+          <para>Enable 'unresolved' mode (see above).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-a</option></term>
+        <listitem>
+          <para>Start with version A (default).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-b</option></term>
+        <listitem>
+          <para>Start with version B.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-c</option></term>
+        <listitem>
+          <para>Start with unresolved changes (implies -u).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-h</option>, <option>--help</option></term>
+        <listitem>
+          <para>Show summary of options and exit.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-V</option>, <option>--version</option></term>
+        <listitem>
+          <para>Show version and exit.</para>
+        </listitem>
+      </varlistentry>
+
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>KEYBOARD COMMANDS</title>
+
+    <para>The following keyboard commands are available in the editor.</para>
+
+    <variablelist>
+
+      <varlistentry>
+        <term><keysym>h</keysym>, <keysym>?</keysym></term>
+        <listitem>
+          <para>Show commands.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycap>up</keycap>, <keycap>down</keycap>, <keycap>left</keycap>, <keycap>right</keycap></term>
+        <listitem>
+          <para>Move in document.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycap>page up</keycap>, <keycap>page down</keycap></term>
+        <listitem>
+          <para>Move a screenfull.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycap>enter</keycap></term>
+        <listitem>
+          <para>Toggle selected change.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>n</keysym>, <keycap>tab</keycap>, <keycap>space</keycap></term>
+        <listitem>
+          <para>Jump to next change.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>p</keysym></term>
+        <listitem>
+          <para>Jump to previous change.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>a</keysym></term>
+        <listitem>
+          <para>Set current chunk to version A.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>b</keysym></term>
+        <listitem>
+          <para>Set current chunk to version B.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>u</keysym></term>
+        <listitem>
+          <para>Set current chunk to unresolved.</para>
+        </listitem>
+      </varlistentry>
+
+
+
+      <varlistentry>
+        <term><keycombo action='simul'><keycap>shift</keycap><keysym>a</keysym></keycombo></term>
+        <listitem>
+          <para>Set all changes to version A.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycombo action='simul'><keycap>shift</keycap><keysym>b</keysym></keycombo></term>
+        <listitem>
+          <para>Set all changes to version B.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycombo action='simul'><keycap>shift</keycap><keysym>u</keysym></keycombo></term>
+        <listitem>
+          <para>Set all changes to unresolved.</para>
+        </listitem>
+      </varlistentry>
+
+
+      <varlistentry>
+        <term><keysym>e</keysym></term>
+        <listitem>
+          <para>Launch external editor.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>r</keysym></term>
+        <listitem>
+          <para>Discard editor-made changes. (Available only after <keysym>e</keysym>.)</para>
+        </listitem>
+      </varlistentry>
+
+
+      <varlistentry>
+        <term><keysym>x</keysym>, <keysym>s</keysym></term>
+        <listitem>
+          <para>Save and exit.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>q</keysym>, <keycombo action='simul'><keycap>ctrl</keycap><keysym>c</keysym></keycombo></term>
+        <listitem>
+          <para>Exit without saving.</para>
+        </listitem>
+      </varlistentry>
+
+
+      <varlistentry>
+        <term><keycap>home</keycap>, <keycap>end</keycap></term>
+        <listitem>
+          <para>Jump to start or end.</para>
+        </listitem>
+      </varlistentry>
+
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>EXTERNAL EDITOR</title>
+
+    <para>The <keysym>e</keysym> command is only available if <varname>$EDITOR</varname>
+    variable is set or if <command>/usr/bin/editor</command> exists and is executable.</para>
+
+  </refsect1>
+
+  <refsect1>
+    <title>SEE ALSO</title>
+
+    <para>sdiff (1), diff (1).</para>
+
+  </refsect1>
+  <refsect1>
+    <title>AUTHOR</title>
+
+    <para>This manual page as well as the program itself was written
+      by <author>&dhfirstname; &dhsurname;</author> (&dhemail;).
+      Unlike the program itself, this document has been placed into
+      the Public Domain.
+    </para>
+
+  </refsect1>
+</refentry>

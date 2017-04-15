@@ -1,0 +1,25 @@
+Source: imediff2
+Section: text
+Priority: optional
+Maintainer: Jarno Elonen <elonen@debian.org>
+Build-Depends-Indep: debhelper (>= 4.1.65), xsltproc, docbook-xsl, python
+Standards-Version: 3.6.1.0
+
+Package: imediff2
+Architecture: all
+Depends: ${python:Depends}
+Description: interactive full screen 2-way merge tool
+ Imediff2 lets you merge two (slightly different) files
+ interactively with a user friendly full screen interface
+ on a text terminal. In other words, it is an ncurses based
+ replacement for sdiff.
+ .
+ The program shows the differences of given files (in color
+ if the terminal supports them), lets you scroll up and down
+ and toggle changes between the old and new versions of
+ the differing hunks one by one.
+ .
+ Unlike split screen based merge tools, it shows only one,
+ partially merged, version of the file at a time, making
+ it more "WYSIWYG", perhaps more intuitive for beginners and
+ most importantly, suitable for narrow terminals.
