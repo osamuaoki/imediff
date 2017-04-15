@@ -17,14 +17,14 @@
 .el .ne 3
 .IP "\\$1" \\$2
 ..
-.TH "IMEDIFF2" 1 "2004-10-22" "" ""
+.TH "IMEDIFF2" 1 "2006-03-10" "" ""
 .SH NAME
 imediff2 \- An interactive fullscreen 2-way merge tool
 .SH "SYNOPSIS"
 .ad l
 .hy 0
 .HP 9
-\fBimediff2\fR [\fB\-m\fR] [\fB\-u\fR] [\fB\-a\fR] [\fB\-b\fR] [\fB\-c\fR] {\fB\-o\ \fIoutputfile\fR\fR} {\fIfile1\fR} {\fIfile2\fR}
+\fBimediff2\fR [\fB\-m\fR] [\fB\-u\fR] [\fB\-a\fR] [\fB\-b\fR] [\fB\-c\fR] [\fB\-N\ \fInew\-file\fR\fR] [\fB\-o\ \fIoutputfile\fR\fR] {\fIfile1\fR} {\fIfile2\fR}
 .ad
 .hy
 
@@ -34,22 +34,29 @@ imediff2 \- An interactive fullscreen 2-way merge tool
 Merge two (slightly different) files interactively with a user friendly fullscreen interface in text mode\&.
 
 .PP
-imediff2 shows the differences of given two files (in color if the terminal supports them), lets you scroll the file and toggle changes between old and new version one by one\&. If the 'unresolved' mode is enabled, you can optionally save both versions\&.
+Imediff2 shows the differences of given two files (in color if the terminal supports them), lets you scroll the file and toggle changes between old and new version one by one\&. If the 'unresolved' mode is enabled, you can optionally save both versions\&.
 
 .PP
-Empty lines are shown in reverse so you see that you can select them\&. If a line is missing completely from one file, imediff2 displays it as a reversed '?'\&. While it seems to take one line in the editing phase, it is naturally not saved in the output file\&.
+Additionally, if the \fI$EDITOR\fR environment variable is set or if \fB/usr/bin/editor\fR exists and is executable, you can also launch an external editor and manually edit the half\-merged file before saving it, perhaps to resolve the 'unresolved' parts\&.
 
 .PP
-To see list of keyboard commands, hit h or ? in the editor\&.
+Empty lines are shown in reverse colors so you see that you can select them\&. If a line is missing completely from one file, imediff2 displays it as a reversed '?'\&. While it seems to take one line in the editing phase, it is naturally not saved into the output file\&.
+
+.PP
+To see a list of keyboard commands, hit h or ? in the editor\&.
+
+.PP
+The program exits with status 0 if the changes were saved, 1 if the merging was aborted and 2 if the parameters were invalid\&.
 
 .SH "OPTIONS"
 
-.PP
-The program follow the usual GNU command line syntax, with long options starting with two dashes (`\-')\&.
-
 .TP
 \fB\-o \fIoutputfile\fR\fR, \fB\-\-output=\fIoutputfile\fR\fR
-Write output to given file\&.
+Write output to given file\&. If missing, changes will not be saved\&.
+
+.TP
+\fB\-N\fR, \fB\-\-new\-file\fR
+Treat absent files as empty\&.
 
 .TP
 \fB\-m\fR, \fB\-\-mono\fR
@@ -152,20 +159,15 @@ Exit without saving\&.
 home, end
 Jump to start or end\&.
 
-.SH "EXTERNAL EDITOR"
-
-.PP
-The e command is only available if \fI$EDITOR\fR variable is set or if \fB/usr/bin/editor\fR exists and is executable\&.
-
 .SH "SEE ALSO"
 
 .PP
-sdiff (1), diff (1)\&.
+sdiff (1), diff (1), merge (1), diff3 (1)\&.
 
-.SH "AUTHOR"
+.SH "COPYRIGHT"
 
 .PP
-This manual page as well as the program itself was written by Jarno Elonen (<elonen@iki\&.fi>)\&. Unlike the program itself, this document has been placed into the Public Domain\&.
+This manual page as well as the program itself was written by Jarno Elonen (<elonen@iki\&.fi>)\&. Unlike the program itself, which is licensed under the GNU General Public License (GPL) version 2 (or any later version, at your option), this document has been placed into the Public Domain\&.
 
 .SH AUTHOR
 Jarno Elonen.
