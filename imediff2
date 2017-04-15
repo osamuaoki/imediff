@@ -44,6 +44,35 @@ start_section_a_str = "# <<<<<<<<<<<<<<<< A <<<<<<<<<<<<<<<<<<\n"
 start_section_b_str = "# >>>>>>>>>>>>>>>> B >>>>>>>>>>>>>>>>>>\n"
 end_section_str =     "# >>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<\n"
 
+global kc, kcr
+kc = {
+    'a':'a',
+    'b':'b',
+    'e':'e',
+    'h':'h',
+    'n':'n',
+    'p':'p',
+    'q':'q',
+    'r':'r',
+    's':'s',
+    'u':'u',
+    'x':'x',
+    'y':'y'}
+
+def translate_key(c):
+  # Command key translation for alphabet
+  if c >= ord('a') and c <= ord('z'):
+    if chr(c) in kcr.keys():
+      c = ord(kcr[chr(c)])
+    else:
+      c = 0 # ignore
+  if c >= ord('A') and c <= ord('Z'):
+    if chr(c + 32) in kcr.keys():
+      c = ord(kcr[chr(c + 32)]) - 32
+    else:
+      c = 0 # ignore
+  return c
+
 global colors, allow_unresolved, assume_empty
 colors = True
 allow_unresolved = False
@@ -76,50 +105,52 @@ Where options include:
 
 def helptext():
   global allow_unresolved, editor, colors
-  txt = _("""  KEYBOARD COMMANDS
+  txt = _("""  KEYBOARD COMMANDS   (Set this in ~/.imediff2)
 
   arrows          move in document
   page up/down    move a screenful
   enter           toggle selected change
-  n, tab, space   jump to next change
-  p, backspace    jump to previous change
+  %c, tab, space   jump to next change
+  %c, backspace    jump to previous change
 
-  a               set current chunk to version A
-  b               set current chunk to version B
-  shift-a         set all changes to version A
-  shitf-b         set all changes to version B
+  %c               set current chunk to version A
+  %c               set current chunk to version B
+  shift-%c         set all changes to version A
+  shitf-%c         set all changes to version B
 
-  u               set current chunk to unresolved
-  shift-u         set all changes to unresolved""")
+  %c               set current chunk to unresolved
+  shift-%c         set all changes to unresolved""") % \
+  (kc['n'], kc['p'], kc['a'], kc['b'], kc['a'], kc['b'], kc['u'], kc['u'])
 
   if not editor is None:
-    txt += "\n\n" + _("  e               launch external editor")
+    txt += "\n\n" + _("  %c               launch external editor") % kc['e']
+    txt += ": " + os.path.basename(editor)
 
   if last_old_chunks is not None:
-    txt += "\n" + _("  r               discard editor-made changes")
+    txt += "\n" + _("  %c               discard editor-made changes") % kc['r']
 
   txt += _("""
-  x, s            save and exit
-  q, ^C           exit without saving
+  %c, %c            save and exit
+  %c, ^C           exit without saving
   home/end        jump to start/end
-  h, ?            show this help
+  %c, ?            show this help
 
   '?' on bright background is a place holder for
   an empty string so you can select them. It is only a
   visualization and will not be written to the output.
-""")
+""") % (kc['x'], kc['s'], kc['q'], kc['h'])
 
   if colors:
     txt += _("\n  CURRENT COLORS") + "\n"
-    txt += (_("\n  blue = '%s'") + "\n") % args[0]
-    txt += (_("  red  = '%s'")) % args[1]
-  
+    txt += (_("\n  version A in blue = '%s'") + "\n") % args[0]
+    txt += (_("  version B in red  = '%s'")) % args[1]
+
   #txt += _("""
   #Press any key to continue""")
   return txt
 
 def quittext():
-  txt = _("""  Do you really wish to quit? (Press 'y' to quit)""")
+  txt = _("""  Do you really wish to quit? (Press '%c' to quit)""" % kc['y'])
   return txt
 
 def read_lines( filename ):
@@ -373,7 +404,7 @@ def main(stdscr, lines_a, lines_b, start_mode):
 
     old_sel = sel
     redraw_sel = False
-    c = stdscr.getch()
+    c = translate_key(stdscr.getch())
 
     # Toggle chunk
     if c == 10 or c == curses.KEY_COMMAND:
@@ -413,7 +444,7 @@ def main(stdscr, lines_a, lines_b, start_mode):
       change_all_chunks( 'b' );
       build_contents()
       redraw_sel = True
-    elif c == ord('U') and allow_unresolved:
+    elif c == ord('U'):
       allow_unresolved = True
       change_all_chunks( 'c' );
       build_contents()
@@ -469,7 +500,7 @@ def main(stdscr, lines_a, lines_b, start_mode):
       quitpad.refresh( 0,0, 0,0, min(quith+1,winh-1),min(quitw+1,winw-1) )
       stdscr.refresh()
       curses.curs_set(0)
-      c = stdscr.getch()
+      c = translate_key(stdscr.getch())
       if c == ord('y'):
         raise KeyboardInterrupt
 
@@ -525,6 +556,34 @@ def main(stdscr, lines_a, lines_b, start_mode):
 ofile = None
 start_mode = 'a'
 
+# Read personal configuration
+config_file = os.path.expanduser("~/.imediff2")
+if os.path.exists(config_file):
+  for s in read_lines(config_file):
+    sa = s.split()
+    if len(sa) == 2 and len(sa[0]) == 1 and len(sa[1]) == 1 \
+     and sa[0][0] in kc.keys() and sa[1][0] >= 'a' and sa[1][0] <= 'z':
+      kc[sa[0][0]] = sa[1][0]
+    elif len(sa) >= 1 and len(sa[0]) == 1 and \
+       (sa[0][0] == '#' or sa[0][0] == ';'):
+      pass # assume to be comment line
+    else:
+      sys.stderr.write( _("Illegal syntax in ~/.imediff2: %s") % s + "\n" )
+      sys.exit(1)
+else:
+  try:
+    with open(config_file, 'w') as f:
+      print >>f, "# Configuration for imediff2: (Erase this file to reset)"
+      print >>f, "# <command_key_in_manpage> <command_key_for_this_user>"
+      print >>f, "#"
+      for k, c in kc.items():
+        print >>f, "%c %c" % (k , c)
+  except:
+    pass # if not writable, so be it.
+kcr = {}
+for k, c in kc.items():
+  kcr[c] = k
+
 # Parse options and arguments
 try:
   opts, args = getopt.getopt(sys.argv[1:], "hmuo:abcNV",
@@ -562,7 +621,7 @@ for o, a in opts:
     start_mode = 'c'
   elif o in ("-N", "--new-file"):
     assume_empty = True
-    
+
 
 lines_a = read_lines(args[0])
 lines_b = read_lines(args[1])
