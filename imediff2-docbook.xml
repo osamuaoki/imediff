@@ -9,11 +9,16 @@
   <!ENTITY dhusername  "elonen">
   <!ENTITY dhucpackage "<refentrytitle>imediff2</refentrytitle>">
   <!ENTITY dhpackage   "imediff2">
+  <!ENTITY dhtitle     "imediff2 User Manual">
+  <!ENTITY dhucpackage "imediff2">
 
   <!ENTITY gnu         "<acronym>GNU</acronym>">
 ]>
+
 <refentry>
   <refentryinfo>
+    <title>&dhtitle;</title>
+    <productname>&dhpackage;</productname>
     <address>
       &dhemail;
     </address>
