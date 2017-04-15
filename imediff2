@@ -118,6 +118,10 @@ def helptext():
   #Press any key to continue""")
   return txt
 
+def quittext():
+  txt = _("""  Do you really wish to quit? (Press 'y' to quit)""")
+  return txt
+
 def read_lines( filename ):
   global assume_empty
   try:
@@ -454,7 +458,20 @@ def main(stdscr, lines_a, lines_b, start_mode):
 
     # Exit without saving (same as ^C)
     elif c == ord('q') or c == curses.KEY_CANCEL:
-      raise KeyboardInterrupt
+      quitw = 0
+      quith = 0
+      for l in string.split(quittext(), "%c"%10):
+        quitw = max(quitw, len(l))
+        quith += 1
+      quitpad = curses.newpad(quith+2, quitw+2)
+      quitpad.addstr(1,0,quittext())
+      quitpad.border()
+      quitpad.refresh( 0,0, 0,0, min(quith+1,winh-1),min(quitw+1,winw-1) )
+      stdscr.refresh()
+      curses.curs_set(0)
+      c = stdscr.getch()
+      if c == ord('y'):
+        raise KeyboardInterrupt
 
     # Save and exit
     elif c == ord('x') or c == ord('s') or \
