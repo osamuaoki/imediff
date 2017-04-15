@@ -67,8 +67,8 @@ Where options include:
   -h, --help            show this help
   -m, --mono            force monochrome display
   -u, --unresolved      enable 'unresolved' in toggling
-  -a                    start with version A (default)
-  -b                    start with version B
+  -a                    start with version A (=<file1>) (default)
+  -b                    start with version B (=<file2>)
   -c                    start with unresolved changes (implies -u)
   -N, --new-file        Treat absent files as empty
   -V, --version		show version and exit
