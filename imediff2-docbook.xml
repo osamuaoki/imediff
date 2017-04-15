@@ -120,14 +120,14 @@
       <varlistentry>
         <term><option>-a</option></term>
         <listitem>
-          <para>Start with version A (default).</para>
+          <para>Start with version A (=<arg choice="req"><replaceable>file1</replaceable></arg>) (default).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term><option>-b</option></term>
         <listitem>
-          <para>Start with version B.</para>
+          <para>Start with version B (=<arg choice="req"><replaceable>file1</replaceable></arg>).</para>
         </listitem>
       </varlistentry>
 
@@ -289,6 +289,15 @@
     </variablelist>
   </refsect1>
 
+  <refsect1>
+    <title>FILE</title>
+
+    <para>The key choices of the above keyboard commands can be configured in
+      ~/.imediff2 which is created at the first execution of this command.  The
+      left side is the keys described in this manpage.  The right side is your
+      configuration choices.  The current settings can be confirmed by the 'h'
+      key dialog.</para>
+  </refsect1>
   <refsect1>
     <title>SEE ALSO</title>
 
