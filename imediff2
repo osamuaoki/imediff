@@ -18,7 +18,7 @@
 # License along with the program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-VERSION = '1.1.2.1'
+VERSION = '1.1.3'
 PACKAGE = 'imediff2'
 
 import curses.wrapper
@@ -44,7 +44,8 @@ start_section_a_str = "# <<<<<<<<<<<<<<<< A <<<<<<<<<<<<<<<<<<\n"
 start_section_b_str = "# >>>>>>>>>>>>>>>> B >>>>>>>>>>>>>>>>>>\n"
 end_section_str =     "# >>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<\n"
 
-global kc, kcr
+config_file = os.path.expanduser("~/.imediff2")
+global kc
 kc = {
     'a':'a',
     'b':'b',
@@ -62,13 +63,13 @@ kc = {
 def translate_key(c):
   # Command key translation for alphabet
   if c >= ord('a') and c <= ord('z'):
-    if chr(c) in kcr.keys():
-      c = ord(kcr[chr(c)])
+    if chr(c) in kc.keys():
+      c = ord(kc[chr(c)])
     else:
       c = 0 # ignore
   if c >= ord('A') and c <= ord('Z'):
-    if chr(c + 32) in kcr.keys():
-      c = ord(kcr[chr(c + 32)]) - 32
+    if chr(c + 32) in kc.keys():
+      c = ord(kc[chr(c + 32)]) - 32
     else:
       c = 0 # ignore
   return c
@@ -90,6 +91,7 @@ elif os.path.isfile(default_editor) or os.path.islink(default_editor):
 def usagetext():
   return _("""
 Usage:  imediff2 [options] <file1> <file2>
+        imediff2 -t
 
 Where options include:
   -o, --output=<file>   write to given file
@@ -99,7 +101,8 @@ Where options include:
   -a                    start with version A (=<file1>) (default)
   -b                    start with version B (=<file2>)
   -c                    start with unresolved changes (implies -u)
-  -N, --new-file        Treat absent files as empty
+  -N, --new-file        treat absent files as empty
+  -t, --template        overwrite ~/.imediff2 with default values
   -V, --version		show version and exit
   """)
 
@@ -556,38 +559,10 @@ def main(stdscr, lines_a, lines_b, start_mode):
 ofile = None
 start_mode = 'a'
 
-# Read personal configuration
-config_file = os.path.expanduser("~/.imediff2")
-if os.path.exists(config_file):
-  for s in read_lines(config_file):
-    sa = s.split()
-    if len(sa) == 2 and len(sa[0]) == 1 and len(sa[1]) == 1 \
-     and sa[0][0] in kc.keys() and sa[1][0] >= 'a' and sa[1][0] <= 'z':
-      kc[sa[0][0]] = sa[1][0]
-    elif len(sa) >= 1 and len(sa[0]) == 1 and \
-       (sa[0][0] == '#' or sa[0][0] == ';'):
-      pass # assume to be comment line
-    else:
-      sys.stderr.write( _("Illegal syntax in ~/.imediff2: %s") % s + "\n" )
-      sys.exit(1)
-else:
-  try:
-    with open(config_file, 'w') as f:
-      print >>f, "# Configuration for imediff2: (Erase this file to reset)"
-      print >>f, "# <command_key_in_manpage> <command_key_for_this_user>"
-      print >>f, "#"
-      for k, c in kc.items():
-        print >>f, "%c %c" % (k , c)
-  except:
-    pass # if not writable, so be it.
-kcr = {}
-for k, c in kc.items():
-  kcr[c] = k
-
 # Parse options and arguments
 try:
-  opts, args = getopt.getopt(sys.argv[1:], "hmuo:abcNV",
-    ["help","mono","unresolved","output=", "version", "new-file"])
+  opts, args = getopt.getopt(sys.argv[1:], "hmuo:abcNtV",
+    ["help","mono","unresolved","output=", "template", "version", "new-file"])
 except getopt.GetoptError, e:
   print _("Error: ") + str(e)
   print usagetext()
@@ -596,6 +571,17 @@ except getopt.GetoptError, e:
 for o, a in opts:
   if o in ("-h", "--help"):
     print usagetext()
+    sys.exit()
+  elif o in ("-t", "--template"):
+    try:
+      with open(config_file, 'w') as f:
+        print >>f, "# Configuration for imediff2: (Erase this file to reset)"
+        print >>f, "# <command_key_in_manpage> <command_key_for_this_user>"
+        print >>f, "#"
+        for k, c in kc.items():
+          print >>f, "%c %c" % (k , c)
+    except:
+      print "%s not writable, aborting" % config_file
     sys.exit()
   elif o in ("-V", "--version"):
     print "%s %s" % (PACKAGE, VERSION)
@@ -622,6 +608,19 @@ for o, a in opts:
   elif o in ("-N", "--new-file"):
     assume_empty = True
 
+# Read personal configuration
+if os.path.exists(config_file):
+  for s in read_lines(config_file):
+    sa = s.split()
+    if len(sa) == 2 and len(sa[0]) == 1 and len(sa[1]) == 1 \
+     and sa[0][0] in kc.keys() and sa[1][0] >= 'a' and sa[1][0] <= 'z':
+      kc[sa[0][0]] = sa[1][0]
+    elif len(sa) >= 1 and len(sa[0]) == 1 and \
+       (sa[0][0] == '#' or sa[0][0] == ';'):
+      pass # assume to be comment line
+    else:
+      sys.stderr.write( _("Illegal syntax in ~/.imediff2: %s") % s + "\n" )
+      sys.exit(1)
 
 lines_a = read_lines(args[0])
 lines_b = read_lines(args[1])

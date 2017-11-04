@@ -134,7 +134,7 @@
       <varlistentry>
         <term><option>-c</option></term>
         <listitem>
-          <para>Start with unresolved changes (implies -u).</para>
+          <para>Start with unresolved changes (implies <option>-u</option>).</para>
         </listitem>
       </varlistentry>
 
@@ -142,6 +142,13 @@
         <term><option>-h</option>, <option>--help</option></term>
         <listitem>
           <para>Show summary of options and exit.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-t</option>, <option>--template</option></term>
+        <listitem>
+          <para>Overwrite <filename>~/.imediff2</filename> with default values.</para>
         </listitem>
       </varlistentry>
 
