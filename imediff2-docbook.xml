@@ -9,11 +9,16 @@
   <!ENTITY dhusername  "elonen">
   <!ENTITY dhucpackage "<refentrytitle>imediff2</refentrytitle>">
   <!ENTITY dhpackage   "imediff2">
+  <!ENTITY dhtitle     "imediff2 User Manual">
+  <!ENTITY dhucpackage "imediff2">
 
   <!ENTITY gnu         "<acronym>GNU</acronym>">
 ]>
+
 <refentry>
   <refentryinfo>
+    <title>&dhtitle;</title>
+    <productname>&dhpackage;</productname>
     <address>
       &dhemail;
     </address>
@@ -23,7 +28,7 @@
     </author>
     <copyright>
       <year>2003-2006</year>
-      <holder>&dhusername;</holder>
+      <holder>&dhusername; &dhemail; </holder>
     </copyright>
     &dhdate;
   </refentryinfo>
@@ -44,7 +49,7 @@
       <arg><option>-a</option></arg>
       <arg><option>-b</option></arg>
       <arg><option>-c</option></arg>
-      <arg><option>-N <replaceable>new-file</replaceable></option></arg>
+      <arg><option>-N</option></arg>
       <arg><option>-o <replaceable>outputfile</replaceable></option></arg>
       <arg choice="req"><replaceable>file1</replaceable></arg>
       <arg choice="req"><replaceable>file2</replaceable></arg>
@@ -115,21 +120,21 @@
       <varlistentry>
         <term><option>-a</option></term>
         <listitem>
-          <para>Start with version A (default).</para>
+          <para>Start with version A (=<arg choice="req"><replaceable>file1</replaceable></arg>) (default).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term><option>-b</option></term>
         <listitem>
-          <para>Start with version B.</para>
+          <para>Start with version B (=<arg choice="req"><replaceable>file1</replaceable></arg>).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term><option>-c</option></term>
         <listitem>
-          <para>Start with unresolved changes (implies -u).</para>
+          <para>Start with unresolved changes (implies <option>-u</option>).</para>
         </listitem>
       </varlistentry>
 
@@ -137,6 +142,13 @@
         <term><option>-h</option>, <option>--help</option></term>
         <listitem>
           <para>Show summary of options and exit.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-t</option>, <option>--template</option></term>
+        <listitem>
+          <para>Create (or overwrite) <filename>~/.imediff2</filename> with default values.</para>
         </listitem>
       </varlistentry>
 
@@ -153,7 +165,7 @@
   <refsect1>
     <title>KEYBOARD COMMANDS</title>
 
-    <para>The following keyboard commands are available in the editor.</para>
+    <para>The following keyboard commands are available in the editor as default.</para>
 
     <variablelist>
 
@@ -220,8 +232,6 @@
         </listitem>
       </varlistentry>
 
-
-
       <varlistentry>
         <term><keycombo action='simul'><keycap>shift</keycap><keysym>a</keysym></keycombo></term>
         <listitem>
@@ -243,7 +253,6 @@
         </listitem>
       </varlistentry>
 
-
       <varlistentry>
         <term><keysym>e</keysym></term>
         <listitem>
@@ -257,7 +266,6 @@
           <para>Discard editor-made changes. (Available only after <keysym>e</keysym>.)</para>
         </listitem>
       </varlistentry>
-
 
       <varlistentry>
         <term><keysym>x</keysym>, <keysym>s</keysym></term>
@@ -273,7 +281,6 @@
         </listitem>
       </varlistentry>
 
-
       <varlistentry>
         <term><keycap>home</keycap>, <keycap>end</keycap></term>
         <listitem>
@@ -284,6 +291,15 @@
     </variablelist>
   </refsect1>
 
+  <refsect1>
+    <title>FILE</title>
+
+    <para>The key choices of the above keyboard commands can be configured in
+       <filename>~/.imediff2</filename> which is created at the first execution
+       of this command.  The left side is the keys described in this manpage.
+       The right side is your configuration choices.  The current settings can
+       be confirmed by the 'h' key dialog.</para>
+  </refsect1>
   <refsect1>
     <title>SEE ALSO</title>
 

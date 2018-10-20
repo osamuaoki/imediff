@@ -1,0 +1,100 @@
+<!DOCTYPE refentry PUBLIC "-//Norman Walsh/DTD DocBk XML V4.1.2//EN"
+"http://www.docbook.org/xml/4.1.2/docbookx.dtd" [
+
+  <!ENTITY dhfirstname "<firstname>Osamu</firstname>">
+  <!ENTITY dhsurname   "<surname>Aoki</surname>">
+  <!ENTITY dhdate      "<date>2018-10-17</date>">
+  <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
+  <!ENTITY dhemail     "<email>osamu@debian.org</email>">
+  <!ENTITY dhusername  "osamu">
+  <!ENTITY dhucpackage "<refentrytitle>git-ime</refentrytitle>">
+  <!ENTITY dhpackage   "git-ime">
+  <!ENTITY dhtitle     "git-ime User Manual">
+  <!ENTITY dhucpackage "git-ime">
+
+  <!ENTITY gnu         "<acronym>GNU</acronym>">
+]>
+
+<refentry>
+  <refentryinfo>
+    <title>&dhtitle;</title>
+    <productname>&dhpackage;</productname>
+    <address>
+      &dhemail;
+    </address>
+    <author>
+      &dhfirstname;
+      &dhsurname;
+    </author>
+    <copyright>
+      <year>2018</year>
+      <holder>&dhusername; &dhemail;</holder>
+    </copyright>
+    &dhdate;
+  </refentryinfo>
+  <refmeta>
+    &dhucpackage;
+
+    &dhsection;
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+    <refpurpose>An interactive git commit selection tool</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      <arg choice="req"><replaceable>file</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+
+    <title>DESCRIPTION</title>
+
+   <para>This is a simple shell wrapper script on
+   <command>imediff2</command> to make it work well with
+   <command>git</command> command.</para>
+
+   <para>If any local uncommitted change is found on
+   <replaceable>file</replaceable>, <command>imediff2</command> is executed
+   with HEAD and local version of <replaceable>file</replaceable>.  With
+   <command>imediff2</command>, you can select a set of changes to the
+   <replaceable>file</replaceable> and to commit it to the git repository as a
+   meaningful chunk.  This script repeats this process until all changes are
+   committed.</para>
+
+   <para>If no local uncommitted change is found on
+   <replaceable>file</replaceable>, <command>imediff2</command> is executed
+   with HEAD^ and HEAD version of <replaceable>file</replaceable>.  With
+   <command>imediff2</command>, you can select a set of changes to the
+   <replaceable>file</replaceable> and to commit it to the git repository as a
+   meaningful chunk.  This script repeats this process until all changes are
+   committed.</para>
+
+   <para>This <command>git-ime</command> is also useful during interactive
+   execution of <command>git rebase -i
+   <replaceable>treeish</replaceable></command>.</para>
+
+   <para>Please note this <command>git-ime</command> creates or overwrites
+   <replaceable>file</replaceable>.tmp_a and
+   <replaceable>file</replaceable>.tmp_b files.  So they should not exist
+   before execution of this command.</para>
+
+  </refsect1>
+
+  <refsect1>
+    <title>SEE ALSO</title>
+
+    <para>imediff2 (1), git(1), and git-rebase(1).</para>
+
+  </refsect1>
+  <refsect1>
+    <title>COPYRIGHT</title>
+
+    <para>This manual page as well as the program itself was written
+      by <author>&dhfirstname; &dhsurname;</author> (&dhemail;).
+      This document has been placed into the Public Domain.
+    </para>
+
+  </refsect1>
+</refentry>
