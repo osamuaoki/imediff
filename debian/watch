@@ -1,2 +1,3 @@
-version=3
-http://alioth.debian.org/project/showfiles.php?group_id=30544 .*imediff2_([\d\.]*).tar.gz
+#Until salsa is used ...
+#version=3
+#http://alioth.debian.org/project/showfiles.php?group_id=30544 .*imediff2_([\d\.]*).tar.gz

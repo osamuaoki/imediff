@@ -1,3 +1,14 @@
+imediff2 (1.1.2.1-1) unstable; urgency=medium
+
+  * New upstream release by DD with configurable key bindings.
+  * Salvage upload.
+  * Add safe guards to the 'q' command.  Closes: #799865
+  * Update manpage XML source and rebuild it.  Closes: #860351
+  * Use source/format 3.0 (quilt)
+  * Use "dh $@" in debian/rules.
+
+ -- Osamu Aoki <osamu@debian.org>  Sun, 21 Oct 2018 01:54:49 +0900
+
 imediff2 (1.1.2-3) unstable; urgency=medium
 
   * Add dh-python, python-setuptools and python-all-dev to Build-Depends.

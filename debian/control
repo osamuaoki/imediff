@@ -1,14 +1,14 @@
 Source: imediff2
 Section: text
 Priority: optional
-Maintainer: Kevin Coyner <kcoyner@debian.org>
-Build-Depends: debhelper (>= 9), xsltproc, docbook-xsl, python-all, dh-python, python-setuptools, python-all-dev
-Standards-Version: 3.9.8
-Homepage: http://alioth.debian.org/projects/imediff2/
+Maintainer: Osamu Aoki <osamu@debian.org>
+Build-Depends: debhelper (>= 11~), dh-python, docbook-xsl, python-all, xsltproc
+Standards-Version: 4.2.1
+Homepage: https://github.com/osamuaoki/imediff2
 
 Package: imediff2
 Architecture: all
-Depends: ${python:Depends}, ${misc:Depends}
+Depends: ${misc:Depends}, ${python:Depends}
 Description: interactive full screen 2-way merge tool
  Imediff2 lets you merge two (slightly different) files
  interactively with a user friendly full screen interface
@@ -23,4 +23,7 @@ Description: interactive full screen 2-way merge tool
  Unlike split screen based merge tools, it shows only one,
  partially merged, version of the file at a time, making
  it more "WYSIWYG", perhaps more intuitive for beginners and
- most importantly, suitable for narrow terminals.
+ most importantly, suitable for narrow terminalis.
+ .
+ This also comes with git-ime wrapper script to use imediff2
+ with git VCS.
