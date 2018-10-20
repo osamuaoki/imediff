@@ -1,3 +1,9 @@
+imediff2 (1.1.2.1-2) unstable; urgency=medium
+
+  * Ship git-ime and git-ime.1. 
+
+ -- Osamu Aoki <osamu@debian.org>  Sun, 21 Oct 2018 02:45:03 +0900
+
 imediff2 (1.1.2.1-1) unstable; urgency=medium
 
   * New upstream release by DD with configurable key bindings.
