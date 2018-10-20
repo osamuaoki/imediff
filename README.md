@@ -8,16 +8,24 @@ The program is written in Python using the curses module.
 For usage instructions, type "imediff -h" and/or hit
 'h' or '?' in the interactive mode.
 
-Visit the project website at
-http://alioth.debian.org/projects/imediff2/
+The original author's website at
+  https://elonen.iki.fi/code/imediff/
+
+Latest original upstream version is 1.1.2, released on 2007-8-18.
 
 ## FORK NOTICE
 
+Copyright (C) 2018 Osamu Aoki <osamu@debian.org>
+
 This is my fork/update of 5 year old source found in Debian archive.
+
+  https://github.com/osamuaoki/imediff2
 
 Please report bug to this github unless this is merge to Debian.
 
- * No more surprise hitting "q".  You will be asked.
+ * No more surprise hitting "q".  You will be asked. (Fix Debian bug #799865)
+ * Fix manpage generation issue (Fix Debian bug #860351)
+ * New git-ime wrapper script (great for git rebase/un-squash commit)
  * You can customize key bindings.
 
 Under Debian:
@@ -34,5 +42,11 @@ Under Debian:
  $ sudo dpkg -i imediff2-1.1.2.1-1.1.deb
 
 ```
+
+## Note on Debian package links
+
+* https://packages.debian.org/source/sid/imediff2 (source package)
+* https://packages.debian.org/sid/imediff2 (binary package)
+* https://bugs.debian.org/cgi-bin/pkgreport.cgi?repeatmerged=0;src=imediff2 (BTS)
 
 Osamu
