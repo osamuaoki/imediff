@@ -1,0 +1,144 @@
+#!/bin/sh -e
+# Split changes on a file into multiple git commits
+#############################################################################
+# Copyright (c) 2015 Osamu Aoki
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#############################################################################
+
+help() {
+
+    echo "\
+${0##*/}, version @version@
+
+Usage: ${0##*/} <path>
+
+DESCRIPTION: Split changes on a file into multiple git commits"
+}
+
+restore() {
+if [ -e $FILENAME.tmp_b ]; then
+    mv -f $FILENAME.tmp_b $FILENAME
+    rm -f $FILENAME.tmp_b
+fi
+rm -f $FILENAME.tmp_a
+echo "--------------------"
+git status || true
+}
+trap restore EXIT HUP INT QUIT BUS USR1 PIPE TERM
+# see "kill -l", signal(7)
+# +  0 EXIT: on exit
+# *  1 HUP:  hang-up (^\)
+# *  2 INT:  KB interrupt (^C)
+#    3 QUIT: QUIT (^D)
+#    7 BUS:  buffer overflow etc.
+#   10 USR1: user defined
+# * 13 PIPE: broken pipe
+# * 15 TERM: trappable termination
+# No trap for KILL(9)
+
+if [ ! -x /usr/bin/imediff2 ]; then
+    echo "Install the imediff2 package."
+    exit 1
+fi
+if [ "$1" = "--help" ] || [ "$1" = "-h" ] || [ -z "$1" ]; then
+    help
+    exit
+fi
+if [ ! -r "$1" ]; then
+    echo "Can not find <path>: $1" >&2
+    help
+    exit 1
+fi
+if [ -z "${1%%/*}" ]; then
+    FILENAME="$1"
+else
+    FILENAME="`pwd`/$1"
+fi
+shift
+# sanity checks
+if [ -e $FILENAME.tmp_a ]; then
+    echo "File conflict, aborting... : $FILENAME.tmp_a" >&2
+    help
+    exit 1
+elif [ -e $FILENAME.tmp_b ]; then
+    echo "File conflict, aborting... : $FILENAME.tmp_b" >&2
+    help
+    exit 1
+elif [ -n "${1%%#}" ]; then
+    echo "Extra arguments, aborting... : $1" >&2
+    help
+    exit 1
+fi
+# check for git repo
+d=`pwd`
+while [ ! -d "$d/.git" -a "$d" != / ];
+    do d="`readlink -f $d/..`"; done
+if [ -d "$d/.git" ] && [ -r "$d/.git/COMMIT_EDITMSG" ]; then
+    OPT_COMMIT0="-e -F $d/.git/COMMIT_EDITMSG"
+else
+    OPT_COMMIT0=''
+fi
+unset d
+
+if ! git diff --cached --quiet ; then
+    echo "Staged changes.  Commit it"
+    git commit -m "Commit staged changes"
+fi
+
+if ! git diff --quiet $FILENAME ; then
+    echo "Local changes found.  Partial commit series from HEAD to local."
+    GIT_REV="HEAD"
+    OPT_COMMIT="$OPT_COMMIT0"
+else
+    echo "No local changes. Partial commit series from HEAD^ to HEAD"
+    GIT_REV="HEAD^"
+    OPT_COMMIT="--amend"
+    if git diff --quiet HEAD^..HEAD $FILENAME ; then
+        echo "No changes for HEAD^..HEAD, nothing to edit for $FILENAME"
+        exit 1
+    fi
+fi
+
+if ! git rev-parse --verify --quiet $GIT_REV >/dev/null ; then
+    echo "Can not find <rev>: $GIT_REV" >&2
+    exit 1
+fi
+
+# new
+mv $FILENAME $FILENAME.tmp_b
+#old
+git checkout $GIT_REV $FILENAME
+mv $FILENAME $FILENAME.tmp_a
+echo "ready to loop"
+while true
+do
+imediff2 -o $FILENAME $FILENAME.tmp_a $FILENAME.tmp_b
+chmod --reference $FILENAME.tmp_b $FILENAME
+git add $FILENAME
+git commit $OPT_COMMIT $FILENAME
+mv $FILENAME $FILENAME.tmp_a
+if diff -q -w $FILENAME.tmp_a $FILENAME.tmp_b ; then
+    echo "No more changes"
+    break
+fi
+OPT_COMMIT="$OPT_COMMIT0"
+done
+echo "$FILENAME committed in series."
+# vim:se tw=78 ai sts=4 et:

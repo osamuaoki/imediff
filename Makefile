@@ -6,15 +6,18 @@ DISTFILE := $(PACKAGE)-$(VERSION).tar.gz
 DSRCFILE := $(PACKAGE)_$(VERSION).orig.tar.gz
 PACKAGE_PATH := $(PACKAGE)-$(VERSION)
 
-all: imediff2.1
+all: imediff2.1 git-ime.1
 
 imediff2.1:  imediff2-docbook.xml
+	xsltproc --novalid /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl $?
+
+git-ime.1: git-ime.xml
 	xsltproc --novalid /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl $?
 
 # dh calls distclean/realclean unless forced to call clean.
 distclean: clean
 	rm -rf ../$(PACKAGE_PATH)/
-	rm -f $(PACKAGE).1
+	rm -f $(PACKAGE).1 git-ime.1
 	rm -f ../$(DISTFILE) ../$(DSRCFILE)
 
 clean:
