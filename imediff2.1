@@ -31,7 +31,7 @@
 imediff2 \- An interactive fullscreen 2\-way merge tool
 .SH "SYNOPSIS"
 .HP \w'\fBimediff2\fR\ 'u
-\fBimediff2\fR [\fB\-m\fR] [\fB\-u\fR] [\fB\-a\fR] [\fB\-b\fR] [\fB\-c\fR] [\fB\-N\ \fR\fB\fInew\-file\fR\fR] [\fB\-o\ \fR\fB\fIoutputfile\fR\fR] {\fIfile1\fR} {\fIfile2\fR}
+\fBimediff2\fR [\fB\-m\fR] [\fB\-u\fR] [\fB\-a\fR] [\fB\-b\fR] [\fB\-c\fR] [\fB\-N\fR] [\fB\-o\ \fR\fB\fIoutputfile\fR\fR] {\fIfile1\fR} {\fIfile2\fR}
 .SH "DESCRIPTION"
 .PP
 Merge two (slightly different) files interactively with a user friendly fullscreen interface in text mode\&.
@@ -101,7 +101,7 @@ Show summary of options and exit\&.
 .PP
 \fB\-t\fR, \fB\-\-template\fR
 .RS 4
-Overwrite
+Create (or overwrite)
 ~/\&.imediff2
 with default values\&.
 .RE
@@ -112,7 +112,7 @@ Show version and exit\&.
 .RE
 .SH "KEYBOARD COMMANDS"
 .PP
-The following keyboard commands are available in the editor\&.
+The following keyboard commands are available in the editor as default\&.
 .PP
 h, ?
 .RS 4
@@ -201,7 +201,9 @@ Jump to start or end\&.
 .RE
 .SH "FILE"
 .PP
-The key choices of the above keyboard commands can be configured in ~/\&.imediff2 which is created at the first execution of this command\&. The left side is the keys described in this manpage\&. The right side is your configuration choices\&. The current settings can be confirmed by the \*(Aqh\*(Aq key dialog\&.
+The key choices of the above keyboard commands can be configured in
+~/\&.imediff2
+which is created at the first execution of this command\&. The left side is the keys described in this manpage\&. The right side is your configuration choices\&. The current settings can be confirmed by the \*(Aqh\*(Aq key dialog\&.
 .SH "SEE ALSO"
 .PP
 sdiff (1), diff (1), merge (1), diff3 (1)\&.
@@ -218,5 +220,5 @@ Author.
 .RE
 .SH "COPYRIGHT"
 .br
-Copyright \(co 2003-2006 elonen
+Copyright \(co 2003-2006 elonen <elonen@iki\&.fi>
 .br

@@ -3,6 +3,7 @@
 # IMEDIFF2 - an interactive fullscreen 2-way merge tool
 #
 # Copyright (C) 2003, 2004 Jarno Elonen <elonen@iki.fi>
+# Copyright (C) 2018       Osamu Aoki <osamu@debian.org>
 #
 # This is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as
@@ -18,10 +19,11 @@
 # License along with the program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-VERSION = '1.1.3'
+# Forked from 1.1.2 by Osamu Aoki <osamu@debian.org>
+VERSION = '1.1.2.1'
 PACKAGE = 'imediff2'
 
-import curses.wrapper
+#import curses.wrapper
 import curses
 import tempfile
 import gettext
@@ -35,7 +37,7 @@ import sys
 import os
 import errno
 
-gettext.bindtextdomain('imediff2', '/path/to/my/language/directory')
+gettext.bindtextdomain('imediff2')
 gettext.textdomain('imediff2')
 _ = gettext.gettext
 
@@ -45,23 +47,29 @@ start_section_b_str = "# >>>>>>>>>>>>>>>> B >>>>>>>>>>>>>>>>>>\n"
 end_section_str =     "# >>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<\n"
 
 config_file = os.path.expanduser("~/.imediff2")
+
 global kc
-kc = {
-    'a':'a',
-    'b':'b',
-    'e':'e',
-    'h':'h',
-    'n':'n',
-    'p':'p',
-    'q':'q',
-    'r':'r',
-    's':'s',
-    'u':'u',
-    'x':'x',
-    'y':'y'}
+global rkc
+global kcvalues
+kcvalues = [
+    'a',
+    'b',
+    'e',
+    'h',
+    'n',
+    'p',
+    'q',
+    'r',
+    's',
+    'u',
+    'x',
+    'y'
+]
+global y
+y=0
 
 def translate_key(c):
-  # Command key translation for alphabet
+  # Command key in action translation to Command key in manpage
   if c >= ord('a') and c <= ord('z'):
     if chr(c) in kc.keys():
       c = ord(kc[chr(c)])
@@ -107,53 +115,53 @@ Where options include:
   """)
 
 def helptext():
-  global allow_unresolved, editor, colors
-  txt = _("""  KEYBOARD COMMANDS   (Set this in ~/.imediff2)
+  global allow_unresolved, editor, colors, y
+  txt = _("""\
+  KEYBOARD COMMANDS   (Set this in ~/.imediff2) %i
 
   arrows          move in document
   page up/down    move a screenful
+  %s, tab, space   jump to next change
+  %s, backspace    jump to previous change
+  home/end        jump to start/end
+
   enter           toggle selected change
-  %c, tab, space   jump to next change
-  %c, backspace    jump to previous change
+  %s/%s             set current chunk to version A/B
+  %s/%s             set all changes to version A/B
+  %s               set current chunk to unresolved
+  %s               set all changes to unresolved
 
-  %c               set current chunk to version A
-  %c               set current chunk to version B
-  shift-%c         set all changes to version A
-  shitf-%c         set all changes to version B
-
-  %c               set current chunk to unresolved
-  shift-%c         set all changes to unresolved""") % \
-  (kc['n'], kc['p'], kc['a'], kc['b'], kc['a'], kc['b'], kc['u'], kc['u'])
+""") % \
+  (y, rkc['n'], rkc['p'], rkc['a'], rkc['b'], rkc['a'].upper(), rkc['b'].upper(), rkc['u'], rkc['u'].upper())
 
   if not editor is None:
-    txt += "\n\n" + _("  %c               launch external editor") % kc['e']
-    txt += ": " + os.path.basename(editor)
+    txt += _("  %s               launch external editor") % rkc['e']
+    txt += ": " + os.path.basename(editor) + "\n"
 
   if last_old_chunks is not None:
-    txt += "\n" + _("  %c               discard editor-made changes") % kc['r']
+    txt += _("  %s               discard editor-made changes") % rkc['r'] + "\n"
 
-  txt += _("""
-  %c, %c            save and exit
-  %c, ^C           exit without saving
-  home/end        jump to start/end
-  %c, ?            show this help
+  txt += _("""\
+  %s, %s            save and exit
+  %s, ^C           exit without saving (quit)
+  %s, ?            show this help
 
-  '?' on bright background is a place holder for
-  an empty string so you can select them. It is only a
-  visualization and will not be written to the output.
-""") % (kc['x'], kc['s'], kc['q'], kc['h'])
+""") % (rkc['s'], rkc['x'], rkc['q'], rkc['h'])
 
   if colors:
-    txt += _("\n  CURRENT COLORS") + "\n"
-    txt += (_("\n  version A in blue = '%s'") + "\n") % args[0]
-    txt += (_("  version B in red  = '%s'")) % args[1]
+    txt += _("  CURRENT COLORS") + "\n\n"
+    txt += (_("  Blue:   version A = '%s'") + "\n") % args[0]
+    txt += (_("  Red:    version B = '%s'") + "\n") % args[1]
+    txt += (_("  Yellow: unresolved")) + "\n\n"
 
-  #txt += _("""
-  #Press any key to continue""")
+  txt += _("""\
+  '?' on bright background is a place holder for
+  an empty string so you can select them. It is only a
+  visualization and will not be written to the output.""")
   return txt
 
 def quittext():
-  txt = _("""  Do you really wish to quit? (Press '%c' to quit)""" % kc['y'])
+  txt = _("""  Do you really wish to quit? (Press '%s' to quit)""" % rkc['y'])
   return txt
 
 def read_lines( filename ):
@@ -468,7 +476,7 @@ def main(stdscr, lines_a, lines_b, start_mode):
         cy=active_chunks[sel][0] - 2
         if cy<y or cy>=y+winh-2:
           y=cy
-    elif c==curses.KEY_PREVIOUS or c == ord('p') or c==curses.KEY_BACKSPACE:
+    elif c==curses.KEY_PREVIOUS or c == ord('p') or c==curses.KEY_BACKSPACE or c==curses.KEY_BTAB:
       if sel-1 >= 0:
         sel-=1
         cy=active_chunks[sel][0] - 2
@@ -576,10 +584,11 @@ for o, a in opts:
     try:
       with open(config_file, 'w') as f:
         print >>f, "# Configuration for imediff2: (Erase this file to reset)"
-        print >>f, "# <command_key_in_manpage> <command_key_for_this_user>"
+        print >>f, "# <command_key_in_action> <command_key_in_manpage>"
+        print >>f, "# edit only first character of each line to 'a'...'z'"
         print >>f, "#"
-        for k, c in kc.items():
-          print >>f, "%c %c" % (k , c)
+        for k in kcvalues:
+          print >>f, "%s %s" % (k , k)
     except:
       print "%s not writable, aborting" % config_file
     sys.exit()
@@ -608,19 +617,35 @@ for o, a in opts:
   elif o in ("-N", "--new-file"):
     assume_empty = True
 
-# Read personal configuration
+# Read personal configuration for key code
+kc = {}
 if os.path.exists(config_file):
   for s in read_lines(config_file):
+    s = s.rstrip()
     sa = s.split()
-    if len(sa) == 2 and len(sa[0]) == 1 and len(sa[1]) == 1 \
-     and sa[0][0] in kc.keys() and sa[1][0] >= 'a' and sa[1][0] <= 'z':
-      kc[sa[0][0]] = sa[1][0]
+    if len(sa) == 2 and \
+        len(sa[0]) == 1 and len(sa[1]) == 1 and \
+        ord(sa[0][0]) >= ord('a') and ord(sa[0][0]) <= ord('z') and \
+        (sa[1][0] in kcvalues):
+      # update key code table
+      if sa[0][0] in kc.keys():
+        sys.stderr.write( _("Illegal syntax in ~/.imediff2 (duplicate): '%s'") % s + "\n" )
+        sys.exit(1)
+      else:
+        kc[sa[0][0]] = sa[1][0]
     elif len(sa) >= 1 and len(sa[0]) == 1 and \
        (sa[0][0] == '#' or sa[0][0] == ';'):
       pass # assume to be comment line
     else:
-      sys.stderr.write( _("Illegal syntax in ~/.imediff2: %s") % s + "\n" )
+      sys.stderr.write( _("Illegal syntax in ~/.imediff2: '%s'") % s + "\n" )
       sys.exit(1)
+else:
+  for k in kcvalues:
+    kc[k] = k
+
+rkc = {}
+for k, c in kc.items():
+  rkc[c] = k
 
 lines_a = read_lines(args[0])
 lines_b = read_lines(args[1])

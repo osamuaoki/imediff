@@ -28,7 +28,7 @@
     </author>
     <copyright>
       <year>2003-2006</year>
-      <holder>&dhusername;</holder>
+      <holder>&dhusername; &dhemail; </holder>
     </copyright>
     &dhdate;
   </refentryinfo>
@@ -49,7 +49,7 @@
       <arg><option>-a</option></arg>
       <arg><option>-b</option></arg>
       <arg><option>-c</option></arg>
-      <arg><option>-N <replaceable>new-file</replaceable></option></arg>
+      <arg><option>-N</option></arg>
       <arg><option>-o <replaceable>outputfile</replaceable></option></arg>
       <arg choice="req"><replaceable>file1</replaceable></arg>
       <arg choice="req"><replaceable>file2</replaceable></arg>
@@ -148,7 +148,7 @@
       <varlistentry>
         <term><option>-t</option>, <option>--template</option></term>
         <listitem>
-          <para>Overwrite <filename>~/.imediff2</filename> with default values.</para>
+          <para>Create (or overwrite) <filename>~/.imediff2</filename> with default values.</para>
         </listitem>
       </varlistentry>
 
@@ -165,7 +165,7 @@
   <refsect1>
     <title>KEYBOARD COMMANDS</title>
 
-    <para>The following keyboard commands are available in the editor.</para>
+    <para>The following keyboard commands are available in the editor as default.</para>
 
     <variablelist>
 
@@ -232,8 +232,6 @@
         </listitem>
       </varlistentry>
 
-
-
       <varlistentry>
         <term><keycombo action='simul'><keycap>shift</keycap><keysym>a</keysym></keycombo></term>
         <listitem>
@@ -255,7 +253,6 @@
         </listitem>
       </varlistentry>
 
-
       <varlistentry>
         <term><keysym>e</keysym></term>
         <listitem>
@@ -269,7 +266,6 @@
           <para>Discard editor-made changes. (Available only after <keysym>e</keysym>.)</para>
         </listitem>
       </varlistentry>
-
 
       <varlistentry>
         <term><keysym>x</keysym>, <keysym>s</keysym></term>
@@ -285,7 +281,6 @@
         </listitem>
       </varlistentry>
 
-
       <varlistentry>
         <term><keycap>home</keycap>, <keycap>end</keycap></term>
         <listitem>
@@ -300,10 +295,10 @@
     <title>FILE</title>
 
     <para>The key choices of the above keyboard commands can be configured in
-      ~/.imediff2 which is created at the first execution of this command.  The
-      left side is the keys described in this manpage.  The right side is your
-      configuration choices.  The current settings can be confirmed by the 'h'
-      key dialog.</para>
+       <filename>~/.imediff2</filename> which is created at the first execution
+       of this command.  The left side is the keys described in this manpage.
+       The right side is your configuration choices.  The current settings can
+       be confirmed by the 'h' key dialog.</para>
   </refsect1>
   <refsect1>
     <title>SEE ALSO</title>
