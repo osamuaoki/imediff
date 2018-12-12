@@ -1,0 +1,112 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-12-13 00:24+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: imediff/tui.py:40
+#, python-brace-format
+msgid ""
+"    Interactive Merge Editor to merge 2 DIFFerent files\n"
+"\n"
+"imediff merges 2 different input files using 5 modes:\n"
+" * mode a: display {file_a} (older) in {color_a}\n"
+" * mode b: display {file_b} (newer) in {color_b}\n"
+" * mode d: display diff2(a,b) by line       in {color_d}\n"
+" * mode e: display editor result buffer     in {color_e}\n"
+" * mode f: display wdiff2(a,b) by character in {color_f}\n"
+"\n"
+"key commands          induced actions\n"
+"{x:c}                     save and exit\n"
+"{q:c}                     quit without saving\n"
+"{a:c}/{b:c}/{d:c}/{e:c}/{f:c}             set a chunk to a/b/d/e/f mode\n"
+"1/2/4/5/6             set a chunk to a/b/d/e/f mode (alternative)\n"
+"{A:c}/{B:c}/{D:c}/{E:c}/{F:c}             set all chunks to a/b/d/e/f mode\n"
+"enter                 toggle mode of a chunk\n"
+"{m:c}                     modify a chunk with editor: {edit_cmd}\n"
+"{M:c}                     remove a editor result buffer\n"
+"arrows/pgdn,{j:c}/pgup,{k:c}  move scope of the display\n"
+"space,{n:c} /backspace,{p:c}  select the next/previous chunk\n"
+"tab,{N:c}   /shift-tab,{P:c}  select the next/previous diff chunk\n"
+"home,{t:c}  /end,{z:c}        select the first/last chunk\n"
+"{T:c}       /{Z:c}            select the first/last diff chunk\n"
+"?,{s:c}                   show the state of the merge\n"
+"{h:c}                     show this help\n"
+"{H:c}                     show tutorial"
+msgstr ""
+
+#: imediff/tui.py:68
+#, python-brace-format
+msgid ""
+"    Interactive Merge Editor to merge 3 DIFFerent files\n"
+"\n"
+"imediff merges 3 different input files using 7 modes:\n"
+" * mode a: display {file_a} (yours) in {color_a}\n"
+" * mode b: display {file_b} (base)  in {color_b}\n"
+" * mode c: display {file_c} (their) in {color_c}\n"
+" * mode d: display diff3(a,b,c) by line       in {color_d}\n"
+" * mode e: display editor result buffer       in {color_e}\n"
+" * mode f: display wdiff3(a,b,c) by character in {color_f}\n"
+" * mode g: set good mode from (a,b,c,e,f) if merged cleanly, or\n"
+"           set mode (d) in case of conflicts\n"
+"\n"
+"key commands          induced actions\n"
+"{x:c}                     save and exit\n"
+"{q:c}                     quit without saving\n"
+"{a:c}/{b:c}/{c:c}/{d:c}/{e:c}/{f:c}/{g:c}         set a chunk to a/b/c/d/e/f/"
+"g mode\n"
+"1/2/3/4/5/6/7         set a chunk to a/b/c/d/e/f/g mode (alternative)\n"
+"{A:c}/{B:c}/{C:c}/{D:c}/{E:c}/{F:c}/{G:c}         set all chunks to a/b/c/d/"
+"e/f/g mode\n"
+"enter                 toggle mode of a chunk\n"
+"{m:c}                     modify a chunk with editor: {edit_cmd}\n"
+"{M:c}                     remove a editor result buffer\n"
+"arrows/pgdn,{j:c}/pgup,{k:c}  move scope of the display\n"
+"space,{n:c} /backspace,{p:c}  select the next/previous chunk\n"
+"tab,{N:c}   /shift-tab,{P:c}  select the next/previous diff chunk\n"
+"home,{t:c}  /end,{z:c}        select the first/last chunk\n"
+"{T:c}       /{Z:c}            select the first/last diff chunk\n"
+"?,{s:c}                   show the state of the merge\n"
+"{h:c}                     show this help\n"
+"{H:c}                     show tutorial"
+msgstr ""
+
+#: imediff/tui.py:99
+#, python-brace-format
+msgid ""
+"Chunk index   = (all files are identical)\n"
+"Line index    ={row: 5d} (total ={conth: 5d})\n"
+"Column offset ={col: 5d}"
+msgstr ""
+
+#: imediff/tui.py:104
+#, python-brace-format
+msgid ""
+"Chunk index   ={active: 5d} (total ={total: 5d}, unresolved ={unresolved: "
+"5d})\n"
+"Line index    ={row: 5d} (total ={conth: 5d})\n"
+"Column offset ={col: 5d}"
+msgstr ""
+
+#: imediff/tui.py:394
+#, python-brace-format
+msgid "Do you save and exit? (Press '{y:c}' to exit)"
+msgstr ""
+
+#: imediff/tui.py:401
+#, python-brace-format
+msgid "Do you quit without saving? (Press '{y:c}' to quit)"
+msgstr ""

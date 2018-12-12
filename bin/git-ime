@@ -3,24 +3,22 @@
 #############################################################################
 # Copyright (c) 2015 Osamu Aoki
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
+# This is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2,
+# or (at your option) any later version.
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+# This is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# You should have received a copy of the GNU General Public
+# License along with the program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #############################################################################
+
+IMEDIFF="/usr/bin/imediff"
 
 help() {
 
@@ -53,8 +51,8 @@ trap restore EXIT HUP INT QUIT BUS USR1 PIPE TERM
 # * 15 TERM: trappable termination
 # No trap for KILL(9)
 
-if [ ! -x /usr/bin/imediff2 ]; then
-    echo "Install the imediff2 package."
+if [ ! -x $IMEDIFF ]; then
+    echo "Install the $(basename $IMEDIFF) program."
     exit 1
 fi
 if [ "$1" = "--help" ] || [ "$1" = "-h" ] || [ -z "$1" ]; then
@@ -129,7 +127,7 @@ mv $FILENAME $FILENAME.tmp_a
 echo "ready to loop"
 while true
 do
-imediff2 -o $FILENAME $FILENAME.tmp_a $FILENAME.tmp_b
+$IMEDIFF -o $FILENAME $FILENAME.tmp_a $FILENAME.tmp_b
 chmod --reference $FILENAME.tmp_b $FILENAME
 git add $FILENAME
 git commit $OPT_COMMIT $FILENAME
