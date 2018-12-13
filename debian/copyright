@@ -1,18 +1,22 @@
-Imediff2 was debianized by Jarno Elonen <elonen@debian.org> in 2003
-from source files available at
-
+Imediff2 was originally debianized by Jarno Elonen
+<elonen@debian.org> in 2003 from source files available at
   https://elonen.iki.fi/code/imediff/
+
+The current upstream site is:
+  https://github.com/osamuaoki/imediff
 
 The packager has placed his own packaging works into the Public
 Domain and licenses those works that are modifications to
 existing copyrighted works (some packaging scripts, modified
 upstream sources etc) under the same license as the original ones.
 
-The current maintainer is Kevin Coyner <kcoyner@debian.org>.
+The current maintainer is Osamu Aoki <osamu@debian.org>.
 
-Upstream Author: Jarno Elonen <elonen@debian.org>
+Previous upstream Author: Jarno Elonen <elonen@debian.org>
+Current upstream Author:  Osamu Aoki <osamu@debian.org>
 
-Copyright: (c) 2003, 2004  Jarno Elonen
+Copyright (C) 2003, 2004 Jarno Elonen <elonen@iki.fi>
+Copyright (C) 2018       Osamu Aoki <osamu@debian.org>
 
 License:
 

@@ -1,3 +1,9 @@
+imediff (2.0-1) UNRELEASED; urgency=medium
+
+  * New upstream release in python3 with diff3 support etc.
+
+ -- Osamu Aoki <osamu@debian.org>  Thu, 13 Dec 2018 23:56:00 +0900
+
 imediff2 (1.1.2.1-2) unstable; urgency=medium
 
   * Ship git-ime and git-ime.1. 

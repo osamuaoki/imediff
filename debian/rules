@@ -3,7 +3,11 @@
 #DH_VERBOSE = 1
 
 %:
-	dh $@ --with python2
+	dh $@ --with python3
+
+override_dh_auto_build:
+	$(MAKE)
+	dh_auto_build $@
 
 override_dh_auto_clean:
 	$(MAKE) clean

@@ -1,19 +1,24 @@
-Source: imediff2
+Source: imediff
 Section: text
 Priority: optional
 Maintainer: Osamu Aoki <osamu@debian.org>
-Build-Depends: debhelper (>= 11~), dh-python, docbook-xsl, python-all, xsltproc
+Build-Depends: debhelper (>= 11~),
+               dh-python,
+               docbook-xsl,
+               python3-all,
+               xsltproc
 Standards-Version: 4.2.1
-Homepage: https://github.com/osamuaoki/imediff2
+Homepage: https://github.com/osamuaoki/imediff
 
-Package: imediff2
+Package: imediff
 Architecture: all
 Depends: ${misc:Depends}, ${python:Depends}
-Description: interactive full screen 2-way merge tool
- Imediff2 lets you merge two (slightly different) files
- interactively with a user friendly full screen interface
- on a text terminal. In other words, it is an ncurses based
- replacement for sdiff.
+Description: interactive full screen 2/3-way merge tool
+ Imediff lets you merge two (slightly different) files with
+ an optional base file interactively with a user friendly
+ single-pane full screen interface on a text terminal. In
+ other words, it is an ncurses based replacement for sdiff
+ and "diff3 -m".
  .
  The program shows the differences of given files (in color
  if the terminal supports them), lets you scroll up and down
@@ -23,7 +28,12 @@ Description: interactive full screen 2-way merge tool
  Unlike split screen based merge tools, it shows only one,
  partially merged, version of the file at a time, making
  it more "WYSIWYG", perhaps more intuitive for beginners and
- most importantly, suitable for narrow terminalis.
+ most importantly, suitable for narrow terminals.
  .
- This also comes with git-ime wrapper script to use imediff2
- with git VCS.
+ Unlike some other merge tools, imediff not only tries to merge
+ by line but also tries to merge by character.  This two step
+ merge enables clean merge even when the same line is modified
+ in both files as long as changes are not overlapped.
+ .
+ This also comes with git-ime wrapper script to use imediff
+ with git VCS and a support file for git-mergetool.
