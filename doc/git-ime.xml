@@ -25,6 +25,7 @@
     <author>
       &dhfirstname;
       &dhsurname;
+      <contrib>Original author of this script.</contrib>
     </author>
     <copyright>
       <year>2018</year>
@@ -52,21 +53,21 @@
     <title>DESCRIPTION</title>
 
    <para>This is a simple shell wrapper script on
-   <command>imediff2</command> to make it work well with
+   <command>imediff</command> to make it work well with
    <command>git</command> command.</para>
 
    <para>If any local uncommitted change is found on
-   <replaceable>file</replaceable>, <command>imediff2</command> is executed
+   <replaceable>file</replaceable>, <command>imediff</command> is executed
    with HEAD and local version of <replaceable>file</replaceable>.  With
-   <command>imediff2</command>, you can select a set of changes to the
+   <command>imediff</command>, you can select a set of changes to the
    <replaceable>file</replaceable> and to commit it to the git repository as a
    meaningful chunk.  This script repeats this process until all changes are
    committed.</para>
 
    <para>If no local uncommitted change is found on
-   <replaceable>file</replaceable>, <command>imediff2</command> is executed
+   <replaceable>file</replaceable>, <command>imediff</command> is executed
    with HEAD^ and HEAD version of <replaceable>file</replaceable>.  With
-   <command>imediff2</command>, you can select a set of changes to the
+   <command>imediff</command>, you can select a set of changes to the
    <replaceable>file</replaceable> and to commit it to the git repository as a
    meaningful chunk.  This script repeats this process until all changes are
    committed.</para>
@@ -85,7 +86,7 @@
   <refsect1>
     <title>SEE ALSO</title>
 
-    <para>imediff2 (1), git(1), and git-rebase(1).</para>
+    <para>imediff (1), git(1), and git-rebase(1).</para>
 
   </refsect1>
   <refsect1>

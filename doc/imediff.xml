@@ -1,0 +1,454 @@
+<!DOCTYPE refentry PUBLIC "-//Norman Walsh/DTD DocBk XML V4.1.2//EN"
+"http://www.docbook.org/xml/4.1.2/docbookx.dtd" [
+
+  <!ENTITY holder1     "<personname> <firstname>Jarno</firstname>
+  <surname>Elonen</surname> </personname> <email>elonen@iki.fi</email>">
+  <!ENTITY holder2     "<personname> <firstname>Osamu</firstname>
+  <surname>Aoki</surname> </personname> <email>osamu@debian.org</email>">
+  <!ENTITY gnu         "<acronym>GNU</acronym>">
+]>
+
+<refentry>
+  <refentryinfo>
+    <title>imediff User Manual</title>
+    <productname>imediff</productname>
+    <date>2018-12-11</date>
+    <author>
+        &holder1;
+        <contrib>Original author for 2 file merge in python2</contrib>
+    </author>
+    <author>
+        &holder2;
+        <contrib>Rewrite author for 2 and 3 file merge in python3</contrib>
+    </author>
+    <copyright>
+      <year>2003-2006</year> <holder>&holder1;</holder>
+      <year>2018</year> <holder>&holder2;</holder>
+    </copyright>
+  </refentryinfo>
+  <refmeta>
+    <refentrytitle>imediff</refentrytitle> <manvolnum>1</manvolnum>
+  </refmeta>
+  <refnamediv>
+    <refname>imediff</refname>
+    <refpurpose>An interactive fullscreen merge tool for 2 or 3 files</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>imediff</command>
+      <arg><option>-a</option></arg>
+      <arg><option>-b</option></arg>
+      <arg><option>-d</option></arg>
+      <arg><option>-f</option></arg>
+      <arg><option>-h</option></arg>
+      <arg><option>-m</option></arg>
+      <arg><option>-n</option></arg>
+      <arg><option>-t</option></arg>
+      <arg><option>-o <replaceable>file_out</replaceable></option></arg>
+      <arg choice="req"><replaceable>file_older</replaceable></arg>
+      <arg choice="req"><replaceable>file_newer</replaceable></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>imediff</command>
+      <arg><option>-a</option></arg>
+      <arg><option>-b</option></arg>
+      <arg><option>-c</option></arg>
+      <arg><option>-d</option></arg>
+      <arg><option>-f</option></arg>
+      <arg><option>-g</option></arg>
+      <arg><option>-h</option></arg>
+      <arg><option>-m</option></arg>
+      <arg><option>-n</option></arg>
+      <arg><option>-t</option></arg>
+      <arg><option>-o <replaceable>file_out</replaceable></option></arg>
+      <arg choice="req"><replaceable>file_yours</replaceable></arg>
+      <arg choice="req"><replaceable>file_base</replaceable></arg>
+      <arg choice="req"><replaceable>file_theirs</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>DESCRIPTION</title>
+
+   <para>Merge two (slightly different) files with an optional common base file
+   interactively with a user friendly fullscreen interface in the full screen
+   text terminal mode.</para>
+
+   <para><command>imediff</command> shows the differences of given two
+   files (in color if the terminal supports them), lets you scroll the file and
+   toggle changes between older and newer version for each chunk of difference.
+   You can also select line diff and character wdiff mode for display.  If you
+   wish to make manual changes, you can edit each chunk with editor.  The
+   result of merge operation is saved in
+   <replaceable>file_out</replaceable>.</para>
+
+   <para>Additionally, you can customize your choice of editor via
+   <varname>$EDITOR</varname> or <filename>~/.imediff</filename>.  The default
+   editor is <command>/usr/bin/editor</command>.  </para>
+
+   <para>Removed lines are shown in reversed '<guilabel>???</guilabel>' as a
+   placeholder, so you see that and you can select them.  While it takes one
+   line on display, it is naturally not saved into the output file.</para>
+
+   <para>To see the key binding, hit <keycap>h</keycap> in the main
+   <command>imediff</command> screen.</para>
+
+   <para>To see the tutorial, hit <keycap>H</keycap> in the main
+   <command>imediff</command> screen or simply start the
+   <command>imediff</command> command without arguments.</para>
+
+   <para>The program exits with status 0 if the changes were saved, 1 if the
+   merging was aborted and 2 if the parameters were invalid.</para>
+
+  </refsect1>
+
+  <refsect1>
+    <title>OPTIONS</title>
+
+    <variablelist>
+
+      <varlistentry>
+        <term><option>-o <replaceable>file_output</replaceable></option>, <option>--output=<replaceable>file_output</replaceable></option></term>
+        <listitem>
+          <para>Write output to a given file. If missing, STDERR is used.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-m</option>, <option>--mode</option></term>
+        <listitem>
+          <para>Display mode column.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>--mono</option></term>
+        <listitem>
+          <para>Force monochrome display.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-n</option></term>
+        <listitem>
+          <para>Non-interactive mode.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-a</option></term>
+        <listitem>
+          <para>Start with version A (=<arg choice="req"><replaceable>file_older</replaceable></arg> or <arg choice="req"><replaceable>file_yours</replaceable></arg>).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-b</option></term>
+        <listitem>
+          <para>Start with version B (=<arg choice="req"><replaceable>file_newer</replaceable></arg> or <arg choice="req"><replaceable>file_base</replaceable></arg>).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-c</option></term>
+        <listitem>
+          <para>Start with version C (=<arg choice="req"><replaceable>file_theirs</replaceable></arg>) for 3 files.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-d</option></term>
+        <listitem>
+          <para>Start with diff by line between version A and version B for 2 files. (default for 2 files)</para>
+          <para>Start with diff by line between version A and version C for 3 files.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-f</option></term>
+        <listitem>
+          <para>Start with wdiff by character between version A and version B for 2 files.</para>
+          <para>Start with wdiff by character between version A and version C for 3 files.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-g</option></term>
+        <listitem>
+          <para>Set good mode from (a,b,c,e,f) if merged cleanly, or set mode (d) in case of conflicts (default for 3 files).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-h</option>, <option>--help</option></term>
+        <listitem>
+          <para>Show summary of options and exit.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-t</option>, <option>--template</option></term>
+        <listitem>
+          <para>Create (or overwrite) <filename>~/.imediff</filename> with default values.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-V</option>, <option>--version</option></term>
+        <listitem>
+          <para>Show version and exit.</para>
+        </listitem>
+      </varlistentry>
+
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>KEYBOARD COMMANDS</title>
+
+    <para>The following keyboard commands are available in the editor as default.</para>
+
+
+    <variablelist>
+
+      <varlistentry>
+        <term><keysym>q</keysym>, <keycombo action='simul'><keycap>ctrl</keycap><keysym>c</keysym></keycombo></term>
+        <listitem>
+          <para>Exit without saving.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycap>home</keycap>, <keycap>t</keycap></term>, <term><keycap>end</keycap>, <keycap>z</keycap></term>
+        <listitem>
+          <para>Jump to start or end of chunks.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>h</keysym></term>
+        <listitem>
+          <para>Show commands.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycombo action='simul'><keycap>shift</keycap><keysym>h</keysym></keycombo></term>
+        <listitem>
+          <para>Show tutorial.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>s</keysym>, <keysym>?</keysym></term>
+        <listitem>
+          <para>Show the state of the merge.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycap>down</keycap>, <keycap>j</keycap>, <keycap>up</keycap>, <keycap>k</keycap></term>
+        <listitem>
+          <para>Move scope of the display for 1 line.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycap>left</keycap>, <keycap>right</keycap></term>
+        <listitem>
+          <para>Move scope of the display for 1 column.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycap>page up</keycap>, <keycap>page down</keycap></term>
+        <listitem>
+          <para>Move scope of the display for screenfull lines.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycap>enter</keycap></term>
+        <listitem>
+          <para>Toggle mode of display for a selected chunk.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>n</keysym>, <keycap>space</keycap></term>
+        <listitem>
+          <para>Jump to next changed chunk.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>N</keysym>, <keycap>tab</keycap></term>
+        <listitem>
+          <para>Jump to next changed chunk in diff mode (d).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>p</keysym> , <keycap>backspace</keycap></term>
+        <listitem>
+          <para>Jump to previous changed chunk.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>P</keysym> , <keycap>back-tab</keycap></term>
+        <listitem>
+          <para>Jump to previous changed chunk in diff mode (d).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>a</keysym></term>
+        <listitem>
+          <para>Set mode of the current chunk to display version A.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>b</keysym></term>
+        <listitem>
+          <para>Set mode of the current chunk to display version B.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>c</keysym></term>
+        <listitem>
+          <para>Set mode of the current chunk to display version C. (if available)</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>d</keysym></term>
+        <listitem>
+          <para>Set mode of the current chunk to display diff by line.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>e</keysym></term>
+        <listitem>
+          <para>Set mode of the current chunk to display editor buffer.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>f</keysym></term>
+        <listitem>
+          <para>Set mode of the current chunk to display wdiff by character.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>g</keysym></term>
+        <listitem>
+          <para>Set good mode from (a,b,c,e,f) if merged cleanly, or set mode (d) in case of conflicts for the current chunk.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycombo action='simul'><keycap>shift</keycap><keysym>a</keysym></keycombo></term>
+        <listitem>
+          <para>Set mode of all chunks to display version A.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycombo action='simul'><keycap>shift</keycap><keysym>b</keysym></keycombo></term>
+        <listitem>
+          <para>Set mode of all chunks to display version B.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycombo action='simul'><keycap>shift</keycap><keysym>c</keysym></keycombo></term>
+        <listitem>
+          <para>Set mode of all chunks to display version C. (if available)</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycombo action='simul'><keycap>shift</keycap><keysym>d</keysym></keycombo></term>
+        <listitem>
+          <para>Set mode of all chunks to display diff by line.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycombo action='simul'><keycap>shift</keycap><keysym>e</keysym></keycombo></term>
+        <listitem>
+          <para>Set mode of all chunks to display editor buffer.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycombo action='simul'><keycap>shift</keycap><keysym>f</keysym></keycombo></term>
+        <listitem>
+          <para>Set mode of all chunks to display wdiff by character.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycombo action='simul'><keycap>shift</keycap><keysym>g</keysym></keycombo></term>
+        <listitem>
+          <para>Set good mode from (a,b,c,e,f) if merged cleanly, or set mode (d) in case of conflicts for all chunks.</para>
+        </listitem>
+      </varlistentry>
+
+
+      <varlistentry>
+        <term><keysym>m</keysym></term>
+        <listitem>
+          <para>Launch external editor on the current chunk.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keycombo action='simul'><keycap>shift</keycap><keysym>f</keysym></keycombo></term>
+        <listitem>
+          <para>Remove display editor buffer of the current chunk.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><keysym>x</keysym>, <keysym>s</keysym></term>
+        <listitem>
+          <para>Save and exit.</para>
+        </listitem>
+      </varlistentry>
+
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>FILE</title>
+
+    <para>The key choices of the above keyboard commands can be configured in
+       <filename>~/.imediff</filename> which is created at the first execution
+       of this command.  The left side is the keys described in this manpage.
+       The right side is your configuration choices.  The current settings can
+       be confirmed by the 'h' key dialog.</para>
+  </refsect1>
+  <refsect1>
+    <title>SEE ALSO</title>
+
+    <para>sdiff (1), diff (1), merge (1), diff3 (1).</para>
+
+  </refsect1>
+  <refsect1>
+    <title>COPYRIGHT</title>
+
+    <para>This manual page as well as the program itself was written
+      by &holder1; and &holder2;.
+      Unlike the program itself, which is licensed under the GNU
+      General Public License (GPL) version 2 (or any later version,
+      at your option), this document has been placed into the
+      Public Domain.
+    </para>
+
+  </refsect1>
+</refentry>
