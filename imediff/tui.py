@@ -117,14 +117,25 @@ Quick start:
                         Copyright (C) 2018 Osamu Aoki <osamu@debian.org>
 ---------------------------------------------------------------------------
 
-The imediff command helps you to merge 2 or 3 input files using the full
-screen terminal user interface with the single-pane view.
+The imediff command helps you to merge 2 slightly different files with an
+optional base file interactively using the in-place alternating display of
+the changed content on a single-pane full screen terminal user interface.
 
-The advantage of the single-pane view design is the minimal movement of the
-line of sight for the user.  Other great tools such as vimdiff, xxdiff, meld
-require you to look at different points to find the exact position of
-changes.  This makes imediff the most stress-free tool.  (I found this when
-I first used the original imediff2 program by Jarno Elonen <elonen@iki.fi>.)
+The advantage of this user interface is the minimal movement of the line of
+sight for the user.  Other great tools such as vimdiff, xxdiff, meld and
+kdiff3 require you to look at different points of display to find the exact
+position of changes.  This makes imediff the most stress-free tool.  (I
+realized this when I first used the original imediff2 program by Jarno
+Elonen <elonen@iki.fi>.)
+
+Other great tools for merge such as "diff3 -m ..." and "git merge ..."
+operate only on the difference by line.  So even for the non-overlapping
+changes, they yield the merge conflict if changes happen on the same line.
+
+The automatic merge logic of the imediff command operates not only on the
+difference by line but on the difference by character.  This is another
+great feature of the imediff command. So for the non-overlapping changes, it
+always yields the clean merge.
 
 Merge with 2 files
 ==================
@@ -156,8 +167,8 @@ key commands.  Pressing "d" displays 2 blocks of lines organized somewhat
 like "diff -u".  Pressing "f" displays intermixed 1 block of lines organized
 somewhat like "wdiff".
 
-You can type "m" to start an editor to edit the focused chunk from any modes
-to create a manually merged content.  Upon exiting the editor, its result is
+Pressing "m" starts an editor to edit the focused chunk from any modes to
+create a manually merged content.  Upon exiting the editor, its result is
 kept in the editor result buffer.  Even after pressing "a", "b", "d" or "f",
 the content of the editor result buffer can be recalled and displayed by
 pressing "e".
@@ -194,9 +205,10 @@ character.  This allows the clean automatic merge even when changes happen
 on different positions of the same line of "file_a" and "file_c" derived
 from "file_b".
 
-Thus only unresolved chunks are displayed in mode "d".  You can move the
+Only really unresolved chunks are displayed in mode "d".  You can move the
 focused chunk to the next unresolved chunk by pressing "Tab", or "N" keys.
-You can move the focused chunk to the previous unresolved chunk by pressing
+Pressing "m" starts an editor to create a manually merged content.  You can
+move the focused chunk to the previous unresolved chunk by pressing
 "Shift-Tab", or "P" keys.
 
 The key binding for "Merge with 3 files" is almost the same as that for
