@@ -49,21 +49,22 @@ _opening = """\
 ===============================================================================
                                {p}                         (version {v})
 
-    The imediff command helps you to merge 2 or 3 input files using the
-    full screen terminal user interface with the single-pane view.
+The imediff command helps you to merge 2 slightly different files with an
+optional base file interactively using the in-place alternating display of
+the changed content on a single-pane full screen terminal user interface.
 
-    From the console command line prompt, type:
-        * "imediff" to read the tutorial,
-        * "imediff -h" to get all the command line options,
-        * "imediff -o output older newer" to merge 2 files, and
-        * "imediff -o output yours base theirs" to merge 3 files.
+From the console command line prompt, type:
+ * "imediff" to read the tutorial,
+ * "imediff -h" to get all the command line options,
+ * "imediff -o output older newer" to merge 2 files, and
+ * "imediff -o output yours base theirs" to merge 3 files.
 
-    For usage instructions, type "h" and "H" in the interactive screen.
+For usage instructions, type "h" and "H" in the interactive screen.
 
-    Copyright (C) 2003, 2004 Jarno Elonen <elonen@iki.fi>
-    Copyright (C) 2018       Osamu Aoki <osamu@debian.org>
+ * Copyright (C) 2003, 2004 Jarno Elonen <elonen@iki.fi>
+ * Copyright (C) 2018       Osamu Aoki <osamu@debian.org>
 
-    License: GPL 2.0+
+License: GPL 2.0+
 ===============================================================================
 """.format(p=PACKAGE, v=VERSION)
 
