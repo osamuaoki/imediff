@@ -27,12 +27,14 @@ Boston, MA 02110-1301, USA.
 
 import difflib
 
+
 def _tag2t(tag):
     if tag == "equal":
         t = "E"
     else:
         t = "N"
     return t
+
 
 class SequenceMatcher2(difflib.SequenceMatcher):
 
@@ -74,7 +76,7 @@ class SequenceMatcher2(difflib.SequenceMatcher):
         Return list of 5-tuples describing how to turn a into b.
     """
 
-    def __init__(self, isjunk=None, a='', b='', autojunk=True):
+    def __init__(self, isjunk=None, a="", b="", autojunk=True):
         """Construct a SequenceMatcher2.
 
         Optional arg isjunk is None (the default), or a one-argument
@@ -119,7 +121,6 @@ class SequenceMatcher2(difflib.SequenceMatcher):
         super().__init__(isjunk, a, b, autojunk)
         self.chunks = None
 
-
     def get_chunks(self):
         """Return list of 5-tuples describing how to turn a into b.
 
@@ -148,20 +149,23 @@ class SequenceMatcher2(difflib.SequenceMatcher):
         N a[6:6] () b[5:6] (f)
         """
 
-# Long version
-#        answer = list()
-#        for tag, i1, i2, j1, j2 in self.get_opcodes():
-#            if tag == 'equal':
-#                answer.append(('E', i1, i2, j1, j2))
-#            else: # tag != 'equal'
-#                answer.append(('N', i1, i2, j1, j2))
-#        self.chunks = answer
+        # Long version
+        #        answer = list()
+        #        for tag, i1, i2, j1, j2 in self.get_opcodes():
+        #            if tag == 'equal':
+        #                answer.append(('E', i1, i2, j1, j2))
+        #            else: # tag != 'equal'
+        #                answer.append(('N', i1, i2, j1, j2))
+        #        self.chunks = answer
 
-# Short version
-        self.chunks = [ (_tag2t(tag), i1, i2, j1, j2) \
-                for tag, i1, i2, j1, j2 in self.get_opcodes() ]
+        # Short version
+        self.chunks = [
+            (_tag2t(tag), i1, i2, j1, j2) for tag, i1, i2, j1, j2 in self.get_opcodes()
+        ]
         return self.chunks
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

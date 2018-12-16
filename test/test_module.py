@@ -5,8 +5,9 @@
 Simple configuration reader
 """
 import sys
+
 # force PYTHONPATH for testing
-sys.path.insert(0, '..')
+sys.path.insert(0, "..")
 import imediff
 import configparser
 
@@ -30,7 +31,7 @@ for section in confs.sections():
 
 ##########################################################################
 print(">>> confs_internal['section'] >>>>>>> 'key' = 'value' >>>>>>>>>>>>>>>>")
-confs_internal = configparser.ConfigParser(inline_comment_prefixes=(';','#'))
+confs_internal = configparser.ConfigParser(inline_comment_prefixes=(";", "#"))
 confs_internal.read_string(imediff.config_template)
 for section in confs_internal.sections():
     for key, value in confs_internal[section].items():
@@ -40,12 +41,12 @@ for section in confs_internal.sections():
 list_a, list_b, list_c = imediff.read_files(args)
 print(">>> list_a >>>>>>> key -> value >>>>>>>>>>>>>>>>")
 for i, f in enumerate(list_a):
-    print (">>> list_a[{}]='{}'".format(i,f))
+    print(">>> list_a[{}]='{}'".format(i, f))
 print(">>> list_b >>>>>>> key -> value >>>>>>>>>>>>>>>>")
 for i, f in enumerate(list_b):
-    print (">>> list_b[{}]='{}'".format(i,f))
+    print(">>> list_b[{}]='{}'".format(i, f))
 print(">>> list_c >>>>>>> key -> value >>>>>>>>>>>>>>>>")
 for i, f in enumerate(list_c):
-    print (">>> list_c[{}]='{}'".format(i,f))
+    print(">>> list_c[{}]='{}'".format(i, f))
 print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 sys.exit(0)

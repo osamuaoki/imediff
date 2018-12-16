@@ -110,12 +110,11 @@ ws3 = }
 """
 
 cc = dict()
-cc['BLUE'] = curses.COLOR_BLUE
-cc['RED'] = curses.COLOR_RED
-cc['YELLOW'] = curses.COLOR_YELLOW
-cc['GREEN'] = curses.COLOR_GREEN
-cc['CYAN'] = curses.COLOR_CYAN
-cc['MAGENTA'] = curses.COLOR_MAGENTA
-cc['WHITE'] = curses.COLOR_WHITE
-cc['BLACK'] = curses.COLOR_BLACK
-
+cc["BLUE"] = curses.COLOR_BLUE
+cc["RED"] = curses.COLOR_RED
+cc["YELLOW"] = curses.COLOR_YELLOW
+cc["GREEN"] = curses.COLOR_GREEN
+cc["CYAN"] = curses.COLOR_CYAN
+cc["MAGENTA"] = curses.COLOR_MAGENTA
+cc["WHITE"] = curses.COLOR_WHITE
+cc["BLACK"] = curses.COLOR_BLACK

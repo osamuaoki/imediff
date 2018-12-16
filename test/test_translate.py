@@ -4,8 +4,10 @@
 Simple macro key translation check
 """
 import sys
-sys.path.insert(0, '..')
+
+sys.path.insert(0, "..")
 import imediff
+
 args = imediff.initialize_args()
 confs = imediff.initialize_confs(args.conf)
 if args.diff_mode == 0 or args.diff_mode is None:
@@ -13,9 +15,9 @@ if args.diff_mode == 0 or args.diff_mode is None:
 list_a = ["a", "b", "c", "d", "e", "f"]
 list_b = ["a", "b", "c", "d", "e", "f"]
 list_c = ["a", "b", "c", "d", "e", "f"]
-macro = ''.join([chr(i) for i in range(ord('a'),ord('z'))])
-macro += ''.join([chr(i) for i in range(ord('A'),ord('Z'))])
-args.macro = macro # override
+macro = "".join([chr(i) for i in range(ord("a"), ord("z"))])
+macro += "".join([chr(i) for i in range(ord("A"), ord("Z"))])
+args.macro = macro  # override
 instance = imediff.TextData(list_a, list_b, list_c, args, confs)
 for c in macro:
     k = instance.getch_translated()

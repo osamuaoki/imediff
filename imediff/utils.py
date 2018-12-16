@@ -34,13 +34,13 @@ import traceback
 import types
 import curses
 
-__all__ = ['_', 'logger', 'read_lines', 'error_exit', 'write_file']
+__all__ = ["_", "logger", "read_lines", "error_exit", "write_file"]
 
 # Utility functions
 
 # gettext for i18n
-gettext.bindtextdomain('imediff')
-gettext.textdomain('imediff')
+gettext.bindtextdomain("imediff")
+gettext.textdomain("imediff")
 _ = gettext.gettext
 
 # logger
@@ -48,26 +48,30 @@ logger = logging.getLogger(__name__)
 
 # file read
 def read_lines(filename):
-    if filename is None or filename =="":
+    if filename is None or filename == "":
         lines = []
     else:
         try:
             with open(filename, buffering=io.DEFAULT_BUFFER_SIZE) as fp:
-                lines = fp.readlines() # read into list
+                lines = fp.readlines()  # read into list
         except IOError as e:
             (error, message) = e.args
             if error == errno.ENOENT:
                 lines = []
             else:
-                error_exit(
-"Could not read '{}': {}\n".format(filename, message))
+                error_exit("Could not read '{}': {}\n".format(filename, message))
         except:
-            error_exit("read_lines: Unexpected error: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+            error_exit(
+                "read_lines: Unexpected error: {} {}".format(
+                    sys.exc_info()[0], sys.exc_info()[1]
+                )
+            )
     return lines
+
 
 # error exit
 def error_exit(msg):
-    #time.sleep(5.0)
+    # time.sleep(5.0)
     try:
         curses.nocbreak()
         curses.echo()
@@ -75,12 +79,17 @@ def error_exit(msg):
     except curses.error:
         pass
     except:
-        error_exit("error_exit: Unexpected error: {} {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+        error_exit(
+            "error_exit: Unexpected error: {} {}".format(
+                sys.exc_info()[0], sys.exc_info()[1]
+            )
+        )
     logger.error(msg)
     trace = traceback.format_exc()
     if trace != "NoneType: None\n":
         logger.error(trace)
     sys.exit(22)
+
 
 # file output
 def write_file(filename, output):
@@ -88,9 +97,8 @@ def write_file(filename, output):
         sys.stderr.write(output)
     else:
         try:
-            with open(filename, mode='w', buffering=io.DEFAULT_BUFFER_SIZE) as fp:
+            with open(filename, mode="w", buffering=io.DEFAULT_BUFFER_SIZE) as fp:
                 fp.write(output)
         except IOError:
             error_exit("Error in creating output file: {}".format(filename))
     return
-

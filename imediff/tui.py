@@ -38,7 +38,8 @@ from imediff.diff3lib import *
 from imediff.cli import *
 
 # Format stings
-_helptext2 = _("""\
+_helptext2 = _(
+    """\
     Interactive Merge Editor to merge 2 DIFFerent files
 
 imediff merges 2 different input files using 5 modes:
@@ -64,9 +65,11 @@ home,{t:c}  /end,{z:c}        select the first/last chunk
 {T:c}       /{Z:c}            select the first/last diff chunk
 ?,{s:c}                   show the state of the merge
 {h:c}                     show this help
-{H:c}                     show tutorial""")
+{H:c}                     show tutorial"""
+)
 
-_helptext3 = _("""\
+_helptext3 = _(
+    """\
     Interactive Merge Editor to merge 3 DIFFerent files
 
 imediff merges 3 different input files using 7 modes:
@@ -95,17 +98,22 @@ home,{t:c}  /end,{z:c}        select the first/last chunk
 {T:c}       /{Z:c}            select the first/last diff chunk
 ?,{s:c}                   show the state of the merge
 {h:c}                     show this help
-{H:c}                     show tutorial""")
+{H:c}                     show tutorial"""
+)
 
-_stattext0 = _("""\
+_stattext0 = _(
+    """\
 Chunk index   = (all files are identical)
 Line index    ={row: 5d} (total ={conth: 5d})
-Column offset ={col: 5d}""")
+Column offset ={col: 5d}"""
+)
 
-_stattext1 = _("""\
+_stattext1 = _(
+    """\
 Chunk index   ={active: 5d} (total ={total: 5d}, unresolved ={unresolved: 5d})
 Line index    ={row: 5d} (total ={conth: 5d})
-Column offset ={col: 5d}""")
+Column offset ={col: 5d}"""
+)
 
 # Keep this under 76 char/line to fit this in the 80 char terminal
 _tutorial = """\
@@ -256,8 +264,10 @@ The "diff3 -m" has an odd feature for the merge when "file_a" and "file_c"
 undergo identical changes from "file_b".  This imediff program results in a
 more intuitive merge result."""
 
-class TextPad(TextData): # TUI data
+
+class TextPad(TextData):  # TUI data
     """Curses class to handle diff data for 2 or 3 lines"""
+
     # persistent variables: self.*
     #     stdscr: display object
     #     winh, winw: Window height and width from stdscr.getmaxyx()
@@ -274,94 +284,100 @@ class TextPad(TextData): # TUI data
         self.mode = args.mode
         self.mono = args.mono
         if self.diff_mode == 2:
-            self.color = confs['color_diff2']
+            self.color = confs["color_diff2"]
         else:
-            self.color = confs['color_diff3']
+            self.color = confs["color_diff3"]
         return
 
-    def command_loop(self, tutorial=False): # for curses TUI (wrapper)
+    def command_loop(self, tutorial=False):  # for curses TUI (wrapper)
         self.tutorial = tutorial
         curses.wrapper(self.gui_loop)
         return
 
-    def gui_loop(self, stdscr): # for curses TUI (core)
+    def gui_loop(self, stdscr):  # for curses TUI (core)
         # initialize
         self.stdscr = stdscr
-        color = self.color # shorthand
-        self.winh, self.winw = self.stdscr.getmaxyx() # window size
+        color = self.color  # shorthand
+        self.winh, self.winw = self.stdscr.getmaxyx()  # window size
         curses.start_color()
         self.stdscr.clear()
         self.stdscr.refresh()
         # set color pair_number as (pair_number, fg, bg)
-        curses.init_pair(1, cc[color['color_a']], cc['BLACK'])
-        curses.init_pair(2, cc[color['color_b']], cc['BLACK'])
-        curses.init_pair(3, cc[color['color_c']], cc['BLACK'])
-        curses.init_pair(4, cc[color['color_d']], cc['BLACK'])
-        curses.init_pair(5, cc[color['color_e']], cc['BLACK'])
-        curses.init_pair(6, cc[color['color_f']], cc['BLACK'])
+        curses.init_pair(1, cc[color["color_a"]], cc["BLACK"])
+        curses.init_pair(2, cc[color["color_b"]], cc["BLACK"])
+        curses.init_pair(3, cc[color["color_c"]], cc["BLACK"])
+        curses.init_pair(4, cc[color["color_d"]], cc["BLACK"])
+        curses.init_pair(5, cc[color["color_e"]], cc["BLACK"])
+        curses.init_pair(6, cc[color["color_f"]], cc["BLACK"])
         #
         # +6: active cc
         self.active_color = 6
-        curses.init_pair(7, cc['WHITE'], cc[color['color_a']])
-        curses.init_pair(8, cc['WHITE'], cc[color['color_b']])
-        curses.init_pair(9, cc['WHITE'], cc[color['color_c']])
-        curses.init_pair(10, cc['WHITE'], cc[color['color_d']])
-        curses.init_pair(11, cc['WHITE'], cc[color['color_e']])
-        curses.init_pair(12, cc['WHITE'], cc[color['color_f']])
+        curses.init_pair(7, cc["WHITE"], cc[color["color_a"]])
+        curses.init_pair(8, cc["WHITE"], cc[color["color_b"]])
+        curses.init_pair(9, cc["WHITE"], cc[color["color_c"]])
+        curses.init_pair(10, cc["WHITE"], cc[color["color_d"]])
+        curses.init_pair(11, cc["WHITE"], cc[color["color_e"]])
+        curses.init_pair(12, cc["WHITE"], cc[color["color_f"]])
         #
         # +12: deleted cc
         self.deleted_color = 12
-        curses.init_pair(13, cc[color['color_a']], cc['WHITE'])
-        curses.init_pair(14, cc[color['color_b']], cc['WHITE'])
-        curses.init_pair(15, cc[color['color_c']], cc['WHITE'])
-        curses.init_pair(16, cc[color['color_d']], cc['WHITE'])
-        curses.init_pair(17, cc[color['color_e']], cc['WHITE'])
-        curses.init_pair(18, cc[color['color_f']], cc['WHITE'])
+        curses.init_pair(13, cc[color["color_a"]], cc["WHITE"])
+        curses.init_pair(14, cc[color["color_b"]], cc["WHITE"])
+        curses.init_pair(15, cc[color["color_c"]], cc["WHITE"])
+        curses.init_pair(16, cc[color["color_d"]], cc["WHITE"])
+        curses.init_pair(17, cc[color["color_e"]], cc["WHITE"])
+        curses.init_pair(18, cc[color["color_f"]], cc["WHITE"])
         #
         # +6+12
-        curses.init_pair(19, cc['BLACK'], cc[color['color_a']])
-        curses.init_pair(20, cc['BLACK'], cc[color['color_b']])
-        curses.init_pair(21, cc['BLACK'], cc[color['color_c']])
-        curses.init_pair(22, cc['BLACK'], cc[color['color_d']])
-        curses.init_pair(23, cc['BLACK'], cc[color['color_e']])
-        curses.init_pair(24, cc['BLACK'], cc[color['color_f']])
+        curses.init_pair(19, cc["BLACK"], cc[color["color_a"]])
+        curses.init_pair(20, cc["BLACK"], cc[color["color_b"]])
+        curses.init_pair(21, cc["BLACK"], cc[color["color_c"]])
+        curses.init_pair(22, cc["BLACK"], cc[color["color_d"]])
+        curses.init_pair(23, cc["BLACK"], cc[color["color_e"]])
+        curses.init_pair(24, cc["BLACK"], cc[color["color_f"]])
         #
         if curses.has_colors() == False:
             self.mono = True
         if self.mono:
             self.mode = True
-            self.color_a = 'WHITE'
-            self.color_b = 'WHITE'
-            self.color_c = 'WHITE'
-            self.color_d = 'WHITE'
-            self.color_e = 'WHITE'
-            self.color_f = 'WHITE'
+            self.color_a = "WHITE"
+            self.color_b = "WHITE"
+            self.color_c = "WHITE"
+            self.color_d = "WHITE"
+            self.color_e = "WHITE"
+            self.color_f = "WHITE"
         else:
             if self.diff_mode == 2:
-                self.color_a = color['color_a']
-                self.color_b = color['color_b']
-                #self.color_c = color['color_c'] # never used
-                self.color_d = color['color_d']
-                self.color_e = color['color_e']
-                self.color_f = color['color_f']
+                self.color_a = color["color_a"]
+                self.color_b = color["color_b"]
+                # self.color_c = color['color_c'] # never used
+                self.color_d = color["color_d"]
+                self.color_e = color["color_e"]
+                self.color_f = color["color_f"]
             else:
-                self.color_a = color['color_a']
-                self.color_b = color['color_b']
-                self.color_c = color['color_c']
-                self.color_d = color['color_d']
-                self.color_e = color['color_e']
-                self.color_f = color['color_f']
+                self.color_a = color["color_a"]
+                self.color_b = color["color_b"]
+                self.color_c = color["color_c"]
+                self.color_d = color["color_d"]
+                self.color_e = color["color_e"]
+                self.color_f = color["color_f"]
         # display parameters
-        self.col = 0 # the column coordinate of textpad (left most=0)
-        self.row = 0 # the row coordinate of textpad    (top most=0)
-        self.update_textpad = True # update textpad content
+        self.col = 0  # the column coordinate of textpad (left most=0)
+        self.row = 0  # the row coordinate of textpad    (top most=0)
+        self.update_textpad = True  # update textpad content
         while True:
             if self.active is not None:
-                logger.debug("command loop: active = {} active_index = {} row = {} col = {}".format(
-                    self.active, self.actives[self.active], self.row, self.col))
+                logger.debug(
+                    "command loop: active = {} active_index = {} row = {} col = {}".format(
+                        self.active, self.actives[self.active], self.row, self.col
+                    )
+                )
             else:
-                logger.debug("command loop: active = ***None*** row = {} col = {}".format(
-                    self.row, self.col))
+                logger.debug(
+                    "command loop: active = ***None*** row = {} col = {}".format(
+                        self.row, self.col
+                    )
+                )
             curses.curs_set(0)
             if self.update_textpad:
                 self.new_textpad()
@@ -369,21 +385,20 @@ class TextPad(TextData): # TUI data
             self.winh, self.winw = self.stdscr.getmaxyx()
             self.adjust_window()
             for icol in range(self.contw - self.col, self.winw):
-                self.stdscr.vline(0, icol, ' ', self.winh)
+                self.stdscr.vline(0, icol, " ", self.winh)
             ##self.stdscr.vline(0, self.contw - self.col, '@', self.winh)
             ##self.stdscr.vline(0, self.winw-1, '*', self.winh)
             # clear rows downward to remove garbage characters
             for irow in range(self.conth - self.row, self.winh):
-                self.stdscr.hline(irow, 0, ' ', self.winw)
+                self.stdscr.hline(irow, 0, " ", self.winw)
             ##if (self.conth - self.row) <= self.winh -1 and (self.conth - self.row) >= 0:
             ##    self.stdscr.hline(self.conth - self.row , 0, '@', self.winw)
             if self.update_textpad or self.update_active:
                 self.highlight()
-            self.textpad.refresh(self.row, self.col, \
-                    0, 0, self.winh - 1, self.winw - 1)
+            self.textpad.refresh(self.row, self.col, 0, 0, self.winh - 1, self.winw - 1)
             if self.active is not None:
                 row = self.get_row(self.actives[self.active]) - self.row
-                if row >=0 and row < self.winh:
+                if row >= 0 and row < self.winh:
                     self.stdscr.move(row, 0)
                     curses.curs_set(1)
                 else:
@@ -393,47 +408,55 @@ class TextPad(TextData): # TUI data
             self.update_textpad = False
             self.update_active = False
             if self.tutorial:
-                c = ord('H')
+                c = ord("H")
                 self.tutorial = False
             else:
                 c = self.getch_translated()
             ch = chr(c)
-            if ch == 'x' or \
-                    c == curses.KEY_EXIT or \
-                    c == curses.KEY_SAVE:
-                if not self.confirm_exit or self.popup(_(
-                        "Do you save and exit? (Press '{y:c}' to exit)"
-                        ).format(y=self.rkc['y'])):
+            if ch == "x" or c == curses.KEY_EXIT or c == curses.KEY_SAVE:
+                if not self.confirm_exit or self.popup(
+                    _("Do you save and exit? (Press '{y:c}' to exit)").format(
+                        y=self.rkc["y"]
+                    )
+                ):
                     output = self.get_output()
                     write_file(self.file_o, output)
                     break
-            elif ch == 'q':
-                if not self.confirm_exit or self.popup(_(
-                        "Do you quit without saving? (Press '{y:c}' to quit)"
-                        ).format(y=self.rkc['y'])):
+            elif ch == "q":
+                if not self.confirm_exit or self.popup(
+                    _("Do you quit without saving? (Press '{y:c}' to quit)").format(
+                        y=self.rkc["y"]
+                    )
+                ):
                     self.chunks = []
                     sys.exit(1)
-            elif ch == 'h' or c == curses.KEY_HELP:
+            elif ch == "h" or c == curses.KEY_HELP:
                 # Show help screen
                 self.popup(self.helptext())
-            elif ch == 'H':
+            elif ch == "H":
                 # Show tutorial screen
                 self.popup(_tutorial)
-            elif ch == 's' or ch == '?':
+            elif ch == "s" or ch == "?":
                 # Show location
                 if len(self.actives) == 0:
-                    self.popup(_stattext0.format(
-                            row=self.row, conth=self.conth, col=self.col))
+                    self.popup(
+                        _stattext0.format(row=self.row, conth=self.conth, col=self.col)
+                    )
                 else:
-                    self.popup(_stattext1.format(
+                    self.popup(
+                        _stattext1.format(
                             active=self.active,
                             total=len(self.actives),
                             unresolved=self.get_unresolved_count(),
-                            row=self.row, conth=self.conth, col=self.col))
+                            row=self.row,
+                            conth=self.conth,
+                            col=self.col,
+                        )
+                    )
             # Moves in document
-            elif c == curses.KEY_SR or c == curses.KEY_UP or ch == 'k':
+            elif c == curses.KEY_SR or c == curses.KEY_UP or ch == "k":
                 self.row -= 1
-            elif c == curses.KEY_SF or c == curses.KEY_DOWN or ch == 'j':
+            elif c == curses.KEY_SF or c == curses.KEY_DOWN or ch == "j":
                 self.row += 1
             elif c == curses.KEY_LEFT:
                 self.col -= 8
@@ -455,60 +478,59 @@ class TextPad(TextData): # TUI data
                 if ch in "abdef":
                     self.set_mode(self.actives[self.active], ch)
                 elif ch in "12456":
-                    self.set_mode(self.actives[self.active],
-                            chr(ord(ch)-ord('1')+ord('a')))
+                    self.set_mode(
+                        self.actives[self.active], chr(ord(ch) - ord("1") + ord("a"))
+                    )
                 elif ch in "ABDEF":
                     self.set_all_mode(ch.lower())
                 elif ch in "cg" and self.diff_mode == 3:
                     self.set_mode(self.actives[self.active], ch)
                 elif ch in "37" and self.diff_mode == 3:
-                    self.set_mode(self.actives[self.active],
-                            chr(ord(ch)-ord('1')+ord('a')))
+                    self.set_mode(
+                        self.actives[self.active], chr(ord(ch) - ord("1") + ord("a"))
+                    )
                 elif ch in "CG" and self.diff_mode == 3:
                     self.set_all_mode(ch.lower())
-                elif (c == 10 or c == curses.KEY_COMMAND):
+                elif c == 10 or c == curses.KEY_COMMAND:
                     mode = self.get_mode(self.actives[self.active])
-                    if mode == 'a':
-                        self.set_mode(self.actives[self.active], 'b')
-                    elif mode == 'b' and self.diff_mode == 2:
-                        self.set_mode(self.actives[self.active], 'd')
-                    elif mode == 'b' and self.diff_mode == 3:
-                        self.set_mode(self.actives[self.active], 'c')
-                    elif mode == 'c':
-                        self.set_mode(self.actives[self.active], 'd')
-                    elif mode == 'd' and \
-                            self.get_bf(self.actives[self.active]) is not None:
-                        self.set_mode(self.actives[self.active], 'e')
-                    elif mode == 'd':
-                        self.set_mode(self.actives[self.active], 'f')
-                    elif mode == 'e':
-                        self.set_mode(self.actives[self.active], 'f')
-                    else: # f
-                        self.set_mode(self.actives[self.active], 'a')
-                elif ch == 'm':
+                    if mode == "a":
+                        self.set_mode(self.actives[self.active], "b")
+                    elif mode == "b" and self.diff_mode == 2:
+                        self.set_mode(self.actives[self.active], "d")
+                    elif mode == "b" and self.diff_mode == 3:
+                        self.set_mode(self.actives[self.active], "c")
+                    elif mode == "c":
+                        self.set_mode(self.actives[self.active], "d")
+                    elif (
+                        mode == "d"
+                        and self.get_bf(self.actives[self.active]) is not None
+                    ):
+                        self.set_mode(self.actives[self.active], "e")
+                    elif mode == "d":
+                        self.set_mode(self.actives[self.active], "f")
+                    elif mode == "e":
+                        self.set_mode(self.actives[self.active], "f")
+                    else:  # f
+                        self.set_mode(self.actives[self.active], "a")
+                elif ch == "m":
                     self.editor(self.actives[self.active])
-                elif ch == 'M':
+                elif ch == "M":
                     self.del_editor(self.actives[self.active])
-                elif ch == 'n' or \
-                        c == curses.KEY_NEXT or \
-                        ch == ' ':
+                elif ch == "n" or c == curses.KEY_NEXT or ch == " ":
                     self.active_next()
-                elif ch == 'p' or \
-                        c == curses.KEY_PREVIOUS or \
-                        c == curses.KEY_BACKSPACE:
+                elif ch == "p" or c == curses.KEY_PREVIOUS or c == curses.KEY_BACKSPACE:
                     self.active_prev()
-                elif ch == 't' or \
-                        c == curses.KEY_HOME:
+                elif ch == "t" or c == curses.KEY_HOME:
                     self.active_home()
-                elif ch == 'z' or c == curses.KEY_END:
+                elif ch == "z" or c == curses.KEY_END:
                     self.active_end()
-                elif ch == 'N' or ch == '\t':
+                elif ch == "N" or ch == "\t":
                     self.diff_next()
-                elif ch == 'P' or c == curses.KEY_BTAB:
+                elif ch == "P" or c == curses.KEY_BTAB:
                     self.diff_prev()
-                elif ch == 'T':
+                elif ch == "T":
                     self.diff_home()
-                elif ch == 'Z':
+                elif ch == "Z":
                     self.diff_end()
                 else:
                     pass
@@ -518,23 +540,23 @@ class TextPad(TextData): # TUI data
     def new_textpad(self):
         """Create new curses textpad"""
         # pre-scan content to get big enough textpad size
-        conth = 0 # content height
-        contw = 0 # content width
+        conth = 0  # content height
+        contw = 0  # content width
         for i in range(len(self.chunks)):
-            self.set_row(i, conth) # record textpad row position in chunk
+            self.set_row(i, conth)  # record textpad row position in chunk
             tag = self.get_tag(i)
-            content = self.get_content(i) # list()
+            content = self.get_content(i)  # list()
             conth += len(content)
-            if tag == 'E' or tag == 'e':
+            if tag == "E" or tag == "e":
                 pass
             else:
                 if len(content) == 0:
                     conth += 1
             for line in content:
                 # there are double width characters and tab code=8 char width
-                contw = max(contw, len(line) * 2 + line.count('\t') * 6)
-        if self.mode: # Add mode column
-            contw += 2 # for the tag indicator + ' '
+                contw = max(contw, len(line) * 2 + line.count("\t") * 6)
+        if self.mode:  # Add mode column
+            contw += 2  # for the tag indicator + ' '
         self.conth = conth
         self.contw = contw
         # actual textpad size slightly bigger for safety margin
@@ -542,49 +564,58 @@ class TextPad(TextData): # TUI data
         for i in range(len(self.chunks)):
             self.textpad_addstr(i, False)
         if self.active is not None:
-            logger.debug("gui init: active={} chunk_index={} row={} col={} conth={} contw={}".format(self.active, self.actives[self.active], self.row, self.col, self.conth, self.contw))
+            logger.debug(
+                "gui init: active={} chunk_index={} row={} col={} conth={} contw={}".format(
+                    self.active,
+                    self.actives[self.active],
+                    self.row,
+                    self.col,
+                    self.conth,
+                    self.contw,
+                )
+            )
         return
 
-    def textpad_addstr(self, i, selected = False):
+    def textpad_addstr(self, i, selected=False):
         tag = self.get_tag(i)
         mode = self.get_mode(i)
-        if tag == 'E': # Same a = b = c
+        if tag == "E":  # Same a = b = c
             decor = curses.A_DIM
             color_pair = 0
-            prefix = '= '
-        elif tag == 'e': # Same a = c
+            prefix = "= "
+        elif tag == "e":  # Same a = c
             decor = curses.A_BOLD
             color_pair = 0
-            prefix = '# '
-        elif mode == 'a': # diff2 OLD  /diff3: YOURS NEW
+            prefix = "# "
+        elif mode == "a":  # diff2 OLD  /diff3: YOURS NEW
             decor = curses.A_BOLD
             color_pair = 1
-            prefix = mode + ' '
-        elif mode == 'b': # diff2 NEW  /diff3: common OLD
+            prefix = mode + " "
+        elif mode == "b":  # diff2 NEW  /diff3: common OLD
             decor = curses.A_BOLD
             color_pair = 2
-            prefix = mode + ' '
-        elif mode == 'c': # diff2 ---  /diff3: THEIRS NEW
+            prefix = mode + " "
+        elif mode == "c":  # diff2 ---  /diff3: THEIRS NEW
             decor = curses.A_BOLD
             color_pair = 3
-            prefix = mode + ' '
-        elif mode == 'd': # diff
+            prefix = mode + " "
+        elif mode == "d":  # diff
             decor = curses.A_BOLD
             color_pair = 4
-            prefix = mode + ' '
-        elif mode == 'e': # edit buffer
+            prefix = mode + " "
+        elif mode == "e":  # edit buffer
             decor = curses.A_BOLD
             color_pair = 5
-            prefix = mode + ' '
-        else: # 'f': # wdiff
+            prefix = mode + " "
+        else:  # 'f': # wdiff
             decor = curses.A_BOLD
             color_pair = 6
-            prefix = mode + ' '
+            prefix = mode + " "
         row = self.get_row(i)
-        content = self.get_content(i) # list()
+        content = self.get_content(i)  # list()
         # Decorative "???" for deleted lines only for display
-        if len(content) == 0 and not (tag == 'E' or tag == 'e'):
-            content = ["???"] # override []
+        if len(content) == 0 and not (tag == "E" or tag == "e"):
+            content = ["???"]  # override []
             if self.mono:
                 decor |= curses.A_REVERSE
             else:
@@ -593,18 +624,17 @@ class TextPad(TextData): # TUI data
             color_pair += self.active_color
             decor |= curses.A_REVERSE
         for line in content:
-            #logger.debug("textpad.addstr, >>>  row={} line={} decor={} color_pair={}".format(row, line[:-1], decor , color_pair))
+            # logger.debug("textpad.addstr, >>>  row={} line={} decor={} color_pair={}".format(row, line[:-1], decor , color_pair))
             if self.mono:
                 self.textpad.addstr(row, 0, prefix + line, decor)
             elif self.mode:
-                self.textpad.addstr(row, 0, prefix + line, decor | \
-                        curses.color_pair(color_pair))
+                self.textpad.addstr(
+                    row, 0, prefix + line, decor | curses.color_pair(color_pair)
+                )
             else:
-                self.textpad.addstr(row, 0, line, decor | \
-                        curses.color_pair(color_pair))
+                self.textpad.addstr(row, 0, line, decor | curses.color_pair(color_pair))
             row += 1
         return
-
 
     def adjust_window(self):
         """Clamp window scope to have cursor within window and content"""
@@ -628,7 +658,11 @@ class TextPad(TextData): # TUI data
             self.col = self.contw - 1
         if self.col < 0:
             self.col = 0
-        logger.debug("adjust_window: conth={} contw={} winh={} winw={} row={}, col={}".format(self.conth, self.contw, self.winh, self.winw, self.row, self.col))
+        logger.debug(
+            "adjust_window: conth={} contw={} winh={} winw={} row={}, col={}".format(
+                self.conth, self.contw, self.winh, self.winw, self.row, self.col
+            )
+        )
         return
 
     def highlight(self):
@@ -639,13 +673,10 @@ class TextPad(TextData): # TUI data
             # This makes highlight more robust and easy to use
             pass
         else:
-            if self.active != self.active_old and \
-                    self.active_old is not None:
+            if self.active != self.active_old and self.active_old is not None:
                 # Repaint old selection without highlighting
-                self.textpad_addstr(self.actives[self.active_old],
-                        selected = False)
-            self.textpad_addstr(self.actives[self.active],
-                    selected = True)
+                self.textpad_addstr(self.actives[self.active_old], selected=False)
+            self.textpad_addstr(self.actives[self.active], selected=True)
         return
 
     def set_mode(self, i, new_mode):
@@ -657,7 +688,7 @@ class TextPad(TextData): # TUI data
         try:
             c = self.stdscr.getch()
         except:
-            c = ord('q') # quit w/o saving for ^C
+            c = ord("q")  # quit w/o saving for ^C
         c = self.c_translated(c)
         return c
 
@@ -666,13 +697,13 @@ class TextPad(TextData): # TUI data
         popupw = 0
         popuph = 0
         for l in text.split("\n"):
-            popupw = max(popupw, len(l)) # assume no tab code
+            popupw = max(popupw, len(l))  # assume no tab code
             popuph += 1
-        popuph = popuph + 2 # top/bottom border
-        popupw = popupw + 4 # left/right (border + space)
+        popuph = popuph + 2  # top/bottom border
+        popupw = popupw + 4  # left/right (border + space)
         popuppad = curses.newpad(popuph, popupw)
         for i, line in enumerate(text.split("\n")):
-            popuppad.addstr(1+i, 2, line, curses.A_BOLD)
+            popuppad.addstr(1 + i, 2, line, curses.A_BOLD)
         popuppad.border()
         poprow = 0
         popcol = 0
@@ -681,29 +712,31 @@ class TextPad(TextData): # TUI data
             self.winh, self.winw = self.stdscr.getmaxyx()
             popwinh = min(popuph, self.winh)
             popwinw = min(popupw, self.winw)
-            self.textpad.refresh(self.row, self.col, \
-                    0, 0, self.winh - 1, self.winw - 1)
-            #logger.debug("popup before >>>  poprow={} popcol={} popupw={} popwinw={}".format(poprow, popcol, popupw, popwinw))
-            if poprow <=0:
+            self.textpad.refresh(self.row, self.col, 0, 0, self.winh - 1, self.winw - 1)
+            # logger.debug("popup before >>>  poprow={} popcol={} popupw={} popwinw={}".format(poprow, popcol, popupw, popwinw))
+            if poprow <= 0:
                 poprow = 0
             if poprow >= popuph - popwinh:
                 poprow = popuph - popwinh
-            if popcol <=0:
+            if popcol <= 0:
                 popcol = 0
             if popcol >= popupw - popwinw:
                 popcol = popupw - popwinw
-            popuppad.refresh(poprow, popcol,
-                    max((self.winh - popwinh)//2, 0),
-                    max((self.winw - popwinw)//2, 0),
-                    min((self.winh + popwinh + 1)//2 -1, self.winh-1),
-                    min((self.winw + popwinw + 1)//2 -1, self.winw-1))
+            popuppad.refresh(
+                poprow,
+                popcol,
+                max((self.winh - popwinh) // 2, 0),
+                max((self.winw - popwinw) // 2, 0),
+                min((self.winh + popwinh + 1) // 2 - 1, self.winh - 1),
+                min((self.winw + popwinw + 1) // 2 - 1, self.winw - 1),
+            )
             self.stdscr.refresh()
             c = self.getch_translated()
             ch = chr(c)
             # Moves in document
-            if c == curses.KEY_SR or c == curses.KEY_UP or ch == 'k':
+            if c == curses.KEY_SR or c == curses.KEY_UP or ch == "k":
                 poprow -= 1
-            elif c == curses.KEY_SF or c == curses.KEY_DOWN or ch == 'j':
+            elif c == curses.KEY_SF or c == curses.KEY_DOWN or ch == "j":
                 poprow += 1
             elif c == curses.KEY_LEFT:
                 popcol -= 1
@@ -716,7 +749,7 @@ class TextPad(TextData): # TUI data
             # Terminal resize signal
             elif c == curses.KEY_RESIZE:
                 self.winh, self.winw = self.stdscr.getmaxyx()
-            elif c == ord('y') or c == ord('y')-32:
+            elif c == ord("y") or c == ord("y") - 32:
                 result = True
                 break
             else:
@@ -726,7 +759,7 @@ class TextPad(TextData): # TUI data
         return result
 
     def editor(self, i):
-        #logger.debug("Before invoking editor")
+        # logger.debug("Before invoking editor")
         self.stdscr.keypad(0)
         curses.savetty()
         curses.echo()
@@ -736,87 +769,93 @@ class TextPad(TextData): # TUI data
         curses.cbreak()
         curses.noecho()
         curses.resetty()
-        self.stdscr.keypad(True) # keys processed by curses (again)
+        self.stdscr.keypad(True)  # keys processed by curses (again)
         self.stdscr.clear()
         self.stdscr.refresh()
-        #logger.debug("After invoking editor")
+        # logger.debug("After invoking editor")
         return
 
     def helptext(self):
         if self.diff_mode == 2:
             text = _helptext2.format(
-                    file_a=self.file_a, color_a=self.color_a,
-                    file_b=self.file_b, color_b=self.color_b,
-                    color_d=self.color_d,
-                    color_e=self.color_e,
-                    color_f=self.color_f,
-                    x=self.rkc['x'],
-                    q=self.rkc['q'],
-                    a=self.rkc['a'],
-                    b=self.rkc['b'],
-                    d=self.rkc['d'],
-                    e=self.rkc['e'],
-                    f=self.rkc['f'],
-                    A=self.rkc['a'] -32,
-                    B=self.rkc['b'] -32,
-                    D=self.rkc['d'] -32,
-                    E=self.rkc['e'] -32,
-                    F=self.rkc['f'] -32,
-                    m=self.rkc['m'], edit_cmd=self.edit_cmd,
-                    M=self.rkc['m'] -32,
-                    j=self.rkc['j'],
-                    k=self.rkc['k'],
-                    n=self.rkc['n'],
-                    p=self.rkc['p'],
-                    N=self.rkc['n'] -32,
-                    P=self.rkc['p'] -32,
-                    t=self.rkc['t'],
-                    z=self.rkc['z'],
-                    T=self.rkc['t'] -32,
-                    Z=self.rkc['z'] -32,
-                    s=self.rkc['s'],
-                    h=self.rkc['h'],
-                    H=self.rkc['h'] -32
-                    )
+                file_a=self.file_a,
+                color_a=self.color_a,
+                file_b=self.file_b,
+                color_b=self.color_b,
+                color_d=self.color_d,
+                color_e=self.color_e,
+                color_f=self.color_f,
+                x=self.rkc["x"],
+                q=self.rkc["q"],
+                a=self.rkc["a"],
+                b=self.rkc["b"],
+                d=self.rkc["d"],
+                e=self.rkc["e"],
+                f=self.rkc["f"],
+                A=self.rkc["a"] - 32,
+                B=self.rkc["b"] - 32,
+                D=self.rkc["d"] - 32,
+                E=self.rkc["e"] - 32,
+                F=self.rkc["f"] - 32,
+                m=self.rkc["m"],
+                edit_cmd=self.edit_cmd,
+                M=self.rkc["m"] - 32,
+                j=self.rkc["j"],
+                k=self.rkc["k"],
+                n=self.rkc["n"],
+                p=self.rkc["p"],
+                N=self.rkc["n"] - 32,
+                P=self.rkc["p"] - 32,
+                t=self.rkc["t"],
+                z=self.rkc["z"],
+                T=self.rkc["t"] - 32,
+                Z=self.rkc["z"] - 32,
+                s=self.rkc["s"],
+                h=self.rkc["h"],
+                H=self.rkc["h"] - 32,
+            )
         else:
             text = _helptext3.format(
-                    file_a=self.file_a, color_a=self.color_a,
-                    file_b=self.file_b, color_b=self.color_b,
-                    file_c=self.file_c, color_c=self.color_c,
-                    color_d=self.color_d,
-                    color_e=self.color_e,
-                    color_f=self.color_f,
-                    x=self.rkc['x'],
-                    q=self.rkc['q'],
-                    a=self.rkc['a'],
-                    b=self.rkc['b'],
-                    c=self.rkc['c'],
-                    d=self.rkc['d'],
-                    e=self.rkc['e'],
-                    f=self.rkc['f'],
-                    g=self.rkc['g'],
-                    A=self.rkc['a'] -32,
-                    B=self.rkc['b'] -32,
-                    C=self.rkc['c'] -32,
-                    D=self.rkc['d'] -32,
-                    E=self.rkc['e'] -32,
-                    F=self.rkc['f'] -32,
-                    G=self.rkc['g'] -32,
-                    m=self.rkc['m'], edit_cmd=self.edit_cmd,
-                    M=self.rkc['m'] -32,
-                    j=self.rkc['j'],
-                    k=self.rkc['k'],
-                    n=self.rkc['n'],
-                    p=self.rkc['p'],
-                    N=self.rkc['n'] -32,
-                    P=self.rkc['p'] -32,
-                    t=self.rkc['t'],
-                    z=self.rkc['z'],
-                    T=self.rkc['t'] -32,
-                    Z=self.rkc['z'] -32,
-                    s=self.rkc['s'],
-                    h=self.rkc['h'],
-                    H=self.rkc['h'] -32
-                    )
+                file_a=self.file_a,
+                color_a=self.color_a,
+                file_b=self.file_b,
+                color_b=self.color_b,
+                file_c=self.file_c,
+                color_c=self.color_c,
+                color_d=self.color_d,
+                color_e=self.color_e,
+                color_f=self.color_f,
+                x=self.rkc["x"],
+                q=self.rkc["q"],
+                a=self.rkc["a"],
+                b=self.rkc["b"],
+                c=self.rkc["c"],
+                d=self.rkc["d"],
+                e=self.rkc["e"],
+                f=self.rkc["f"],
+                g=self.rkc["g"],
+                A=self.rkc["a"] - 32,
+                B=self.rkc["b"] - 32,
+                C=self.rkc["c"] - 32,
+                D=self.rkc["d"] - 32,
+                E=self.rkc["e"] - 32,
+                F=self.rkc["f"] - 32,
+                G=self.rkc["g"] - 32,
+                m=self.rkc["m"],
+                edit_cmd=self.edit_cmd,
+                M=self.rkc["m"] - 32,
+                j=self.rkc["j"],
+                k=self.rkc["k"],
+                n=self.rkc["n"],
+                p=self.rkc["p"],
+                N=self.rkc["n"] - 32,
+                P=self.rkc["p"] - 32,
+                t=self.rkc["t"],
+                z=self.rkc["z"],
+                T=self.rkc["t"] - 32,
+                Z=self.rkc["z"] - 32,
+                s=self.rkc["s"],
+                h=self.rkc["h"],
+                H=self.rkc["h"] - 32,
+            )
         return text
-
