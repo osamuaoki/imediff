@@ -1,4 +1,1 @@
-bin/git-ime			usr/bin/
-bin/imediff			usr/bin/
-imediff				usr/lib/python3/dist-packages/
 mergetools/imediff		usr/lib/git-core/mergetools/

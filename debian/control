@@ -6,6 +6,7 @@ Build-Depends: debhelper (>= 11~),
                dh-python,
                docbook-xsl,
                python3-all,
+               python3-distutils-extra,
                python3-setuptools,
                xsltproc
 Standards-Version: 4.2.1
