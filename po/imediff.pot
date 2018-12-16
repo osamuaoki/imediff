@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-13 00:24+0900\n"
+"POT-Creation-Date: 2018-12-16 21:38+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: imediff/tui.py:40
+#: ../imediff/tui.py:42
 #, python-brace-format
 msgid ""
 "    Interactive Merge Editor to merge 2 DIFFerent files\n"
@@ -48,7 +48,7 @@ msgid ""
 "{H:c}                     show tutorial"
 msgstr ""
 
-#: imediff/tui.py:68
+#: ../imediff/tui.py:72
 #, python-brace-format
 msgid ""
 "    Interactive Merge Editor to merge 3 DIFFerent files\n"
@@ -84,7 +84,7 @@ msgid ""
 "{H:c}                     show tutorial"
 msgstr ""
 
-#: imediff/tui.py:99
+#: ../imediff/tui.py:105
 #, python-brace-format
 msgid ""
 "Chunk index   = (all files are identical)\n"
@@ -92,7 +92,7 @@ msgid ""
 "Column offset ={col: 5d}"
 msgstr ""
 
-#: imediff/tui.py:104
+#: ../imediff/tui.py:112
 #, python-brace-format
 msgid ""
 "Chunk index   ={active: 5d} (total ={total: 5d}, unresolved ={unresolved: "
@@ -101,12 +101,12 @@ msgid ""
 "Column offset ={col: 5d}"
 msgstr ""
 
-#: imediff/tui.py:394
+#: ../imediff/tui.py:418
 #, python-brace-format
 msgid "Do you save and exit? (Press '{y:c}' to exit)"
 msgstr ""
 
-#: imediff/tui.py:401
+#: ../imediff/tui.py:427
 #, python-brace-format
 msgid "Do you quit without saving? (Press '{y:c}' to quit)"
 msgstr ""

@@ -86,6 +86,10 @@ Build some files with "make" first.
 Please make sure to fit each line to 80 chars.  Tutorial contents should be
 within 76 chars/line.
 
+Update PO with:
+
+ $ ./setup.py build_i18n -m
+
 ## Note on Debian package links
 
 * imediff2 (based on older upstream source and released for Debian buster)

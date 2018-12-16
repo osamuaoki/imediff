@@ -17,13 +17,12 @@ You should have received a copy of the GNU General Public
 License along with the program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 """
-
 import setuptools
+from DistUtilsExtra.command import *
+from imediff import VERSION, PACKAGE
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
-
-from imediff import VERSION, PACKAGE
 
 setuptools.setup(
     name=PACKAGE,
@@ -33,13 +32,12 @@ setuptools.setup(
     description="Interactive Merge Editor for DIFF2/3",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://elonen.iki.fi/code/imediff/",
+    url="https://github.com/osamuaoki/imediff",
     packages=setuptools.find_packages(),
     scripts=["bin/git-ime"],
     entry_points={"console_scripts": ["imediff=imediff:main"]},
     data_files=[
         ("share/man/man1", ["doc/imediff.1", "doc/git-ime.1"]),
-        ("share/local/ja/LC_MESSAGES/imediff.mo", ["po/ja/LC_MESSAGES/imediff.mo"]),
         ("lib/git-core/mergetools", ["mergetools/imediff"]),
     ],
     license="GPLv2+",
@@ -53,4 +51,10 @@ setuptools.setup(
         "Programming Language :: Python :: 3 :: Only",
         "Topic :: Text Processing :: General",
     ],
+    cmdclass={
+        "build": build_extra.build_extra,
+        "build_i18n": build_i18n.build_i18n,
+        "build_help": build_help.build_help,
+        "build_icons": build_icons.build_icons,
+    },
 )
