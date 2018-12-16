@@ -1,0 +1,327 @@
+'\" t
+.\"     Title: imediff
+.\"    Author: Jarno Elonen <elonen@iki.fi>
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 2018-12-11
+.\"    Manual: imediff User Manual
+.\"    Source: imediff
+.\"  Language: English
+.\"
+.TH "IMEDIFF" "1" "2018\-12\-11" "imediff" "imediff User Manual"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+imediff \- An interactive fullscreen merge tool for 2 or 3 files
+.SH "SYNOPSIS"
+.HP \w'\fBimediff\fR\ 'u
+\fBimediff\fR [\fB\-a\fR] [\fB\-b\fR] [\fB\-d\fR] [\fB\-f\fR] [\fB\-h\fR] [\fB\-m\fR] [\fB\-n\fR] [\fB\-t\fR] [\fB\-o\ \fR\fB\fIfile_out\fR\fR] {\fIfile_older\fR} {\fIfile_newer\fR}
+.HP \w'\fBimediff\fR\ 'u
+\fBimediff\fR [\fB\-a\fR] [\fB\-b\fR] [\fB\-c\fR] [\fB\-d\fR] [\fB\-f\fR] [\fB\-g\fR] [\fB\-h\fR] [\fB\-m\fR] [\fB\-n\fR] [\fB\-t\fR] [\fB\-o\ \fR\fB\fIfile_out\fR\fR] {\fIfile_yours\fR} {\fIfile_base\fR} {\fIfile_theirs\fR}
+.SH "DESCRIPTION"
+.PP
+Merge two (slightly different) files with an optional common base file interactively with a user friendly fullscreen interface in the full screen text terminal mode\&.
+.PP
+\fBimediff\fR
+shows the differences of given two files (in color if the terminal supports them), lets you scroll the file and toggle changes between older and newer version for each chunk of difference\&. You can also select line diff and character wdiff mode for display\&. If you wish to make manual changes, you can edit each chunk with editor\&. The result of merge operation is saved in
+\fIfile_out\fR\&.
+.PP
+Additionally, you can customize your choice of editor via
+\fI$EDITOR\fR
+or
+~/\&.imediff\&. The default editor is
+\fB/usr/bin/editor\fR\&.
+.PP
+Removed lines are shown in reversed \*(Aq???\*(Aq as a placeholder, so you see that and you can select them\&. While it takes one line on display, it is naturally not saved into the output file\&.
+.PP
+To see the key binding, hit
+h
+in the main
+\fBimediff\fR
+screen\&.
+.PP
+To see the tutorial, hit
+H
+in the main
+\fBimediff\fR
+screen or simply start the
+\fBimediff\fR
+command without arguments\&.
+.PP
+The program exits with status 0 if the changes were saved, 1 if the merging was aborted and 2 if the parameters were invalid\&.
+.SH "OPTIONS"
+.PP
+\fB\-o \fR\fB\fIfile_output\fR\fR, \fB\-\-output=\fR\fB\fIfile_output\fR\fR
+.RS 4
+Write output to a given file\&. If missing, STDERR is used\&.
+.RE
+.PP
+\fB\-m\fR, \fB\-\-mode\fR
+.RS 4
+Display mode column\&.
+.RE
+.PP
+\fB\-\-mono\fR
+.RS 4
+Force monochrome display\&.
+.RE
+.PP
+\fB\-n\fR
+.RS 4
+Non\-interactive mode\&.
+.RE
+.PP
+\fB\-a\fR
+.RS 4
+Start with version A (={\fIfile_older\fR}
+or
+{\fIfile_yours\fR})\&.
+.RE
+.PP
+\fB\-b\fR
+.RS 4
+Start with version B (={\fIfile_newer\fR}
+or
+{\fIfile_base\fR})\&.
+.RE
+.PP
+\fB\-c\fR
+.RS 4
+Start with version C (={\fIfile_theirs\fR}) for 3 files\&.
+.RE
+.PP
+\fB\-d\fR
+.RS 4
+Start with diff by line between version A and version B for 2 files\&. (default for 2 files)
+.sp
+Start with diff by line between version A and version C for 3 files\&.
+.RE
+.PP
+\fB\-f\fR
+.RS 4
+Start with wdiff by character between version A and version B for 2 files\&.
+.sp
+Start with wdiff by character between version A and version C for 3 files\&.
+.RE
+.PP
+\fB\-g\fR
+.RS 4
+Set good mode from (a,b,c,e,f) if merged cleanly, or set mode (d) in case of conflicts (default for 3 files)\&.
+.RE
+.PP
+\fB\-h\fR, \fB\-\-help\fR
+.RS 4
+Show summary of options and exit\&.
+.RE
+.PP
+\fB\-t\fR, \fB\-\-template\fR
+.RS 4
+Create (or overwrite)
+~/\&.imediff
+with default values\&.
+.RE
+.PP
+\fB\-V\fR, \fB\-\-version\fR
+.RS 4
+Show version and exit\&.
+.RE
+.SH "KEYBOARD COMMANDS"
+.PP
+The following keyboard commands are available in the editor as default\&.
+.PP
+q, ctrl+c
+.RS 4
+Exit without saving\&.
+.RE
+.PP
+home, t, end, z
+.RS 4
+, Jump to start or end of chunks\&.
+.RE
+.PP
+h
+.RS 4
+Show commands\&.
+.RE
+.PP
+shift+h
+.RS 4
+Show tutorial\&.
+.RE
+.PP
+s, ?
+.RS 4
+Show the state of the merge\&.
+.RE
+.PP
+down, j, up, k
+.RS 4
+Move scope of the display for 1 line\&.
+.RE
+.PP
+left, right
+.RS 4
+Move scope of the display for 1 column\&.
+.RE
+.PP
+page up, page down
+.RS 4
+Move scope of the display for screenfull lines\&.
+.RE
+.PP
+enter
+.RS 4
+Toggle mode of display for a selected chunk\&.
+.RE
+.PP
+n, space
+.RS 4
+Jump to next changed chunk\&.
+.RE
+.PP
+N, tab
+.RS 4
+Jump to next changed chunk in diff mode (d)\&.
+.RE
+.PP
+p , backspace
+.RS 4
+Jump to previous changed chunk\&.
+.RE
+.PP
+P , back\-tab
+.RS 4
+Jump to previous changed chunk in diff mode (d)\&.
+.RE
+.PP
+a
+.RS 4
+Set mode of the current chunk to display version A\&.
+.RE
+.PP
+b
+.RS 4
+Set mode of the current chunk to display version B\&.
+.RE
+.PP
+c
+.RS 4
+Set mode of the current chunk to display version C\&. (if available)
+.RE
+.PP
+d
+.RS 4
+Set mode of the current chunk to display diff by line\&.
+.RE
+.PP
+e
+.RS 4
+Set mode of the current chunk to display editor buffer\&.
+.RE
+.PP
+f
+.RS 4
+Set mode of the current chunk to display wdiff by character\&.
+.RE
+.PP
+g
+.RS 4
+Set good mode from (a,b,c,e,f) if merged cleanly, or set mode (d) in case of conflicts for the current chunk\&.
+.RE
+.PP
+shift+a
+.RS 4
+Set mode of all chunks to display version A\&.
+.RE
+.PP
+shift+b
+.RS 4
+Set mode of all chunks to display version B\&.
+.RE
+.PP
+shift+c
+.RS 4
+Set mode of all chunks to display version C\&. (if available)
+.RE
+.PP
+shift+d
+.RS 4
+Set mode of all chunks to display diff by line\&.
+.RE
+.PP
+shift+e
+.RS 4
+Set mode of all chunks to display editor buffer\&.
+.RE
+.PP
+shift+f
+.RS 4
+Set mode of all chunks to display wdiff by character\&.
+.RE
+.PP
+shift+g
+.RS 4
+Set good mode from (a,b,c,e,f) if merged cleanly, or set mode (d) in case of conflicts for all chunks\&.
+.RE
+.PP
+m
+.RS 4
+Launch external editor on the current chunk\&.
+.RE
+.PP
+shift+f
+.RS 4
+Remove display editor buffer of the current chunk\&.
+.RE
+.PP
+x, s
+.RS 4
+Save and exit\&.
+.RE
+.SH "FILE"
+.PP
+The key choices of the above keyboard commands can be configured in
+~/\&.imediff
+which is created at the first execution of this command\&. The left side is the keys described in this manpage\&. The right side is your configuration choices\&. The current settings can be confirmed by the \*(Aqh\*(Aq key dialog\&.
+.SH "SEE ALSO"
+.PP
+sdiff (1), diff (1), merge (1), diff3 (1)\&.
+.SH "COPYRIGHT"
+.PP
+This manual page as well as the program itself was written by
+Jarno Elonen
+<elonen@iki\&.fi>
+and
+Osamu Aoki
+<osamu@debian\&.org>\&. Unlike the program itself, which is licensed under the GNU General Public License (GPL) version 2 (or any later version, at your option), this document has been placed into the Public Domain\&.
+.SH "AUTHORS"
+.PP
+\fBJarno Elonen\fR <\&elonen@iki\&.fi\&>
+.RS 4
+Original author for 2 file merge in python2
+.RE
+.PP
+\fBOsamu Aoki\fR <\&osamu@debian\&.org\&>
+.RS 4
+Rewrite author for 2 and 3 file merge in python3
+.RE
+.SH "COPYRIGHT"
+.br
+Copyright \(co 2003-2006, 2018 Jarno Elonen <elonen@iki\&.fi>, Osamu Aoki <osamu@debian\&.org>
+.br

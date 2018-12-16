@@ -79,16 +79,22 @@ bumped to 2.0.
 
 ## Note to developer
 
-Build some files with "make" first.
+Please make sure to fit each code below 80-88 chars. (Run "black" on python
+code)
 
-## Note to translator
+Manpages need to be updated from XML files with "make" first in doc/ directory
+when you edit it.
 
-Please make sure to fit each line to 80 chars.  Tutorial contents should be
-within 76 chars/line.
+## Note to developer and translator
+
+Tutorial contents should be within 76 chars/line to fit in consile.
 
 Update PO with:
 
  $ ./setup.py build_i18n -m
+
+If anyone wants more contents to be translated such as manpage and tutorial,
+adding po4a may be a good idea.  For now, let's keep it minimal.
 
 ## Note on Debian package links
 
@@ -99,4 +105,5 @@ Update PO with:
 
 * imediff: TBD (beta version on github)
 
-Osamu
+This is written by Osamu Aoki on December 2018
+
