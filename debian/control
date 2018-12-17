@@ -10,6 +10,8 @@ Build-Depends: debhelper (>= 11~),
                python3-setuptools,
                xsltproc
 Standards-Version: 4.2.1
+VCS-Git: https://github.com/osamuaoki/imediff.git -b master
+Vcs-Browser: https://github.com/osamuaoki/imediff
 Homepage: https://github.com/osamuaoki/imediff
 
 Package: imediff

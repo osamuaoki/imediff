@@ -1,3 +1,4 @@
-#Until salsa is used ...
-#version=3
-#http://alioth.debian.org/project/showfiles.php?group_id=30544 .*imediff2_([\d\.]*).tar.gz
+version=4
+opts="filenamemangle=s%(?:.*?)?v?(\d[\d.]*)\.tar\.gz%imediff-$1.tar.gz%, pgpmode=none" \
+    https://github.com/osamuaoki/imediff/tags \
+    (?:.*?/)?v?(\d[\d.]*)\.tar\.gz debian uupdate
