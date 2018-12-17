@@ -211,6 +211,13 @@
     <variablelist>
 
       <varlistentry>
+        <term><keysym>x</keysym></term>
+        <listitem>
+          <para>Save and exit.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><keysym>q</keysym>, <keycombo action='simul'><keycap>ctrl</keycap><keysym>c</keysym></keycombo></term>
         <listitem>
           <para>Exit without saving.</para>
@@ -411,13 +418,6 @@
         <term><keycombo action='simul'><keycap>shift</keycap><keysym>f</keysym></keycombo></term>
         <listitem>
           <para>Remove display editor buffer of the current chunk.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keysym>x</keysym>, <keysym>s</keysym></term>
-        <listitem>
-          <para>Save and exit.</para>
         </listitem>
       </varlistentry>
 
