@@ -9,22 +9,24 @@ Class SequenceMatcher2:
 
 Copyright (C) 2018       Osamu Aoki <osamu@debian.org>
 
-This is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as
-published by the Free Software Foundation; either version 2,
-or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of
+the License, or (at your option) any later version.
 
-This is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public
-License along with the program; if not, write to the Free Software
-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+License along with this program; if not, write to the Free
+Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+Boston, MA 02110-1301, USA.
 """
 
 import difflib
+
 
 def _tag2t(tag):
     if tag == "equal":
@@ -32,6 +34,7 @@ def _tag2t(tag):
     else:
         t = "N"
     return t
+
 
 class SequenceMatcher2(difflib.SequenceMatcher):
 
@@ -73,7 +76,7 @@ class SequenceMatcher2(difflib.SequenceMatcher):
         Return list of 5-tuples describing how to turn a into b.
     """
 
-    def __init__(self, isjunk=None, a='', b='', autojunk=True):
+    def __init__(self, isjunk=None, a="", b="", autojunk=True):
         """Construct a SequenceMatcher2.
 
         Optional arg isjunk is None (the default), or a one-argument
@@ -118,7 +121,6 @@ class SequenceMatcher2(difflib.SequenceMatcher):
         super().__init__(isjunk, a, b, autojunk)
         self.chunks = None
 
-
     def get_chunks(self):
         """Return list of 5-tuples describing how to turn a into b.
 
@@ -147,20 +149,23 @@ class SequenceMatcher2(difflib.SequenceMatcher):
         N a[6:6] () b[5:6] (f)
         """
 
-# Long version
-#        answer = list()
-#        for tag, i1, i2, j1, j2 in self.get_opcodes():
-#            if tag == 'equal':
-#                answer.append(('E', i1, i2, j1, j2))
-#            else: # tag != 'equal'
-#                answer.append(('N', i1, i2, j1, j2))
-#        self.chunks = answer
+        # Long version
+        #        answer = list()
+        #        for tag, i1, i2, j1, j2 in self.get_opcodes():
+        #            if tag == 'equal':
+        #                answer.append(('E', i1, i2, j1, j2))
+        #            else: # tag != 'equal'
+        #                answer.append(('N', i1, i2, j1, j2))
+        #        self.chunks = answer
 
-# Short version
-        self.chunks = [ (_tag2t(tag), i1, i2, j1, j2) \
-                for tag, i1, i2, j1, j2 in self.get_opcodes() ]
+        # Short version
+        self.chunks = [
+            (_tag2t(tag), i1, i2, j1, j2) for tag, i1, i2, j1, j2 in self.get_opcodes()
+        ]
         return self.chunks
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

@@ -40,6 +40,13 @@ From the console command line prompt, type:
 
 For usage instructions, type "h" and "H" in the interactive display.
 
+If you wish to translate "h" menu, send me a translation PO file :-)
+
+You can get Japanese help screen by setting and exporting "LANGUAGE=ja".
+
+(This uses GNU gettext as its backend.  LANGUAGE setting has priority
+over setting of LC_ALL etc.)
+
 ## History and features
 
 This was originally written by Jarno Elonen in Python2. The latest original
@@ -70,6 +77,7 @@ Osamu also wanted to add some features:
  * CLI and logging interface for easy self-testing/debugging
  * Include simple tutorial within "imediff".
  * Add "git-mergetool" integration.
+ * Good CJK wide character support with East_Asian_Width on console.
 
 This was accomplished by practically a whole rewrite of the source code in
 November-December 2018.  Osamu decided to release this as imediff after
@@ -79,12 +87,22 @@ bumped to 2.0.
 
 ## Note to developer
 
-Build some files with "make" first.
+Please make sure to fit each code below 80-88 chars. (Run "black" on python
+code)
 
-## Note to translator
+Manpages need to be updated from XML files with "make" first in doc/ directory
+when you edit it.
 
-Please make sure to fit each line to 80 chars.  Tutorial contents should be
-within 76 chars/line.
+## Note to developer and translator
+
+Tutorial contents should be within 76 chars/line to fit in consile.
+
+Update PO with:
+
+ $ ./setup.py build_i18n -m
+
+If anyone wants more contents to be translated such as manpage and tutorial,
+adding po4a may be a good idea.  For now, let's keep it minimal.
 
 ## Note on Debian package links
 
@@ -95,4 +113,5 @@ within 76 chars/line.
 
 * imediff: TBD (beta version on github)
 
-Osamu
+This is written by Osamu Aoki on December 2018
+
