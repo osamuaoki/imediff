@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # vim:se tw=79 sts=4 ts=4 et ai:
 """
-Console script to test diff2lib and diff3lib used by imediff
+Script to test diff2lib and diff3lib modules in place.
 
 Current diff2 uses Python standard library difflib which uses a variant of
 longest contiguous matching subsequence algorithm by Ratcliff and Obershelp

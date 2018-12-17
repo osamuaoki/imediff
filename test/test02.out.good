@@ -1,0 +1,45 @@
+00 wsx
+<<<<<<< file_a
+01 qaz add_a
+=======
+01 qaz
+>>>>>>> file_b
+02 adf
+03 zcv
+<<<<<<< file_a
+04 change_a
+=======
+04 adv
+>>>>>>> file_b
+05 tyu
+06 ghj
+<<<<<<< file_a
+=======
+07 ujj
+>>>>>>> file_b
+08 qaz
+09 wsx
+10 tte
+11 iao
+12 njk
+13 mop
+14 wdd
+15 edv
+16 ijb
+17 wsc
+18 ugv
+19 ijp
+20 tte
+21 iao
+22 njk
+23 mop
+24 wdd
+25 edv
+26 ijb
+27 wsc
+28 ugv
+29 ijp
+<<<<<<< file_a
+31 iao
+=======
+>>>>>>> file_b

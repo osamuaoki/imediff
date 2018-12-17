@@ -1,9 +1,11 @@
 #!/usr/bin/python3
 # vim:se tw=0 sts=4 ts=4 et ai:
 """
-Console script of imediff within package for testing.  Use as:
+Script to test imediff module in place.
 
- $ python3 test_imediff.py ...
+Use as:
+
+ $ ./test_imediff ...
 
 """
 import sys

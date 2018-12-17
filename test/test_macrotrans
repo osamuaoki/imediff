@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # vim:se tw=0 sts=4 ts=4 et ai:
 """
-Simple macro key translation check
+Script to test imediff macro key translation in place.
 """
 import sys
 
@@ -18,6 +18,7 @@ list_c = ["a", "b", "c", "d", "e", "f"]
 macro = "".join([chr(i) for i in range(ord("a"), ord("z"))])
 macro += "".join([chr(i) for i in range(ord("A"), ord("Z"))])
 args.macro = macro  # override
+args.edit_cmd = "DUMMY_EDITOR"
 instance = imediff.TextData(list_a, list_b, list_c, args, confs)
 for c in macro:
     k = instance.getch_translated()
