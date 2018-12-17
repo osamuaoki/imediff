@@ -553,8 +553,7 @@ class TextPad(TextData):  # TUI data
                 if len(content) == 0:
                     conth += 1
             for line in content:
-                # there are double width characters and tab code=8 char width
-                contw = max(contw, len(line) * 2 + line.count("\t") * 6)
+                contw = max(contw, console_width(line))
         if self.mode:  # Add mode column
             contw += 2  # for the tag indicator + ' '
         self.conth = conth
@@ -697,7 +696,7 @@ class TextPad(TextData):  # TUI data
         popupw = 0
         popuph = 0
         for l in text.split("\n"):
-            popupw = max(popupw, len(l))  # assume no tab code
+            popupw = max(popupw, console_width(l))
             popuph += 1
         popuph = popuph + 2  # top/bottom border
         popupw = popupw + 4  # left/right (border + space)

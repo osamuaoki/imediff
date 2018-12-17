@@ -33,8 +33,9 @@ import sys
 import traceback
 import types
 import curses
+import unicodedata
 
-__all__ = ["_", "logger", "read_lines", "error_exit", "write_file"]
+__all__ = ["_", "console_width", "logger", "read_lines", "error_exit", "write_file"]
 
 # Utility functions
 
@@ -42,6 +43,21 @@ __all__ = ["_", "logger", "read_lines", "error_exit", "write_file"]
 gettext.bindtextdomain("imediff")
 gettext.textdomain("imediff")
 _ = gettext.gettext
+
+# Console width with Zenkaku=2, Hankaku=1 (Hankaku=ASCII etc.)
+# Latin-1, CJK focus simplification applied.
+# (For Arabic, Hebrew etc., we need some refinement)
+def console_width(text):
+    width = 0
+    for c in text:
+        if c == "\t":  # TAB = 8
+            width += 8
+        elif unicodedata.east_asian_width(c) in "FWA":  # Zenkaku
+            width += 2
+        else:
+            width += 1
+    return width
+
 
 # logger
 logger = logging.getLogger(__name__)

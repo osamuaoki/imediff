@@ -40,6 +40,13 @@ From the console command line prompt, type:
 
 For usage instructions, type "h" and "H" in the interactive display.
 
+If you wish to translate "h" menu, send me a translation PO file :-)
+
+You can get Japanese help screen by setting and exporting "LANGUAGE=ja".
+
+(This uses GNU gettext as its backend.  LANGUAGE setting has priority
+over setting of LC_ALL etc.)
+
 ## History and features
 
 This was originally written by Jarno Elonen in Python2. The latest original
@@ -70,6 +77,7 @@ Osamu also wanted to add some features:
  * CLI and logging interface for easy self-testing/debugging
  * Include simple tutorial within "imediff".
  * Add "git-mergetool" integration.
+ * Good CJK wide character support with East_Asian_Width on console.
 
 This was accomplished by practically a whole rewrite of the source code in
 November-December 2018.  Osamu decided to release this as imediff after
