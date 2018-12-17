@@ -17,6 +17,9 @@ Homepage: https://github.com/osamuaoki/imediff
 Package: imediff
 Architecture: all
 Depends: ${misc:Depends}, ${python3:Depends}
+Provides: imediff2
+Breaks: imediff2 (<= 1.1.2.1-2)
+Replaces: imediff2
 Description: interactive full screen 2/3-way merge tool
  The imediff command helps you to merge 2 slightly different files with an
  optional base file interactively using the in-place alternating display of
