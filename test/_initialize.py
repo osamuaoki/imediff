@@ -6,20 +6,21 @@ Script to test imediff initializing code in place.
 """
 import sys
 
-# force PYTHONPATH for testing
+# Force to use in source modules over system installed ones
 sys.path.insert(0, "..")
+
 import imediff
 import configparser
 
-#print("VERSION={}".format(imediff.VERSION))
-#print("PACKAGE={}".format(imediff.PACKAGE))
-#print(">>> imediff >>>>>>> key -> value >>>>>>>>>>>>>>>>")
-#for k, v in imediff.__dict__.items():
+# print("VERSION={}".format(imediff.VERSION))
+# print("PACKAGE={}".format(imediff.PACKAGE))
+# print(">>> imediff >>>>>>> key -> value >>>>>>>>>>>>>>>>")
+# for k, v in imediff.__dict__.items():
 #    print(">>> '{}' -> '{}'".format(k, v))
 ##########################################################################
 args = imediff.initialize_args()
 print(">>> args >>>>>>> key -> value >>>>>>>>>>>>>>>>")
-#for k, v in args.__dict__.items():
+# for k, v in args.__dict__.items():
 #    print(">>> args >>> '{}' -> '{}'".format(k, v))
 
 ##########################################################################
