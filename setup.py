@@ -40,6 +40,7 @@ setuptools.setup(
         ("share/man/man1", ["doc/imediff.1", "doc/git-ime.1"]),
         ("lib/git-core/mergetools", ["mergetools/imediff"]),
     ],
+    test_suite="test.test_diff23lib",
     license="GPLv2+",
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -51,10 +52,5 @@ setuptools.setup(
         "Programming Language :: Python :: 3 :: Only",
         "Topic :: Text Processing :: General",
     ],
-    cmdclass={
-        "build": build_extra.build_extra,
-        "build_i18n": build_i18n.build_i18n,
-        "build_help": build_help.build_help,
-        "build_icons": build_icons.build_icons,
-    },
+    cmdclass={"build": build_extra.build_extra, "build_i18n": build_i18n.build_i18n},
 )

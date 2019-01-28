@@ -37,56 +37,68 @@ class SequenceMatcher3:
     SequenceMatcher3 is a matching class for comparing three of sequences of
     any type, so long as the sequence elements are hashable.
 
-    Let's call these three sequences as A (yours), B (old), and C (theirs).
-    Then let's call concatenated A+B+C with separator string as D (diff).
-    The rule for the merging of three of sequences is as follows:
+    Let's call these three sequences as A (yours), B (base), and C (theirs).
+    Let's assume A and C are derivatives from B and try to merge C into A.
+    The basic rule for the merging of three of sequences is as follows:
+        * Check B-A matching and B-C matching situation.
+        * Walk through B to see which sides made change. (12 cases)
+        * Check if the high end of range is available (Either "E" or deletion)
+        * Pick one making change as the merged content.
+            * Merged as equal: 3 cases
+                BA      EEEENN..    EEEEEE..    EEEENN..
+                BC      EEEENN..    EEEENN..    EEEEEE..
+                        ^^^^        ^^^^        ^^^^
+                Range   AC          AC          AC
+                Tag     E           E           E
+            * Merged to pick A: 2 cases, undecided to pick conflict 1 case
+                BA      NNNNNN..    NNNNEE..                NNNNEE..
+                BC      EEEENN..    EEEENN..                EEEEEE..
+                        ^^^^        ^^^^                    ^^^^
+                Range   A           AC                      AC
+                Tag     N*          A                       A
+            * Merged to pick C: 2 cases, undecided to pick conflict 1 case
+                BA      EEEENN..                EEEENN..    EEEEEE..
+                BC      NNNNNN..                NNNNEE..    NNNNEE..
+                        ^^^^                    ^^^^        ^^^^
+                Range   C                       AC          AC
+                Tag     N*                      C           C
+            * Merged as conflict: 1 case, undecided to pick conflict 2 cases
+                BA                  NNNNEE..    NNNNNN..    NNNNEE..
+                BC                  NNNNNN..    NNNNEE..    NNNNEE..
+                                    ^^^^        ^^^^        ^^^^
+                Range               C           A           AC
+                Tag                 N*          N*          N
+            Please note the high end of range is unavailable if the continuing
+            side is "N" and not complete deletion. (marked "N*")
+            All "N" and "N*" containing ranges are conflict but are checked for
+            A==C check (case "e")
 
-    * Check B-A matching and B-C matching situation.
-    * Walk through the ranges of B-A matching and B-C matching on b
-      There are 12 basic cases.
-
-    CASE NEEE            EENE
-     BA  NNNEEE          EEENNN        
-     BC  EEEEEE          EEEEEE        
-         AF ^            EF ^        
-
-    CASE NNEE    NNNE    ENNE    ENEE
-     BA  NNNEEE  NNNNNN  EEENNN  EEEEEE
-     BC  NNNEEE  NNNEEE  NNNEEE  NNNEEE
-         XF*^    X- ^    CF ^    CF ^
-
-    CASE NEEN    NENN    EENN    EEEN
-     BA  NNNEEE  NNNNNN  EEENNN  EEEEEE
-     BC  EEENNN  EEENNN  EEENNN  EEENNN
-         AF ^    X- ^    EF*^    EF ^
-
-    CASE NNEN            ENNN 
-     BA  NNNEEE          EEENNN        
-     BC  NNNNNN          NNNNNN        
-         X- ^            X- ^
-
-    * If CASE EENN is followed by NNEE, then check A-C between these
-      checkpoints being identical or not.  If Match, change XF* to eF,
-      otherwise treat it as XF for previous match is EENN. (Not for NENN nor
-      ENNN)
-    * If AF or CF follows unfinalized X-, Make them as finalized XF.
+            Here tag for diff3:
+                'E'    a[j1:j2] == b[i1:i2] == c[k1:k2] == a[j1:j2]
+                'A'    a[j1:j2] != b[i1:i2] == c[k1:k2] != a[j1:j2]
+                'C'    a[j1:j2] == b[i1:i2] != c[k1:k2] != a[j1:j2]
+                'e'    a[j1:j2] != b[i1:i2] != c[k1:k2] == a[j1:j2]
+                'N'    a[j1:j2] != b[i1:i2] != c[k1:k2] != a[j1:j2]
 
     This requires diff2lib which is a wrapper of difflib and provides
-    'get_chunks' method.
+    'get_chunks' method. Here tag for diff2:
 
-    Example, comparing two strings, and considering blanks to be "junk":
+                'E'    a[j1:j2] == b[i1:i2]
+                'N'    a[j1:j2] != b[i1:i2]
+
+    Example1: comparing two strings, and considering None to be "junk"
 
     >>> a = "private Thread currentThread foo bar;"
     >>> b = "private volatile Thread currentThread;"
-    >>> c = "private volatile currentThread foo;"
-    >>> s = SequenceMatcher3(lambda x: x == " ", a, b, c)
+    >>> c = "private volatile currentThread foo;tail"
+    >>> s = SequenceMatcher3(None, a, b, c)
     >>>
 
     If you want to know how to change the first sequence into the second,
     use .get_chunks():
 
     >>> for tag, i1, i2, j1, j2, k1, k2 in s.get_chunks():
-    ...     print("%1s a[%d:%d],b[%d:%d],c[%d:%d] => '%s', '%s', '%s'" % (
+    ...     print("%s a[%d:%d],b[%d:%d],c[%d:%d] => '%s', '%s', '%s'" % (
     ...     tag, i1, i2, j1, j2, k1, k2, a[i1:i2], b[j1:j2], c[k1:k2]))
     ...
     E a[0:6],b[0:6],c[0:6] => 'privat', 'privat', 'privat'
@@ -96,6 +108,33 @@ class SequenceMatcher3:
     E a[15:28],b[24:37],c[17:30] => 'currentThread', 'currentThread', 'currentThread'
     N a[28:36],b[37:37],c[30:34] => ' foo bar', '', ' foo'
     E a[36:37],b[37:38],c[34:35] => ';', ';', ';'
+    C a[37:37],b[38:38],c[35:39] => '', '', 'tail'
+
+    Example 2: comparing two strings, and considering blanks to be "junk"
+
+    >>> a = "private Thread currentThread foo bar;"
+    >>> b = "private volatile Thread currentThread;"
+    >>> c = "private volatile currentThread foo;tail"
+    >>> s = SequenceMatcher3(lambda x: x == " ", a, b, c)
+    >>>
+
+    If you want to know how to change the first sequence into the second,
+    use .get_chunks():
+
+    >>> for tag, i1, i2, j1, j2, k1, k2 in s.get_chunks():
+    ...     print("%s a[%d:%d],b[%d:%d],c[%d:%d] => '%s', '%s', '%s'" % (
+    ...     tag, i1, i2, j1, j2, k1, k2, a[i1:i2], b[j1:j2], c[k1:k2]))
+    ...
+    E a[0:8],b[0:8],c[0:8] => 'private ', 'private ', 'private '
+    A a[8:8],b[8:16],c[8:16] => '', 'volatile', 'volatile'
+    e a[8:8],b[16:17],c[16:16] => '', ' ', ''
+    C a[8:14],b[17:23],c[16:16] => 'Thread', 'Thread', ''
+    E a[14:28],b[23:37],c[16:30] => ' currentThread', ' currentThread', ' currentThread'
+    N a[28:36],b[37:37],c[30:34] => ' foo bar', '', ' foo'
+    E a[36:37],b[37:38],c[34:35] => ';', ';', ';'
+    C a[37:37],b[38:38],c[35:39] => '', '', 'tail'
+
+    This example 2 produces more intuitive result due to setting for "junk".
 
     Methods:
 
@@ -232,7 +271,7 @@ class SequenceMatcher3:
         >>> c = "abycdfzcpgp"
         >>> s = SequenceMatcher3(None, a, b, c)
         >>> for tag, i1, i2, j1, j2, k1, k2 in s.get_chunks():
-        ...    print(("%1s a[%d:%d] (%s) / b[%d:%d] (%s) / c[%d:%d] (%s)" %
+        ...    print(("%s a[%d:%d] (%s) / b[%d:%d] (%s) / c[%d:%d] (%s)" %
         ...           (tag, i1, i2, a[i1:i2], j1, j2, b[j1:j2], k1, k2, c[k1:k2])))
         ...
         A a[0:1] (q) / b[0:0] () / c[0:0] ()
@@ -248,267 +287,81 @@ class SequenceMatcher3:
         a = self.a
         b = self.b
         c = self.c
-        sm_ba = SequenceMatcher2(self.isjunk, b, a)
-        sm_bc = SequenceMatcher2(self.isjunk, b, c)
-        chunks_ba = sm_ba.get_chunks()
-        chunks_bc = sm_bc.get_chunks()
-        diff3 = list()
-        i_ba = 0  # walking index
-        i_bc = 0  # walking index
-        i_bax = i_ba  # walking index
-        i_bcx = i_bc  # walking index
-        il = jl = kl = 0  # range lower end for b, a, c (next in next round)
-        ilx = jlx = klx = 0  # range lower end for b, a, c (previous)
-        ih = jh = kh = 0  # range higher end for b, a, c (used in next round)
-        ihx = jhx = khx = 0  # range higher end for b, a, c (previous)
-        il_ba = ih_ba = jl_ba = jh_ba = il_bc = ih_bc = kl_bc = kh_bc = 0
+        chunks_ba = SequenceMatcher2(self.isjunk, b, a).get_chunks()
+        chunks_bc = SequenceMatcher2(self.isjunk, b, c).get_chunks()
+        n_ba = 0  # walking index for chunks_ba
+        n_bc = 0  # walking index for chunks_bc
         len_ba = len(chunks_ba)
         len_bc = len(chunks_bc)
+        il = jl = kl = 0  # range lower end for b, a, c (next in next round)
+        ih = jh = kh = 0  # range high end for b, a, c (next in next round)
         answer = list()
-        tag = "*"
-        tag_ba = tag_bc = "*"
-        tagset = "****"
-        side = "BA+BC"
-        while True:
-            # preserve previous values
-            tag_bax = tag_ba
-            il_bax = il_ba
-            ih_bax = ih_ba
-            jl_bax = jl_ba
-            jh_bax = jh_ba
-            tag_bcx = tag_bc
-            il_bcx = il_bc
-            ih_bcx = ih_bc
-            kl_bcx = kl_bc
-            kh_bcx = kh_bc
+        tag = ""
+        while n_ba < len_ba or n_bc < len_bc:
+            # logger.debug("diff3lib: n_ba={} n_bc={} len_ba={} len_bc={}".format(n_ba, n_bc, len_ba, len_bc))
             # get a chunk data
-            # logger.debug("diff3lib: i_ba={} i_bc={} len_ba={} len_bc={}".format(i_ba, i_bc, len_ba, len_bc))
-            if len(chunks_ba):
-                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = chunks_ba[i_ba]
+            if n_ba < len_ba:
+                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = chunks_ba[n_ba]
             else:
-                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = ("E", 0, 0, 0, 0)
-            if len(chunks_bc):
-                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = chunks_bc[i_bc]
+                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = chunks_ba[len_ba - 1]
+                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = ("E", ih_ba, ih_ba, jh_ba, jh_ba)
+                # print("diff3lib: OVERRUN n_ba={} len_ba={}".format(n_ba, len_ba), file=sys.stderr)
+            if n_bc < len_bc:
+                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = chunks_bc[n_bc]
             else:
-                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = ("E", 0, 0, 0, 0)
-            tagsetx = tagset
-            tagset = tag_bax + tag_bcx + tag_ba + tag_bc
-            # preserve previous values
-            i_bax = i_ba
-            i_bcx = i_bc
-            ihx = ih
-            jhx = jh
-            khx = kh
-            # Get new values
-            #
-            #  BA  ...EEENNN...
-            #  BC  ...EEENNN...
-            #      EF    ^
-            if tagset == "EENN":
-                # Finalize step
-                ih = il_ba  # = il_bc
-                jh = jl_ba
-                kh = kl_bc
+                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = chunks_bc[len_bc - 1]
+                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = ("E", ih_bc, ih_bc, kh_bc, kh_bc)
+                # print("diff3lib: OVERRUN n_bc={} len_bc={}".format( n_bc, len_bc), file=sys.stderr)
+            # get tag for this set of chunks if high range value is available
+            if tag == "N":
+                pass  # All undecided comes in as tag == "N", otherwise tag == ""
+            elif tag_ba == "E" and tag_bc == "E":
                 tag = "E"
-                finalized = True
-            #  BA  ...EEEEEE...
-            #  BC  ...EEENNN...
-            #      EF    ^
-            elif tagset == "EEEN":
-                # Finalize step
-                ih = il_bc
-                jh = jl + ih - ihx
-                kh = kl_bc
-                tag = "E"
-                finalized = True
-            #  BA  ...EEENNN...
-            #  BC  ...EEEEEE...
-            #      EF    ^
-            elif tagset == "EENE":
-                # Finalize step
-                ih = il_ba
-                jh = jl_ba
-                kh = kl + ih - ihx
-                if tag == "N":
-                    tag = "N"
-                elif tag == "A":
-                    tag = "A"
-                elif tag == "C":
-                    tag = "C"
-                else:
-                    tag = "E"
-                finalized = True
-            #  BA  ...NNNEEE...
-            #  BC  ...EEEEEE...
-            #      AF    ^
-            elif tagset == "NEEE":
-                # Finalize step
-                ih = il_ba
-                jh = jl_ba
-                kh = kl + ih - ihx
-                if tag == "N":
-                    tag = "N"
-                else:
-                    tag = "A"
-                finalized = True
-            #  BA  ...NNNEEE...
-            #  BC  ...EEENNN...
-            #      AF    ^
-            elif tagset == "NEEN":
-                # Finalize step
-                ih = il_ba  # = il_bc
-                jh = jl_ba
-                kh = kl_bc
-                if tag == "N":
-                    tag = "N"
-                else:
-                    tag = "A"
-                finalized = True
-            #  BA  ...EEENNN...
-            #  BC  ...NNNEEE...
-            #      CF    ^
-            elif tagset == "ENNE":
-                # Finalize step
-                ih = il_ba  # = il_bc
-                jh = jl_ba
-                kh = kl_bc
-                if tag == "N":
-                    tag = "N"
-                else:
-                    tag = "C"
-                finalized = True
-            #  BA  ...EEEEEE...
-            #  BC  ...NNNEEE...
-            #      CF    ^
-            elif tagset == "ENEE":
-                # Finalize step
-                ih = il_bc
-                jh = jl + ih - ihx
-                kh = kl_bc
-                if tag == "N":
-                    tag = "N"
-                else:
-                    tag = "C"
-                finalized = True
-            #  BA  ...NNNEEE...
-            #  BC  ...NNNEEE...
-            #      NF*   ^
-            elif tagset == "NNEE":
-                # Finalize step
-                ih = il_ba  # = il_bc
-                jh = jl_ba
-                kh = kl_bc
-                if tagsetx == "EENN" and a[jl_bax:jh_bax] == c[kl_bcx:kh_bcx]:
-                    tag = "e"  # Exact same change happened on A and C
-                else:
-                    tag = "N"
-                finalized = True
-            #  BA  ...NNNNNN...  ...NNNNNN...  ...NNNEEE...  ...EEENNN...
-            #  BC  ...NNNEEE...  ...EEENNN...  ...NNNNNN...  ...NNNNNN...
-            #      N-    ^             ^
-            elif (
-                tagset == "NNNE"
-                or tagset == "NENN"
-                or tagset == "NNEN"
-                or tagset == "ENNN"
-            ):
-                finalized = False
+            elif tag_ba == "N" and tag_bc == "E":
+                tag = "A"
+            elif tag_ba == "E" and tag_bc == "N":
+                tag = "C"
+            elif tag_ba == "N" and tag_bc == "N":
                 tag = "N"
-            #  BA  EEE... NNN... EEE...
-            #  BC  EEE... EEE... NNN...
-            #      ^      ^      ^
-            elif jl_ba == 0 and kl_bc == 0 and il_ba == il_bc:
-                if jh_ba == 0 and kh_bc == 0:
-                    finalized = True
-                    tag = "e"
-                elif jh_ba == 0:
-                    finalized = True
-                    tag = "C"
-                elif kh_bc == 0:
-                    finalized = True
-                    tag = "A"
-                elif tagset == "**EE" or tagset == "**NE" or tagset == "**EN":
-                    finalized = False
-                    tag = "*"
-                elif tagset == "**NN":
-                    finalized = True
-                    tag = "N"
+            if ih_ba == ih_bc:
+                n_ba += 1
+                n_bc += 1
+                ih = ih_ba  # == ih_bc
+                jh = jh_ba
+                kh = kh_bc
+            elif ih_ba > ih_bc:
+                n_bc += 1
+                ih = ih_bc
+                kh = kh_bc
+                if tag_ba == "E":
+                    jh = jh_ba - (ih_ba - ih_bc)
+                elif jh_ba == jl_ba:
+                    jh = jh_ba
                 else:
-                    finalized = False
-                    print(">>> START ERROR >>>")
-                    sys.exit(3)
-            else:
-                finalized = False
-                print(">>> ERROR IN ELSE >>>")
-                sys.exit(3)
-            # print("=== final={} tag={} side={} ===".format(finalized, tag, side))
-            # print("    BA i_bax=%i i_ba=%i tagset=%s picked b[%i:%i]='%s' a[%i:%i]='%s'" % (i_bax, i_ba, tagset, il, ih, b[il:ih], jl, jh, a[jl:jh]))
-            # print("    BC i_bcx=%i i_bc=%i tagset=%s picked b[%i:%i]='%s' c[%i:%i]='%s'" % (i_bcx, i_bc, tagset, il, ih, b[il:ih], kl, kh, c[kl:kh]))
-            if finalized:
-                if not (
-                    jl == 0 and jh == 0 and il == 0 and ih == 0 and kl == 0 and kh == 0
-                ):
-                    answer.append((tag, jl, jh, il, ih, kl, kh))
-                # Set lower bound for next step
+                    jh = None  # undecided
+                    tag = "N"
+            if ih_ba == ih_bc:
+                kh = kh_bc
+            elif ih_ba < ih_bc:
+                n_ba += 1
+                ih = ih_ba
+                jh = jh_ba
+                if tag_bc == "E":
+                    kh = kh_bc - (ih_bc - ih_ba)
+                elif kh_bc == kl_bc:
+                    kh = kh_bc
+                else:
+                    kh = None  # undecided
+                    tag = "N"
+            if jh is not None and kh is not None:
+                if tag == "N":
+                    if a[jl:jh] == c[kl:kh]:
+                        tag = "e"
+                answer.append((tag, jl, jh, il, ih, kl, kh))
                 il = ih
                 jl = jh
                 kl = kh
-                tag = "*"
-            # End loop at the end
-            if i_ba >= len_ba - 1 and i_bc >= len_bc - 1:
-                finalized = True  # Force finalize at the end
-                ih = ih_ba  # = ih_bc
-                jh = jh_ba
-                kh = kh_bc
-                if tagset[-2:] == "EN":
-                    if tag == "N":
-                        tag = "N"
-                    else:
-                        tag = "C"  # C has trailing string
-                elif tagset[-2:] == "NE":
-                    if tag == "N":
-                        tag = "N"
-                    else:
-                        tag = "A"  # A has trailing string
-                elif tagset[-2:] == "NN":
-                    if a[jl_ba:jh_ba] == c[kl_bc:kh_bc]:
-                        tag = "e"  # Exact same change happened on A and C
-                    else:
-                        tag = "N"
-                elif tagset[-2:] == "EE":
-                    tag = "E"
-                else:
-                    print(">>> BREAK ERROR >>> tagset={}".format(tagset))
-                    sys.exit(3)
-                break
-            # Walk to next chunk
-            if ih_ba > ih_bc:
-                # print('walk BC side chunk[%i] from b[%i:%i]=%s to next' % (i_bc, il_bc, ih_bc, b[il_bc:ih_bc]))
-                i_bc += 1
-                side = "BC"
-            elif ih_ba < ih_bc:
-                # print('walk BA side chunk[%i] from b[%i:%i]=%s to next' % (i_ba, il_ba, ih_ba, b[il_ba:ih_ba]))
-                i_ba += 1
-                side = "BA"
-            else:  # ih_ba == ih_bc
-                # print('walk BA+BC side chunk[BA=%i, BC=%i] from b[%i:%i]=%s to next' % (i_ba, i_bc, il_ba, ih_ba, b[il_ba:ih_ba]))
-                i_ba += 1
-                i_bc += 1
-                side = "BA+BC"
-                if i_ba > len_ba - 1:
-                    i_ba = len_ba - 1
-                    side = "BC-last"
-                if i_bc > len_bc - 1:
-                    i_bc = len_bc - 1
-                    side = "BA-last"
-            if i_ba > len_ba - 1 or i_bc > len_bc - 1:
-                print(">>>> ERROR >>>>")
-                sys.exit(3)
-        # Finalize step
-        # print("=== out of loop final={} tag={} side={} ===".format(finalized, tag, side))
-        # print("    BA i_bax=%i i_ba=%i tagset=%s ending b[%i:%i]='%s' a[%i:%i]='%s'" % (i_bax, i_ba, tagset, il, ih, b[il:ih], jl, jh_ba, a[jl:jh]))
-        # print("    BC i_bcx=%i i_bc=%i tagset=%s ending b[%i:%i]='%s' c[%i:%i]='%s'" % (i_bcx, i_bc, tagset, il, ih, b[il:ih], kl, kh, c[kl:kh]))
-        answer.append((tag, jl, jh, il, ih, kl, kh))
+                tag = ""
         self.chunks = answer
         return answer
 

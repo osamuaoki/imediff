@@ -5,7 +5,9 @@ Script to test imediff macro key translation in place.
 """
 import sys
 
+# Force to use in source modules over system installed ones
 sys.path.insert(0, "..")
+
 import imediff
 
 args = imediff.initialize_args()

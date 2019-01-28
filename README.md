@@ -104,6 +104,13 @@ Update PO with:
 If anyone wants more contents to be translated such as manpage and tutorial,
 adding po4a may be a good idea.  For now, let's keep it minimal.
 
+Upstream tarball can be made for upstream version 2.0 as:
+
+ $ git archive --prefix=imediff-2.0/  upstream | xz \
+                   > ../imediff_2.0.orig.tar.xz
+
+(Please make sure to use tailing backslash for prefix.)
+
 ## Note on Debian package links
 
 * imediff2 (based on older upstream source and released for Debian buster)

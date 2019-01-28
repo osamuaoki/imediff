@@ -9,7 +9,10 @@ Use as:
 
 """
 import sys
-sys.path.insert(0, '..')
+
+# Force to use in source modules over system installed ones
+sys.path.insert(0, "..")
+
 import imediff
 
 imediff.main()
