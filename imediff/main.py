@@ -271,15 +271,15 @@ def main():
 
     # configuration
     confs = initialize_confs(args.conf)
-    editor = "/usr/bin/editor"
+    editor = "editor"
     if "EDITOR" in os.environ:
         editor = os.environ["EDITOR"]
     if "editor" in confs["config"].keys():
         editor = confs["config"]["editor"]
     args.edit_cmd = shutil.which(editor)
+    if args.edit_cmd is None:
+        args.edit_cmd = "/usr/bin/editor" # safe fall back
     logger.debug("external editor {} found as {}".format(editor, args.edit_cmd))
-    if not (os.path.isfile(args.edit_cmd) or os.path.islink(args.edit_cmd)):
-        error_exit("Missing external editor in command path: '{}'".format(editor))
 
     # normalize and process non-standard situation
     if args.version:
