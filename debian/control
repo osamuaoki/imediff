@@ -16,7 +16,8 @@ Homepage: https://github.com/osamuaoki/imediff
 
 Package: imediff
 Architecture: all
-Depends: ${misc:Depends}, ${python3:Depends}
+Depends: ${misc:Depends}, ${python3:Depends}, vim | emacs | editor
+Recommends: git
 Provides: imediff2
 Breaks: imediff2 (<= 1.1.2.1-2)
 Replaces: imediff2
