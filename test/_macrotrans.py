@@ -1,13 +1,8 @@
 #!/usr/bin/python3
 # vim:se tw=0 sts=4 ts=4 et ai:
 """
-Script to test imediff macro key translation in place.
+Script to test imediff macro key translation
 """
-import sys
-
-# Force to use in source modules over system installed ones
-sys.path.insert(0, "..")
-
 import imediff
 
 args = imediff.initialize_args()
@@ -25,4 +20,3 @@ instance = imediff.TextData(list_a, list_b, list_c, args, confs)
 for c in macro:
     k = instance.getch_translated()
     print("MACRO:{} --> TranslatedKey={}".format(c, chr(k)))
-sys.exit(0)

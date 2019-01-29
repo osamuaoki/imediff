@@ -1,21 +1,23 @@
 #!/usr/bin/python3
 # vim:se tw=79 sts=4 ts=4 et ai:
 """
-Test many aspect of imediff package viaunittest invoked from setup.py
-in the root of the source tree.
+Test many aspect of imediff package via unittest.
+
+To test the in-source-tree module, invoke this script from setup.py in the
+root of the source tree as:
 
  $ python3 setup.py test
+
+
+To test the installed module, invoke this script directly as:
+
+ $ python3 test_diff23lib.py -v
 
 Current diff2 uses Python standard library difflib which uses a variant of
 longest contiguous matching subsequence algorithm by Ratcliff and Obershelp
 developed in the late 1980's.  If I update this imediff program to use more
 modern algorithm, this test may yield slightly different result.
 """
-import sys
-
-# Force to use in source modules over installed ones
-sys.path.insert(0, "..")
-
 import unittest
 import subprocess
 import os
