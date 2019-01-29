@@ -52,8 +52,8 @@ over setting of LC_ALL etc.)
 This was originally written by Jarno Elonen in Python2. The latest original
 upstream version was 1.1.2 released on 2007-8-18.
 
-(The original author's website was https://elonen.iki.fi/code/imediff/ which
-redirects now to  https://github.com/osamuaoki/imediff )
+The original author's website was https://elonen.iki.fi/code/imediff/ .
+Now it redirects to this site https://github.com/osamuaoki/imediff .
 
 Osamu Aoki made a minor patched release for Debian buster in Oct 2018.
 
@@ -88,6 +88,36 @@ bumped to 2.0.
 
 ## Note to developer and translator
 
+### making Debian package
+
+You can make your own Debian package as:
+
+    $ git checkout master
+    $ git archive --prefix=imediff-2.0/  upstream | xz > ../imediff_2.0.orig.tar.xz
+    $ pdebuild
+    $ sudo dpkg -i imediff_2.0-1_all.deb
+
+Here, we assume the upstream version to be 2.0, and the Debian revision to be
+1.
+
+Please make sure to use tailing backslash for --prefix argument and bump
+upstream version as needed.
+
+### sharing changed source tree
+
+You can fork this source to your account, e.g., `yourname`, and work on it as:
+
+    $ git clone git@github.com:yuourname/imediff.git
+    $ cd imediff
+    $ git checkout --track origin/upstream
+    $ git checkout upstream
+     ... hack source
+    $ git checkout master
+     ... hack source
+    $ git push --all
+
+This way, you can share your changes back to me easily via "pull request".
+
 ### updating manpages
 
 Please make sure to fit each code below 80-88 chars. (Run "black" on python
@@ -96,40 +126,30 @@ code)
 Manpages need to be updated from XML files with "make" first in doc/ directory
 when you edit it.
 
-
 ### updating PO
 
-Tutorial contents should be within 76 chars/line to fit in consiole.
+Tutorial contents should be within 76 chars/line to fit in console.
 
 Update PO with:
 
- $ ./setup.py build_i18n -m
+    $ ./setup.py build_i18n -m
 
 If anyone wants more contents to be translated such as manpage and tutorial,
 adding po4a may be a good idea.  For now, let's keep it minimal.
 
 ### testing code
 
+If you make changes, please test then.
+
 To test the in-source-tree module, invoke the test script from setup.py in the
 root of the source tree as:
 
- $ python3 setup.py test
+    $ python3 setup.py test
 
 To test the installed module, invoke the test script directly as:
 
- $ cd test
- $ python3 test_diff23lib.py -v
-
-### making Debian package
-
-For upstream version 2.0, you can make Debian package as:
-
- $ git checkout master
- $ git archive --prefix=imediff-2.0/  upstream | xz > ../imediff_2.0.orig.tar.xz
- $ pdebuild
- $ sudo dpkg -i imediff_2.0-1_all.deb
-
-Please make sure to use tailing backslash for --prefix argument and bump upstream version as needed.
+    $ cd test
+    $ python3 test_diff23lib.py -v
 
 ## Note on Debian package links
 
