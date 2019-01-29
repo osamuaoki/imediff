@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # vim:se tw=79 sts=4 ts=4 et ai:
 """
-Script to test diff2 and diff3 logic in place.
+Script to test diff2 and diff3 logic
 
 The diff3 logic is build on top of diff2 logic.
 
@@ -11,10 +11,6 @@ developed in the late 1980's.  If I update this imediff program to use more
 modern algorithm, this test may yield slightly different result in some 
 corner cases.
 """
-import sys
-
-# Force to use in source modules over system installed ones
-sys.path.insert(0, "..")
 
 import imediff.diff2lib
 import imediff.diff3lib

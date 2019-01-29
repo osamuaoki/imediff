@@ -2,13 +2,8 @@
 # vim:se tw=0 sts=4 ts=4 et ai:
 
 """
-Script to test imediff initializing code in place.
+Script to test imediff initializing code
 """
-import sys
-
-# Force to use in source modules over system installed ones
-sys.path.insert(0, "..")
-
 import imediff
 import configparser
 
@@ -52,4 +47,3 @@ print(">>> list_c >>>>>>> key -> value >>>>>>>>>>>>>>>>")
 for i, f in enumerate(list_c):
     print(">>> list_c[{}]='{}'".format(i, f[:-1]))
 print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-sys.exit(0)

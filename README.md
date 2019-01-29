@@ -75,6 +75,7 @@ Osamu also wanted to add some features:
  * Make its TUI more friendly under monochrome terminal
  * Use curses.wrapper()
  * CLI and logging interface for easy self-testing/debugging
+ * Add decent test cases
  * Include simple tutorial within "imediff".
  * Add "git-mergetool" integration.
  * Good CJK wide character support with East_Asian_Width on console.
@@ -85,7 +86,9 @@ consulting with Jarno Elonen. Now program name is without "2", since it
 supports diff for not only 2 files but also 3 files.  The version number is
 bumped to 2.0.
 
-## Note to developer
+## Note to developer and translator
+
+### updating manpages
 
 Please make sure to fit each code below 80-88 chars. (Run "black" on python
 code)
@@ -93,9 +96,10 @@ code)
 Manpages need to be updated from XML files with "make" first in doc/ directory
 when you edit it.
 
-## Note to developer and translator
 
-Tutorial contents should be within 76 chars/line to fit in consile.
+### updating PO
+
+Tutorial contents should be within 76 chars/line to fit in consiole.
 
 Update PO with:
 
@@ -104,12 +108,28 @@ Update PO with:
 If anyone wants more contents to be translated such as manpage and tutorial,
 adding po4a may be a good idea.  For now, let's keep it minimal.
 
-Upstream tarball can be made for upstream version 2.0 as:
+### testing code
 
- $ git archive --prefix=imediff-2.0/  upstream | xz \
-                   > ../imediff_2.0.orig.tar.xz
+To test the in-source-tree module, invoke the test script from setup.py in the
+root of the source tree as:
 
-(Please make sure to use tailing backslash for prefix.)
+ $ python3 setup.py test
+
+To test the installed module, invoke the test script directly as:
+
+ $ cd test
+ $ python3 test_diff23lib.py -v
+
+### making Debian package
+
+For upstream version 2.0, you can make Debian package as:
+
+ $ git checkout master
+ $ git archive --prefix=imediff-2.0/  upstream | xz > ../imediff_2.0.orig.tar.xz
+ $ pdebuild
+ $ sudo dpkg -i imediff_2.0-1_all.deb
+
+Please make sure to use tailing backslash for --prefix argument and bump upstream version as needed.
 
 ## Note on Debian package links
 
