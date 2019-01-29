@@ -1,0 +1,2 @@
+Test-Command: unset PYTHONPATH; python3 test/test_diff23lib.py -v 2>&1
+Depends: @

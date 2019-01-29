@@ -1,8 +1,9 @@
 imediff (2.0-1) unstable; urgency=medium
 
   * New upstream release in python3 with diff3 support etc.
+  * Add autopkgtest support.
 
- -- Osamu Aoki <osamu@debian.org>  Mon, 17 Dec 2018 23:12:03 +0900
+ -- Osamu Aoki <osamu@debian.org>  Tue, 29 Jan 2019 22:03:59 +0900
 
 imediff2 (1.1.2.1-2) unstable; urgency=medium
 
