@@ -92,10 +92,12 @@ bumped to 2.0.
 
 You can make your own Debian package as:
 
+    $ git clone https://github.com/osamuaoki/imediff.git
+    $ cd imediff
     $ git checkout master
-    $ git archive --prefix=imediff-2.0/  upstream | xz > ../imediff_2.0.orig.tar.xz
+    $ git archive --prefix=imediff-2.0/ upstream | xz > ../imediff_2.0.orig.tar.xz
     $ pdebuild
-    $ sudo dpkg -i imediff_2.0-1_all.deb
+    $ sudo dpkg -i ../imediff_2.0-1_all.deb
 
 Here, we assume the upstream version to be 2.0, and the Debian revision to be
 1.
@@ -110,9 +112,10 @@ You can fork this source to your account, e.g., `yourname`, and work on it as:
     $ git clone git@github.com:yuourname/imediff.git
     $ cd imediff
     $ git checkout --track origin/upstream
-    $ git checkout upstream
      ... hack source
     $ git checkout master
+     ... hack source
+    $ git checkout upstream
      ... hack source
     $ git push --all
 
