@@ -95,7 +95,7 @@ You can make your own Debian package as:
     $ git clone https://github.com/osamuaoki/imediff.git
     $ cd imediff
     $ git checkout master
-    $ git archive --prefix=imediff-2.0/ upstream | xz > ../imediff_2.0.orig.tar.xz
+    $ git deborig # to make ../*.orig.tar.xz
     $ pdebuild
     $ sudo dpkg -i ../imediff_2.0-1_all.deb
 
@@ -109,7 +109,7 @@ upstream version as needed.
 
 You can fork this source to your account, e.g., `yourname`, and work on it as:
 
-    $ git clone git@github.com:yuourname/imediff.git
+    $ git clone git@github.com:yourname/imediff.git
     $ cd imediff
     $ git checkout --track origin/upstream
      ... hack source
@@ -156,12 +156,17 @@ To test the installed module, invoke the test script directly as:
 
 ## Note on Debian package links
 
-* imediff2 (based on older upstream source and released for Debian buster)
+* imediff2 (based on older python2 source for and before stretch)
+  * https://tracker.debian.org/pkg/imediff2
   * https://packages.debian.org/source/sid/imediff2 (source package in Debian)
   * https://packages.debian.org/sid/imediff2 (binary package in Debian)
   * https://bugs.debian.org/cgi-bin/pkgreport.cgi?repeatmerged=0;src=imediff2 (BTS)
 
-* imediff: TBD (beta version on github)
+* imediff: (based on newer python3 source for buster)
+  * https://tracker.debian.org/pkg/imediff
+  * https://packages.debian.org/source/sid/imediff (source package in Debian)
+  * https://packages.debian.org/sid/imediff (binary package in Debian)
+  * https://bugs.debian.org/cgi-bin/pkgreport.cgi?repeatmerged=0;src=imediff (BTS)
 
-This is written by Osamu Aoki on December 2018
+This is written by Osamu Aoki on February 2019
 
