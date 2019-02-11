@@ -130,12 +130,16 @@ The imediff command helps you to merge 2 slightly different files with an
 optional base file interactively using the in-place alternating display of
 the changed content on a single-pane full screen terminal user interface.
 
+The source of line is clearly identified by the color of the line or the
+identifier character at the first column.
+
 The advantage of this user interface is the minimal movement of the line of
 sight for the user.  Other great tools such as vimdiff, xxdiff, meld and
 kdiff3 require you to look at different points of display to find the exact
 position of changes.  This makes imediff the most stress-free tool.  (I
 realized this when I first used the original imediff2 program by Jarno
-Elonen <elonen@iki.fi>.)
+Elonen <elonen@iki.fi>.  Please note that the command name is changed from
+imediff2 to imediff now.)
 
 Other great tools for merge such as "diff3 -m ..." and "git merge ..."
 operate only on the difference by line.  So even for the non-overlapping

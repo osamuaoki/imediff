@@ -59,6 +59,9 @@ The imediff command helps you to merge 2 slightly different files with an
 optional base file interactively using the in-place alternating display of
 the changed content on a single-pane full screen terminal user interface.
 
+The source of line is clearly identified by the color of the line or the
+identifier character at the first column.
+
 From the console command line prompt, type:
  * "imediff" to read the tutorial,
  * "imediff -h" to get all the command line options,
