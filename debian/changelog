@@ -1,3 +1,9 @@
+imediff (2.1-1) unstable; urgency=medium
+
+  * Adjust package dependency for smooth transition from imediff2.
+
+ -- Osamu Aoki <osamu@debian.org>  Sat, 16 Feb 2019 13:08:00 +0900
+
 imediff (2.0-1) unstable; urgency=medium
 
   * New upstream release in python3 with diff3 support etc. as imediff.
