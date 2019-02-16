@@ -3,7 +3,10 @@
 #DH_VERBOSE = 1
 
 %:
-	dh $@ --with python2
+	dh $@
 
 override_dh_auto_clean:
 	$(MAKE) clean
+
+override_dh_auto_build:
+	echo "Do nothing"

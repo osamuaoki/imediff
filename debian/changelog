@@ -1,3 +1,9 @@
+imediff2 (1.1.2.1-3) unstable; urgency=medium
+
+  * Transitional package to install imediff. 
+
+ -- Osamu Aoki <osamu@debian.org>  Mon, 11 Feb 2019 17:19:01 +0900
+
 imediff2 (1.1.2.1-2) unstable; urgency=medium
 
   * Ship git-ime and git-ime.1. 
