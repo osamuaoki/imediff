@@ -79,8 +79,8 @@ imediff merges 3 different input files using 7 modes:
  * mode d: display diff3(a,b,c) by line       in {color_d}
  * mode e: display editor result buffer       in {color_e}
  * mode f: display wdiff3(a,b,c) by character in {color_f}
- * mode g: set good mode from (a,b,c,e,f) if merged cleanly, or
-           set mode (d) in case of conflicts
+ * mode g: set good mode from (a,b,c,e,g) if merged cleanly, or
+           set mode (df) in case of conflicts
 
 key commands          induced actions
 {x:c}                     save and exit
@@ -148,7 +148,7 @@ changes, they yield the merge conflict if changes happen on the same line.
 The automatic merge logic of the imediff command operates not only on the
 difference by line but on the difference by character.  This is another
 great feature of the imediff command. So for the non-overlapping changes, it
-always yields the clean merge.
+always yields the clean merge (mode "g").
 
 Merge with 2 files
 ==================
@@ -171,26 +171,31 @@ You can set the display mode of the focused chunk with the corresponding
 single key command.  Pressing "a" displays the "file_a" content.  Pressing
 "b" displays the "file_b" content.
 
-By alternating "a" and "b" keys, you can easily see the difference very
-intuitively with the constant line of sight.  (This is the same great
+By alternating "a" and "b" keys, you can see the difference in place which
+is easy on you with the constant line of sight.  (This is the same great
 feature inherited from the original imediff2 program.)  
 
 You can display both the "file_a" content and the "file_b" content with 2
 key commands.  Pressing "d" displays 2 blocks of lines organized somewhat
-like "diff -u".  Pressing "f" displays intermixed 1 block of lines organized
-somewhat like "wdiff".
+like "diff -u" (mode "d").  Pressing "f" displays intermixed 1 block of
+lines organized somewhat like "wdiff" (mode "f").
 
 Pressing "m" starts an editor to edit the focused chunk from any modes to
 create a manually merged content.  Upon exiting the editor, its result is
-kept in the editor result buffer.  Even after pressing "a", "b", "d" or "f",
-the content of the editor result buffer can be recalled and displayed by
-pressing "e".
+kept in the editor result buffer.  Even after pressing "a", "b", "d", or 
+"f", the content of the editor result buffer can be recalled and displayed
+by pressing "e".
 
-When you press one of the upper case "A", "B", "D", "E", "F", this sets all
-chunks to the corresponding lower case mode.
+Pressing "M" in mode "e" removes the editor result buffer.
 
-Once you are satisfied with the merge result on screen, type "x" to save the
-displayed content to "file_o" and exit the imediff program.
+When you press one of the upper case "A", "B", "D", "E", "F", this sets
+all chunks to the corresponding lower case mode.
+
+Once you are satisfied with the cleanly merge result on screen, type "x" to
+save the displayed content to "file_o" and exit the imediff program.  Here,
+the editor buffer content is always treated as cleanly merged.  (This
+requirement of the cleanly merge result can be disabled by specifying the
+"--sloppy" option.)
 
 Although the imediff program is practically WYSIWYG, there is one notable
 exception.  For the deleted content in mode "a" or "b", the imediff program
@@ -226,10 +231,15 @@ move the focused chunk to the previous unresolved chunk by pressing
 
 The key binding for "Merge with 3 files" is almost the same as that for
 "Merge with 2 files".  There are 2 notable extensions.  Pressing "c"
-displays the "file_c" content.  Pressing "g" sets the chunk to the new
-automatic merge starting mode.  Naturally, you need to use alternating "a"
-and "c" keys to see the difference, instead.  The rests are the same as
-"Merge with 2 files".
+displays the "file_c" content.  Pressing "g" causes automatic merge efforts
+on a chunk for 3 files in the following order:
+ * If the editor result buffer has content, mode is set to "e".
+ * If a chunk is resolved cleanly, mode is set to "a", "c", or "g".
+   This overrides previous manual settings such as "a", "b", or "c".
+ * If a chunk isn't resolved cleanly, mode is left as mode "g" or "f".
+
+By alternating "a" and "c" keys, you can see the difference in place.
+The rests are mostly the same as "Merge with 2 files".
 
 Terminal
 ========
@@ -246,8 +256,8 @@ matched section or display mode of each selectable unmatched chunk.
    (Under the color terminal, this is displayed in white/normal.)
  * "#" for a un-selectable section means matched and changed files: a==c and
    a!=b.  (Under the color terminal, this is displayed in white/bold.)
- * "a", "b", "c", "d", "e", and "f" for selectable unmatched chunk are the
-   display mode of each chunk.  (Under the color terminal, these are
+ * "a", "b", "c", "d", "e", "f", and "g" for selectable unmatched chunk are
+   the display mode of each chunk.  (Under the color terminal, these are
    displayed in different colors.)
 
 Customization
@@ -263,6 +273,10 @@ The internal default values of the imediff program are used.
 
 Note
 ====
+
+Some keys are aliased for "Merge with 2 files" for your convenience:
+ * "c" works as "d"
+ * "g" works as "e"
 
 The "diff3 -m" has an odd feature for the merge when "file_a" and "file_c"
 undergo identical changes from "file_b".  This imediff program results in a
@@ -418,14 +432,23 @@ class TextPad(TextData):  # TUI data
                 c = self.getch_translated()
             ch = chr(c)
             if ch == "x" or c == curses.KEY_EXIT or c == curses.KEY_SAVE:
-                if not self.confirm_exit or self.popup(
-                    _("Do you save and exit? (Press '{y:c}' to exit)").format(
-                        y=self.rkc["y"]
-                    )
+                if self.sloppy or (
+                    not self.sloppy and self.get_unresolved_count() == 0
                 ):
-                    output = self.get_output()
-                    write_file(self.file_o, output)
-                    break
+                    if not self.confirm_exit or self.popup(
+                        _("Do you save and exit? (Press '{y:c}' to exit)").format(
+                            y=self.rkc["y"]
+                        )
+                    ):
+                        output = self.get_output()
+                        write_file(self.file_o, output)
+                        break
+                else:
+                    self.popup(
+                        _(
+                            "Unresolved contents exist. (Press '{y:c}' to continue)"
+                        ).format(y=self.rkc["y"])
+                    )
             elif ch == "q":
                 if not self.confirm_exit or self.popup(
                     _("Do you quit without saving? (Press '{y:c}' to quit)").format(
@@ -518,7 +541,7 @@ class TextPad(TextData):  # TUI data
                         self.set_mode(self.actives[self.active], "a")
                 elif ch == "m":
                     self.editor(self.actives[self.active])
-                elif ch == "M":
+                elif ch == "M" and mode == "e":
                     self.del_editor(self.actives[self.active])
                 elif ch == "n" or c == curses.KEY_NEXT or ch == " ":
                     self.active_next()
@@ -610,14 +633,19 @@ class TextPad(TextData):  # TUI data
             decor = curses.A_BOLD
             color_pair = 5
             prefix = mode + " "
-        else:  # 'f': # wdiff
+        elif mode == "f":  # wdiff
             decor = curses.A_BOLD
+            color_pair = 6
+            prefix = mode + " "
+        else:  # 'g': # wdiff, cleanly merged
+            decor = curses.A_BOLD
+            decor |= curses.A_REVERSE
             color_pair = 6
             prefix = mode + " "
         row = self.get_row(i)
         content = self.get_content(i)  # list()
         # Decorative "???" for deleted lines only for display
-        if len(content) == 0 and not (tag == "E" or tag == "e"):
+        if len(content) == 0 and tag not in "Ee":
             content = ["???"]  # override []
             if self.mono:
                 decor |= curses.A_REVERSE
