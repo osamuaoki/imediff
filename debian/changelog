@@ -1,3 +1,12 @@
+imediff (2.2-1) unstable; urgency=medium
+
+  * Refactor code and refine "g" key command.
+  * Use REVERSE for mode "g" for readability.
+  * Ensure clean save and add --sloppy option.
+  * Bump policy to 4.3.0 and compat to 12.
+
+ -- Osamu Aoki <osamu@debian.org>  Sun, 03 Mar 2019 21:15:46 +0900
+
 imediff (2.1-1) unstable; urgency=medium
 
   * Adjust package dependency for smooth transition from imediff2.
