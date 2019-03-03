@@ -28,6 +28,7 @@ import imediff.diff3lib
 # path to test directory
 pwd = os.path.dirname(os.path.abspath(__file__))
 
+
 class TestImediff(unittest.TestCase):
 
     a = "a12b345c6789d"

@@ -82,6 +82,11 @@ Display mode column\&.
 Force monochrome display\&.
 .RE
 .PP
+\fB\-\-sloppy\fR
+.RS 4
+Allow one to save unresolved contents\&.
+.RE
+.PP
 \fB\-n\fR
 .RS 4
 Non\-interactive mode\&.
@@ -110,19 +115,19 @@ Start with version C (={\fIfile_theirs\fR}) for 3 files\&.
 .RS 4
 Start with diff by line between version A and version B for 2 files\&. (default for 2 files)
 .sp
-Start with diff by line between version A and version C for 3 files\&.
+Start with diff by line between version A and version C while using version B as base version for 3 files\&.
 .RE
 .PP
 \fB\-f\fR
 .RS 4
 Start with wdiff by character between version A and version B for 2 files\&.
 .sp
-Start with wdiff by character between version A and version C for 3 files\&.
+Start with wdiff by character between version A and version C while using version B as base version for 3 files\&.
 .RE
 .PP
 \fB\-g\fR
 .RS 4
-Set good mode from (a,b,c,e,f) if merged cleanly, or set mode (d) in case of conflicts (default for 3 files)\&.
+This is the default starting mode for 3 files\&. For the cleanly merged resolved portion, display wdiff by character between version A and version C while using version B as base version\&. For the unresolved portion, display diff by line, instead\&.
 .RE
 .PP
 \fB\-h\fR, \fB\-\-help\fR
@@ -147,7 +152,11 @@ The following keyboard commands are available in the editor as default\&.
 .PP
 x
 .RS 4
-Save and exit\&.
+Save and exit if merge is resolved\&. (default behavior)
+.sp
+Save and exit unconditionally\&. (when
+\fB\-\-sloppy\fR
+specified)
 .RE
 .PP
 q, ctrl+c
@@ -157,7 +166,7 @@ Exit without saving\&.
 .PP
 home, t, end, z
 .RS 4
-, Jump to start or end of chunks\&.
+Jump to start or end of chunks\&.
 .RE
 .PP
 h
@@ -202,97 +211,103 @@ Jump to next changed chunk\&.
 .PP
 N, tab
 .RS 4
-Jump to next changed chunk in diff mode (d)\&.
+Jump to next unresolved chunk (mode "d" or "f")\&.
 .RE
 .PP
-p , backspace
+p, backspace
 .RS 4
 Jump to previous changed chunk\&.
 .RE
 .PP
-P , back\-tab
+P, back\-tab
 .RS 4
-Jump to previous changed chunk in diff mode (d)\&.
+Jump to previous unresolved chunk (mode "d" or "f")\&.
 .RE
 .PP
 a
 .RS 4
-Set mode of the current chunk to display version A\&.
+Set mode of the current chunk to "a" to display version A\&.
 .RE
 .PP
 b
 .RS 4
-Set mode of the current chunk to display version B\&.
+Set mode of the current chunk to "b" to display version B\&.
 .RE
 .PP
 c
 .RS 4
-Set mode of the current chunk to display version C\&. (if available)
+Set mode of the current chunk to "c" to display version C for 3 files\&.
 .RE
 .PP
 d
 .RS 4
-Set mode of the current chunk to display diff by line\&.
+Set mode of the current chunk to "d" to display diff by line\&.
 .RE
 .PP
 e
 .RS 4
-Set mode of the current chunk to display editor buffer\&.
+Set mode of the current chunk to "e" to display editor buffer if available\&.
 .RE
 .PP
 f
 .RS 4
-Set mode of the current chunk to display wdiff by character\&.
+Set mode of the current chunk to "f" to display wdiff by character\&. If cleanly merged, mode is set to "g" instead\&.
 .RE
 .PP
 g
 .RS 4
-Set good mode from (a,b,c,e,f) if merged cleanly, or set mode (d) in case of conflicts for the current chunk\&.
+This causes automatic merge efforts on a chunk for 3 files in the following order\&.
+.sp
+If the editor result buffer has content, mode is set to "e"\&.
+.sp
+If a chunk is resolved cleanly, mode is set to "a", "c", or "g"\&. This overrides previous manual settings such as "a", "b", or "c"\&.
+.sp
+If a chunk isn\*(Aqt resolved cleanly, mode is left as mode "g" or "f"\&.
 .RE
 .PP
 shift+a
 .RS 4
-Set mode of all chunks to display version A\&.
+Apply "a" to all chunks\&.
 .RE
 .PP
 shift+b
 .RS 4
-Set mode of all chunks to display version B\&.
+Apply "b" to all chunks\&.
 .RE
 .PP
 shift+c
 .RS 4
-Set mode of all chunks to display version C\&. (if available)
+Apply "c" to all chunks\&.
 .RE
 .PP
 shift+d
 .RS 4
-Set mode of all chunks to display diff by line\&.
+Apply "d" to all chunks\&.
 .RE
 .PP
 shift+e
 .RS 4
-Set mode of all chunks to display editor buffer\&.
+Apply "e" to all chunks\&.
 .RE
 .PP
 shift+f
 .RS 4
-Set mode of all chunks to display wdiff by character\&.
+Apply "f" to all chunks\&.
 .RE
 .PP
 shift+g
 .RS 4
-Set good mode from (a,b,c,e,f) if merged cleanly, or set mode (d) in case of conflicts for all chunks\&.
+Apply "g" to all chunks\&.
 .RE
 .PP
 m
 .RS 4
-Launch external editor on the current chunk\&.
+Launch external editor on the current chunk, save its result to the editor buffer, and set its mode to "e"\&.
 .RE
 .PP
-shift+f
+shift+m
 .RS 4
-Remove display editor buffer of the current chunk\&.
+Remove the editor buffer of the current chunk when its mode is "e"\&.
 .RE
 .SH "FILE"
 .PP

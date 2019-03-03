@@ -35,38 +35,6 @@ from imediff.diff2lib import *
 from imediff.diff3lib import *
 
 
-def _new_mode2(tag, bf, new_mode):
-    if new_mode in "abdf":
-        mode = new_mode
-    elif new_mode in "eg":
-        if bf is None:
-            mode = "d"
-        else:
-            mode = "e"
-    else:  # even for "c" hidden command
-        mode = "d"
-    return mode
-
-
-def _new_mode3(tag, bf, new_mode):
-    if new_mode in "abcdf":
-        mode = new_mode
-    elif new_mode == "e":
-        if bf is not None:
-            mode = "e"
-        else:
-            mode = "d"
-    elif tag == "E" or tag == "e" or tag == "A":  # new_mode = 'g'
-        mode = "a"
-    elif tag == "C":  # new_mode = 'g'
-        mode = "c"
-    elif bf is not None:  # new_mode = 'g'
-        mode = "e"
-    else:  # new_mode = 'g'
-        mode = "g"
-    return mode
-
-
 class TextData:  # Non-TUI data
     """Non curses class to handle diff data for 2 or 3 lines"""
 
@@ -83,6 +51,7 @@ class TextData:  # Non-TUI data
         self.list_a = list_a
         self.list_b = list_b
         self.list_c = list_c
+        self.sloppy = args.sloppy
         self.isjunk = args.isjunk
         self.edit_cmd = args.edit_cmd
         self.macro = args.macro
@@ -122,36 +91,32 @@ class TextData:  # Non-TUI data
             sequence = SequenceMatcher2(isjunk, list_a, list_b, None)
             chunks = sequence.get_chunks()
             k1 = k2 = None
+            # Set initial mode to "a" or "d"
             self.chunks = [
-                (tag, i1, i2, j1, j2, k1, k2, _new_mode2(tag, bf, new_mode), row, bf)
+                (tag, i1, i2, j1, j2, k1, k2, "a" if tag == "E" else "d", row, bf)
                 for (tag, i1, i2, j1, j2) in chunks
             ]
             self.actives = [
-                j for j, (tag, i1, i2, j1, j2) in enumerate(chunks) if tag != "E"
+                j for j, (tag, i1, i2, j1, j2) in enumerate(chunks) if tag == "N"
             ]
         else:
             sequence = SequenceMatcher3(isjunk, list_a, list_b, list_c)
             chunks = sequence.get_chunks()
+            # Set initial mode to "a" or "d"
             self.chunks = [
-                (tag, i1, i2, j1, j2, k1, k2, _new_mode3(tag, bf, new_mode), row, bf)
+                (tag, i1, i2, j1, j2, k1, k2, "a" if tag in "Ee" else "d", row, bf)
                 for (tag, i1, i2, j1, j2, k1, k2) in chunks
             ]
-            for i, chunk in enumerate(self.chunks):
-                (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = chunk
-                if mode == "g":
-                    (clean_merge, content) = self.merge_wdiff3(i)
-                    if clean_merge:
-                        self.set_mode(i, "f")
-                    else:
-                        self.set_mode(i, "d")
             self.actives = [
                 j
                 for j, (tag, i1, i2, j1, j2, k1, k2) in enumerate(chunks)
-                if (tag != "E" and tag != "e")
+                if tag not in "Ee"
             ]
         # self.actives[i] = j -> self.rev_actives[j] = i
         self.rev_actives = dict()
         for i, j in enumerate(self.actives):
+            if new_mode != "d":
+                self.set_mode(j, new_mode)
             self.rev_actives[j] = i
         if len(self.actives) == 0:
             self.active = None
@@ -278,6 +243,11 @@ class TextData:  # Non-TUI data
                 content = self.merge_wdiff2(i)
             else:  # self.diff_mode == 3
                 (clean_merge, content) = self.merge_wdiff3(i)
+        elif mode == "g":
+            if self.diff_mode == 2:
+                content = self.merge_diff(i)
+            else:  # self.diff_mode == 3
+                (clean_merge, content) = self.merge_wdiff3(i)
         else:
             error_exit("Bad mode='{}'\n".format(mode))
         # content is at least [] (at least empty list)
@@ -287,38 +257,48 @@ class TextData:  # Non-TUI data
 
     def set_mode(self, i, new_mode):
         (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.chunks[i]
-        if self.diff_mode == 2:
-            self.chunks[i] = (
-                tag,
-                i1,
-                i2,
-                j1,
-                j2,
-                k1,
-                k2,
-                _new_mode2(tag, bf, new_mode),
-                row,
-                bf,
-            )
-        elif tag == "N" and new_mode == "g":
-            (clean_merge, content) = self.merge_wdiff3(i)
-            if clean_merge:
-                self.chunks[i] = (tag, i1, i2, j1, j2, k1, k2, "f", row, bf)
-            else:
-                self.chunks[i] = (tag, i1, i2, j1, j2, k1, k2, "d", row, bf)
-        else:
-            self.chunks[i] = (
-                tag,
-                i1,
-                i2,
-                j1,
-                j2,
-                k1,
-                k2,
-                _new_mode3(tag, bf, new_mode),
-                row,
-                bf,
-            )
+        if new_mode in "abd":
+            mode = new_mode
+        elif self.diff_mode == 2:  # mode is always in "abdef"
+            if new_mode == "c":
+                mode = "d"  # hidden alias
+            elif new_mode == "f":
+                mode = "f"
+            else:  # for new_mode in "eg"
+                if bf is not None:
+                    mode = "e"
+                else:  #  for mode in "abdef"
+                    pass
+        else:  # self.diff_mode == 3
+            if new_mode == "c":
+                mode = "c"
+            elif new_mode == "f":
+                (clean_merge, content) = self.merge_wdiff3(i)
+                if clean_merge:
+                    mode = "g"
+                else:
+                    mode = "f"
+            elif new_mode == "e":
+                if bf is not None:
+                    mode = "e"
+                else:  # for mode in "abcdefg"
+                    pass
+            else:  # new_mode == "g":
+                if bf is not None:
+                    mode = "e"
+                elif tag == "A":
+                    mode = "a"
+                elif tag == "C":
+                    mode = "c"
+                elif mode in "abceg":
+                    pass
+                else:  # for mode in "df" and tag == "N"
+                    (clean_merge, content) = self.merge_wdiff3(i)
+                    if clean_merge:
+                        mode = "g"
+                    else:
+                        pass  # mode to "d" or "f"
+        self.chunks[i] = (tag, i1, i2, j1, j2, k1, k2, mode, row, bf)
         self.update_textpad = True
         return
 
@@ -328,7 +308,7 @@ class TextData:  # Non-TUI data
             self.set_mode(i, new_mode)
         return
 
-    def set_row(self, i, new_row):
+    def set_row(self, i, new_row):  # used by TUI
         (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.chunks[i]
         # row is passed by value but chunk is passed by reference !
         self.chunks[i] = (tag, i1, i2, j1, j2, k1, k2, mode, new_row, bf)
@@ -427,7 +407,7 @@ class TextData:  # Non-TUI data
         """Count 'd' mode chunks"""
         count = 0
         for j, i in enumerate(self.actives):
-            if self.get_mode(i) == "d":
+            if self.get_mode(i) in "df":
                 count += 1
         return count
 
@@ -437,7 +417,7 @@ class TextData:  # Non-TUI data
         active = None
         for j in range(self.active + 1, len(self.actives)):
             i = self.actives[j]
-            if self.get_mode(i) == "d":
+            if self.get_mode(i) in "df":
                 active = j
                 break
         if active is not None:
@@ -454,7 +434,7 @@ class TextData:  # Non-TUI data
         active = None
         for j in range(self.active - 1, -1, -1):
             i = self.actives[j]
-            if self.get_mode(i) == "d":
+            if self.get_mode(i) in "df":
                 active = j
                 break
         if active is not None:
@@ -469,7 +449,7 @@ class TextData:  # Non-TUI data
         active = None
         for j in range(0, self.active):
             i = self.actives[j]
-            if self.get_mode(i) == "d":
+            if self.get_mode(i) in "df":
                 active = j
                 break
         if active is not None:
@@ -484,7 +464,7 @@ class TextData:  # Non-TUI data
         active = None
         for j in range(len(self.actives) - 1, self.active, -1):
             i = self.actives[j]
-            if self.get_mode(i) == "d":
+            if self.get_mode(i) in "df":
                 active = j
                 break
         if active is not None:

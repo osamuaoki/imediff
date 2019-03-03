@@ -126,6 +126,9 @@ def initialize_args():
     pa.add_argument("--mode", "-m", action="store_true", help="Display mode column")
     pa.add_argument("--mono", action="store_true", help="Force monochrome display")
     pa.add_argument(
+        "--sloppy", action="store_true", help="Allow one to save unresolved contents"
+    )
+    pa.add_argument(
         "--version", "-V", action="store_true", help="Show version and license"
     )
     pa.add_argument(
@@ -147,7 +150,7 @@ Specify configuration file to use.  (default="~/.imediff")',
     )
     pa.add_argument(
         "--macro", "-M", default="", help=argparse.SUPPRESS
-    )  # hidden option for debug and selftest
+    )  # hidden option for debug and self test
     pa.add_argument(
         "--template",
         "-t",
@@ -176,14 +179,14 @@ Specify configuration file to use.  (default="~/.imediff")',
     elif args.b:
         args.default_mode = "b"
     elif args.c and args.diff_mode == 2:
-        args.default_mode = "d"  # hidden backward compatibility -c
+        args.default_mode = "d"  # backward compatibility -c
     elif args.c and args.diff_mode == 3:
         args.default_mode = "c"
     elif args.d or args.u:
         args.default_mode = "d"  # hidden backward compatibility -u
     elif args.f:
         args.default_mode = "f"
-    else:  # default
+    else:  # default=None or "g"
         if args.diff_mode == 2:
             args.default_mode = "d"  # default diff2
         else:
@@ -281,7 +284,7 @@ def main():
         editor = confs["config"]["editor"]
     args.edit_cmd = shutil.which(editor)
     if args.edit_cmd is None:
-        args.edit_cmd = "/usr/bin/editor" # safe fall back
+        args.edit_cmd = "/usr/bin/editor"  # safe fall back
     logger.debug("external editor {} found as {}".format(editor, args.edit_cmd))
 
     # normalize and process non-standard situation
