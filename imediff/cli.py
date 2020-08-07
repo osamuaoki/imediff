@@ -513,7 +513,7 @@ class TextData:  # Non-TUI data
             else:
                 ch = " "
 
-            if c == 0 or ch == "x":
+            if c == 0 or ch == "w" or ch == "x":
                 output = self.get_output()
                 write_file(self.file_o, output)
                 break

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-13 00:24+0900\n"
+"POT-Creation-Date: 2021-06-03 15:53+0900\n"
 "PO-Revision-Date: 2018-12-08 22:20+0900\n"
 "Last-Translator: Osamu Aoki <osamu@debian.org>\n"
 "Language-Team: Japanese <ja@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: imediff/tui.py:40
+#: ../imediff/tui.py:42
 #, python-brace-format
 msgid ""
 "    Interactive Merge Editor to merge 2 DIFFerent files\n"
@@ -30,7 +30,7 @@ msgid ""
 " * mode f: display wdiff2(a,b) by character in {color_f}\n"
 "\n"
 "key commands          induced actions\n"
-"{x:c}                     save and exit\n"
+"{w:c},{x:c}                   save and exit\n"
 "{q:c}                     quit without saving\n"
 "{a:c}/{b:c}/{d:c}/{e:c}/{f:c}             set a chunk to a/b/d/e/f mode\n"
 "1/2/4/5/6             set a chunk to a/b/d/e/f mode (alternative)\n"
@@ -57,7 +57,7 @@ msgstr ""
 " * モード f: 文字単位 wdiff (a,b)     {color_f}\n"
 "\n"
 "キーコマンド              コマンド結果\n"
-"{x:c}                     保存し終了\n"
+"{x:c},{x:c}                   保存し終了\n"
 "{q:c}                     保存せず中断\n"
 "{a:c}/{b:c}/{d:c}/{e:c}/{f:c}             断片を a/b/d/e/f モードに設定\n"
 "1/2/4/5/6             断片を a/b/d/e/f モードに設定 (代替)\n"
@@ -74,7 +74,7 @@ msgstr ""
 "{h:c}                     このヘルプを表示\n"
 "{H:c}                     チュートリアルを表示"
 
-#: imediff/tui.py:68
+#: ../imediff/tui.py:72
 #, python-brace-format
 msgid ""
 "    Interactive Merge Editor to merge 3 DIFFerent files\n"
@@ -86,11 +86,11 @@ msgid ""
 " * mode d: display diff3(a,b,c) by line       in {color_d}\n"
 " * mode e: display editor result buffer       in {color_e}\n"
 " * mode f: display wdiff3(a,b,c) by character in {color_f}\n"
-" * mode g: set good mode from (a,b,c,e,f) if merged cleanly, or\n"
-"           set mode (d) in case of conflicts\n"
+" * mode g: set good mode from (a,b,c,e,g) if merged cleanly, or\n"
+"           set mode (df) in case of conflicts\n"
 "\n"
 "key commands          induced actions\n"
-"{x:c}                     save and exit\n"
+"{w:c},{x:c}                   save and exit\n"
 "{q:c}                     quit without saving\n"
 "{a:c}/{b:c}/{c:c}/{d:c}/{e:c}/{f:c}/{g:c}         set a chunk to a/b/c/d/e/f/"
 "g mode\n"
@@ -118,11 +118,11 @@ msgstr ""
 " * 表示モード d: 行単位diff (a,b)         {color_d}\n"
 " * 表示モード e: エディター結果バッファー {color_e}\n"
 " * 表示モード f: 文字単位 wdiff (a,b)     {color_f}\n"
-" * 表示モード g: 適切なマージモードを(a,b,c,e,f)から設定\n"
-"                 競合がある際にはdiff モード (d) を設定\n"
+" * 表示モード g: 競合がない際には適切なモードを(a,b,c,e,g)から設定\n"
+"                 競合がある際にはモード (df) を設定\n"
 "\n"
 "キーコマンド              コマンド結果\n"
-"{x:c}                     保存し終了\n"
+"{x:c},{x:c}                   保存し終了\n"
 "{q:c}                     保存せず中断\n"
 "{a:c}/{b:c}/{c:c}/{d:c}/{e:c}/{f:c}/{g:c}         断片を a/b/c/d/e/f/g モード"
 "に設定\n"
@@ -141,7 +141,7 @@ msgstr ""
 "{h:c}                     このヘルプを表示\n"
 "{H:c}                     チュートリアルを表示"
 
-#: imediff/tui.py:99
+#: ../imediff/tui.py:105
 #, python-brace-format
 msgid ""
 "Chunk index   = (all files are identical)\n"
@@ -152,7 +152,7 @@ msgstr ""
 "行インデックス   ={row: 5d} (total ={conth: 5d})\n"
 "列オフセット     ={col: 5d}"
 
-#: imediff/tui.py:104
+#: ../imediff/tui.py:112
 #, python-brace-format
 msgid ""
 "Chunk index   ={active: 5d} (total ={total: 5d}, unresolved ={unresolved: "
@@ -165,12 +165,35 @@ msgstr ""
 "行インデックス   ={row: 5d} (合計数 ={conth: 5d})\n"
 "列オフセット     ={col: 5d}"
 
-#: imediff/tui.py:394
-#, python-brace-format
-msgid "Do you save and exit? (Press '{y:c}' to exit)"
-msgstr "保存し終了しますか? ('{y:c}' を押し終了)"
+#: ../imediff/tui.py:120
+msgid ""
+"This requirement of the clean merge for 'save and exit' can be disabled by\n"
+"specifying the \"--sloppy\" option to the imediff command.  Alternatively,\n"
+"you can effectively evade this requirement by pressing \"m\" on all\n"
+"non-clean merges to make them as the manually edited text data."
+msgstr ""
+"「保存し終了」のためのクリーンマージ要件は imediff コマンドに \"--sloppy\" オ"
+"プションを指定することで無効にできます。この要件は、すべての非クリーンマージ"
+"上で \"m\" を押して手動編集テキストデーターとする代替策でも実質的に回避できま"
+"す。"
 
-#: imediff/tui.py:401
+#: ../imediff/tui.py:465
 #, python-brace-format
-msgid "Do you quit without saving? (Press '{y:c}' to quit)"
-msgstr "保存せず中断しますか? ('{y:c}' を押し中断)"
+msgid "Do you 'save and exit'? (Press '{y:c}' to exit)"
+msgstr "「保存し終了」しますか? ('{y:c}' を押し終了)"
+
+#: ../imediff/tui.py:475
+#, python-brace-format
+msgid ""
+"Can't 'save and exit' due to the non-clean merge. (Press '{y:c}' to "
+"continue)\n"
+"\n"
+msgstr ""
+"解決しないマージ内容があるので、「保存し終了」できません。('{y:c}' を押し継"
+"続)\n"
+"\n"
+
+#: ../imediff/tui.py:482
+#, python-brace-format
+msgid "Do you 'quit without saving'? (Press '{y:c}' to quit)"
+msgstr "「保存せず中断終了」しますか? ('{y:c}' を押し中断終了)"
