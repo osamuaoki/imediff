@@ -173,7 +173,7 @@ single key command.  Pressing "a" displays the "file_a" content.  Pressing
 
 By alternating "a" and "b" keys, you can see the difference in place which
 is easy on you with the constant line of sight.  (This is the same great
-feature inherited from the original imediff2 program.)  
+feature inherited from the original imediff2 program.)
 
 You can display both the "file_a" content and the "file_b" content with 2
 key commands.  Pressing "d" displays 2 blocks of lines organized somewhat
@@ -182,7 +182,7 @@ lines organized somewhat like "wdiff" (mode "f").
 
 Pressing "m" starts an editor to edit the focused chunk from any modes to
 create a manually merged content.  Upon exiting the editor, its result is
-kept in the editor result buffer.  Even after pressing "a", "b", "d", or 
+kept in the editor result buffer.  Even after pressing "a", "b", "d", or
 "f", the content of the editor result buffer can be recalled and displayed
 by pressing "e".
 
