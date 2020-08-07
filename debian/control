@@ -9,7 +9,7 @@ Build-Depends: debhelper-compat (= 12),
                python3-distutils-extra,
                python3-setuptools,
                xsltproc
-Standards-Version: 4.3.0
+Standards-Version: 4.5.0
 VCS-Git: https://github.com/osamuaoki/imediff.git -b master
 Vcs-Browser: https://github.com/osamuaoki/imediff
 Homepage: https://github.com/osamuaoki/imediff
