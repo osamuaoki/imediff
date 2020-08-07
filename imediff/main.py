@@ -42,6 +42,9 @@ from imediff.config import *
 from imediff.cli import *
 from imediff.tui import *
 
+VERSION = "2.3"
+PACKAGE = "imediff"
+
 _version = (
     """\
 {p} (version {v})
@@ -216,7 +219,6 @@ def initialize_confs(config_file):
     # Allow inline comment with #
     confs_i = configparser.ConfigParser(inline_comment_prefixes=("#"))
     confs_i.read_string(config_template)
-    confs_i["config"]["version"]
     confs_f = configparser.ConfigParser(inline_comment_prefixes=("#"))
     if os.path.exists(config_file):
         confs_f.read(config_file)
@@ -228,9 +230,12 @@ def initialize_confs(config_file):
         else:
             error_exit(
                 '''\
-~/.imediff is in the wrong version: {}.
-Erase it and get the correct template with "imediff -t"'''.format(
-                    confs_f["config"]["version"]
+Error in ~/.imediff: version mismatch
+        the current version:  {}
+        the required version: {}
+
+Erase ~/.imediff and get the correct template with "imediff -t"'''.format(
+                    confs_f["config"]["version"], confs_i["config"]["version"]
                 )
             )
     else:
