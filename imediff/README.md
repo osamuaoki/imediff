@@ -37,7 +37,7 @@ element.  As for longest contiguous matching subsequence, see:
   * https://xlinux.nist.gov/dads/HTML/ratcliffObershelp.html
   * PATTERN MATCHING: THE GESTALT APPROACH: https://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/DDJ/1988/8807/8807c/8807c.htm
 
-## Alternative algorithms for diff2 
+## Alternative algorithms for diff2
 
 I found several interesting blogs and source codes examples.
 
@@ -62,7 +62,7 @@ I found several interesting blogs and source codes examples.
     https://tociyuki.hatenablog.jp/entry/20151207/1449474412
   * テキスト差分 Wu によるO(NP) 法の Hirschberg 法化まとめ
     https://tociyuki.hatenablog.jp/entry/20170526/1495801840
-  * Simple variant of diff(1) program 
+  * Simple variant of diff(1) program
     https://gist.github.com/tociyuki/09eae66a6650b5f7defc
   * word based unified color differences between two texts (The BSD 3-Clause)
     https://github.com/tociyuki/udiff-cxx11
@@ -77,7 +77,7 @@ I found several interesting blogs and source codes examples.
 * http://wiki.c2.com/?DiffAlgorithm
 
 These were too much to digest but there seems to be newer algorithm than one
-used in Python library for diff2. 
+used in Python library for diff2.
 
   * unified format diff between texts line by line with Wu's O(NP) and Hirschberg's linear space method in C++11
     https://gist.github.com/tociyuki/acedd33ca4913f1ab8e9
@@ -89,7 +89,7 @@ python standard library is fast enough.
 
   * Paul Heckel (April 1978). "A technique for isolating differences between files"
     * http://documents.scribd.com/docs/10ro9oowpo1h81pgh1as.pdf
-  * https://gist.github.com/ndarville/3166060 
+  * https://gist.github.com/ndarville/3166060
   * https://stackoverflow.com/questions/42755035/difficulty-understanding-paul-heckels-diff-algorithm
   * https://www.npmjs.com/package/heckel-diff
   * https://github.com/mcudich/HeckelDiff/blob/master/Source/Diff.swift

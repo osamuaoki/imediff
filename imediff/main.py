@@ -86,7 +86,7 @@ def initialize_args():
 
     Input:
         commandline
-    
+
     Return:
         args    argument values
     """
