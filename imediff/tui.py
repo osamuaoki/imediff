@@ -115,6 +115,24 @@ Line index    ={row: 5d} (total ={conth: 5d})
 Column offset ={col: 5d}"""
 )
 
+# Keep this under 74 char/line for better looks
+_nonclean = _(
+    """\
+This requirement of the clean merge for 'save and exit' can be disabled by
+specifying the "--sloppy" option to the imediff command.  Alternatively,
+you can evade this requirement by pressing "m" on all non-clean merges to
+make them as the manually edited text data."""
+)
+
+# Keep this under 74 char/line for better looks
+# I need this hack to avoid translation of tutorial.
+nonclean = """\
+This requirement of the clean merge for 'save and exit' can be disabled by
+specifying the "--sloppy" option to the imediff command.  Alternatively,
+you can evade this requirement by pressing "m" on all non-clean merges to
+make them as the manually edited text data."""
+
+
 # Keep this under 76 char/line to fit this in the 80 char terminal
 _tutorial = """\
 Quick start:
@@ -173,7 +191,7 @@ single key command.  Pressing "a" displays the "file_a" content.  Pressing
 
 By alternating "a" and "b" keys, you can see the difference in place which
 is easy on you with the constant line of sight.  (This is the same great
-feature inherited from the original imediff2 program.)  
+feature inherited from the original imediff2 program.)
 
 You can display both the "file_a" content and the "file_b" content with 2
 key commands.  Pressing "d" displays 2 blocks of lines organized somewhat
@@ -182,7 +200,7 @@ lines organized somewhat like "wdiff" (mode "f").
 
 Pressing "m" starts an editor to edit the focused chunk from any modes to
 create a manually merged content.  Upon exiting the editor, its result is
-kept in the editor result buffer.  Even after pressing "a", "b", "d", or 
+kept in the editor result buffer.  Even after pressing "a", "b", "d", or
 "f", the content of the editor result buffer can be recalled and displayed
 by pressing "e".
 
@@ -191,11 +209,11 @@ Pressing "M" in mode "e" removes the editor result buffer.
 When you press one of the upper case "A", "B", "D", "E", "F", this sets
 all chunks to the corresponding lower case mode.
 
-Once you are satisfied with the cleanly merge result on screen, type "x" to
+Once you are satisfied with the cleanly merged result on screen, type "x" to
 save the displayed content to "file_o" and exit the imediff program.  Here,
-the editor buffer content is always treated as cleanly merged.  (This
-requirement of the cleanly merge result can be disabled by specifying the
-"--sloppy" option.)
+the editor buffer content is always treated as cleanly merged.
+
+{}
 
 Although the imediff program is practically WYSIWYG, there is one notable
 exception.  For the deleted content in mode "a" or "b", the imediff program
@@ -280,7 +298,9 @@ Some keys are aliased for "Merge with 2 files" for your convenience:
 
 The "diff3 -m" has an odd feature for the merge when "file_a" and "file_c"
 undergo identical changes from "file_b".  This imediff program results in a
-more intuitive merge result."""
+more intuitive merge result.""".format(
+    nonclean
+)
 
 
 class TextPad(TextData):  # TUI data
@@ -436,7 +456,7 @@ class TextPad(TextData):  # TUI data
                     not self.sloppy and self.get_unresolved_count() == 0
                 ):
                     if not self.confirm_exit or self.popup(
-                        _("Do you save and exit? (Press '{y:c}' to exit)").format(
+                        _("Do you 'save and exit'? (Press '{y:c}' to exit)").format(
                             y=self.rkc["y"]
                         )
                     ):
@@ -446,12 +466,14 @@ class TextPad(TextData):  # TUI data
                 else:
                     self.popup(
                         _(
-                            "Unresolved contents exist. (Press '{y:c}' to continue)"
+                            "Can't 'save and exit' due to the non-clean merge. (Press '{y:c}' to continue)"
+                            + "\n\n"
+                            + _nonclean
                         ).format(y=self.rkc["y"])
                     )
             elif ch == "q":
                 if not self.confirm_exit or self.popup(
-                    _("Do you quit without saving? (Press '{y:c}' to quit)").format(
+                    _("Do you 'quit without saving'? (Press '{y:c}' to quit)").format(
                         y=self.rkc["y"]
                     )
                 ):

@@ -26,10 +26,7 @@ Boston, MA 02110-1301, USA.
 
 import curses
 
-# configuration
-
-VERSION = "2.0"
-PACKAGE = "imediff"
+# Update version below only when configuration API changes
 
 config_template = """\
 # imediff configuration file
@@ -52,7 +49,7 @@ select_d = d        # set mode d to select diff content
 select_e = e        # set mode e to select editor buffer
 select_f = f        # set mode f to select wdiff content
 select_g = g        # set _g_ood default mode (diff3)
-select_h = h        # show _h_elp screen 
+select_h = h        # show _h_elp screen
 select_j = j        # move down display scope
 select_k = k        # move up display scope
 select_m = m        # start editor to _m_odify content

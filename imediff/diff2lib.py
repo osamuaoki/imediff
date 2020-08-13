@@ -39,7 +39,7 @@ def _tag2t(tag):
 class SequenceMatcher2(difflib.SequenceMatcher):
 
     """
-    SequenceMatcher2 is a flexible wrapper class for comparing pairs of 
+    SequenceMatcher2 is a flexible wrapper class for comparing pairs of
     sequences of any type, so long as the sequence elements are hashable.
     The is to accommodate different algorithms available.
 
