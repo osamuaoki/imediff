@@ -1,7 +1,7 @@
 # IMEDIFF - an interactive fullscreen merge tool for DIFF2/3
 
  * Copyright (C) 2003,2004 Jarno Elonen <elonen@iki.fi>
- * Copyright (C) 2018 Osamu Aoki <osamu@debian.org>
+ * Copyright (C) 2018-2020 Osamu Aoki <osamu@debian.org>
 
 Released under the GNU General Public License, 2.0+.
 See LICENSE for details
@@ -99,36 +99,27 @@ You can make your own Debian package as:
     $ git clone https://github.com/osamuaoki/imediff.git
     $ cd imediff
     $ git checkout master
-    $ git deborig # to make ../*.orig.tar.xz
+    $ git deborig master # to make ../*.orig.tar.xz
     $ pdebuild
-    $ sudo dpkg -i ../imediff_2.0-1_all.deb
+    $ cd ..
+    $ sudo dpkg -i imediff_2.0-1_all.deb
 
-Here, we assume the upstream version to be 2.0, and the Debian revision to be
-1.
+Here, we assume the upstream version to be 2.5, and the Debian revision to be 1
+as defined in debian/changelog.  I currently use the dgit-maint-merge(7) work
+flow but I may remove debian/* from the published *.orig.tar.xz.
 
-Please make sure to use tailing backslash for --prefix argument and bump
-upstream version as needed.
+Please make sure to use tailing backslash for --prefix argument to the
+./setup.py when testing this source and bump the package version as needed.
 
-### sharing changed source tree
-
-You can fork this source to your account, e.g., `yourname`, and work on it as:
-
-    $ git clone git@github.com:yourname/imediff.git
-    $ cd imediff
-    $ git checkout --track origin/upstream
-     ... hack source
-    $ git checkout master
-     ... hack source
-    $ git checkout upstream
-     ... hack source
-    $ git push --all
-
-This way, you can share your changes back to me easily via "pull request".
+If you have bug fixes or feature enhancement propose changes to me via "pull
+request"
 
 ### updating manpages
 
 Please make sure to fit each code below 80-88 chars. (Run "black" on python
-code)
+code)  In case if reformat errors, check its syntax by:
+
+   $ python3 -m py_compile program.py
 
 Manpages need to be updated from XML files with "make" first in doc/ directory
 when you edit it.
@@ -172,5 +163,5 @@ To test the installed module, invoke the test script directly as:
   * https://packages.debian.org/sid/imediff (binary package in Debian)
   * https://bugs.debian.org/cgi-bin/pkgreport.cgi?repeatmerged=0;src=imediff (BTS)
 
-This is written by Osamu Aoki on February 2019
+This is written by Osamu Aoki on February 2019 and updated on August 2020.
 
