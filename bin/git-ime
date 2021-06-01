@@ -3,7 +3,7 @@
 #
 # git-ime: Split changes on a file into multiple git commits
 #
-#   Copyright (c) 2015 Osamu Aoki
+#   Copyright (c) 2015-2021 Osamu Aoki
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -35,11 +35,11 @@ DESCRIPTION: Split changes on a file into multiple git commits"
 }
 
 restore() {
-if [ -e $FILENAME.tmp_b ]; then
-    mv -f $FILENAME.tmp_b $FILENAME
-    rm -f $FILENAME.tmp_b
+if [ -e "$FILENAME.tmp_b" ]; then
+    mv -f "$FILENAME.tmp_b" "$FILENAME"
+    rm -f "$FILENAME.tmp_b"
 fi
-rm -f $FILENAME.tmp_a
+rm -f "$FILENAME.tmp_a"
 echo "--------------------"
 git status || true
 }
@@ -71,15 +71,15 @@ fi
 if [ -z "${1%%/*}" ]; then
     FILENAME="$1"
 else
-    FILENAME="`pwd`/$1"
+    FILENAME="$(pwd)/$1"
 fi
 shift
 # sanity checks
-if [ -e $FILENAME.tmp_a ]; then
+if [ -e "$FILENAME.tmp_a" ]; then
     echo "File conflict, aborting... : $FILENAME.tmp_a" >&2
     help
     exit 1
-elif [ -e $FILENAME.tmp_b ]; then
+elif [ -e "$FILENAME.tmp_b" ]; then
     echo "File conflict, aborting... : $FILENAME.tmp_b" >&2
     help
     exit 1
@@ -89,9 +89,9 @@ elif [ -n "${1%%#}" ]; then
     exit 1
 fi
 # check for git repo
-d=`pwd`
-while [ ! -d "$d/.git" -a "$d" != / ];
-    do d="`readlink -f $d/..`"; done
+d="$(pwd)"
+while [ ! -d "$d/.git" ] && [ "$d" != / ];
+do d="$(readlink -f "$d/..")"; done
 if [ -d "$d/.git" ] && [ -r "$d/.git/COMMIT_EDITMSG" ]; then
     OPT_COMMIT0="-e -F $d/.git/COMMIT_EDITMSG"
 else
@@ -104,7 +104,7 @@ if ! git diff --cached --quiet ; then
     git commit -m "Commit staged changes"
 fi
 
-if ! git diff --quiet $FILENAME ; then
+if ! git diff --quiet "$FILENAME" ; then
     echo "Local changes found.  Partial commit series from HEAD to local."
     GIT_REV="HEAD"
     OPT_COMMIT="$OPT_COMMIT0"
@@ -112,7 +112,7 @@ else
     echo "No local changes. Partial commit series from HEAD^ to HEAD"
     GIT_REV="HEAD^"
     OPT_COMMIT="--amend"
-    if git diff --quiet HEAD^..HEAD $FILENAME ; then
+    if git diff --quiet HEAD^..HEAD "$FILENAME" ; then
         echo "No changes for HEAD^..HEAD, nothing to edit for $FILENAME"
         exit 1
     fi
@@ -124,23 +124,23 @@ if ! git rev-parse --verify --quiet $GIT_REV >/dev/null ; then
 fi
 
 # new
-mv $FILENAME $FILENAME.tmp_b
+mv "$FILENAME" "$FILENAME.tmp_b"
 #old
-git checkout $GIT_REV $FILENAME
-mv $FILENAME $FILENAME.tmp_a
+git checkout "$GIT_REV $FILENAME"
+mv "$FILENAME" "$FILENAME.tmp_a"
 echo "ready to loop"
 while true
 do
-$IMEDIFF -o $FILENAME $FILENAME.tmp_a $FILENAME.tmp_b
-chmod --reference $FILENAME.tmp_b $FILENAME
-git add $FILENAME
-git commit $OPT_COMMIT $FILENAME
-mv $FILENAME $FILENAME.tmp_a
-if diff -q -w $FILENAME.tmp_a $FILENAME.tmp_b ; then
+"$IMEDIFF" -o "$FILENAME" "$FILENAME.tmp_a" "$FILENAME.tmp_b"
+chmod --reference "$FILENAME.tmp_b" "$FILENAME"
+git add "$FILENAME"
+git commit $OPT_COMMIT "$FILENAME"
+mv "$FILENAME" "$FILENAME.tmp_a"
+if diff -q -w "$FILENAME.tmp_a" "$FILENAME.tmp_b" ; then
     echo "No more changes"
     break
 fi
 OPT_COMMIT="$OPT_COMMIT0"
 done
 echo "$FILENAME committed in series."
-# vim:se tw=78 ai sts=4 et:
+# vim:se tw=78 ai sts=4 sw=4 et:
