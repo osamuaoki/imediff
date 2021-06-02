@@ -192,21 +192,6 @@ Specify configuration file to use.  (default="~/.imediff")',
         else:
             args.default_mode = "g"  # default diff3
     config_file = os.path.expanduser(args.conf)
-    if args.template:
-        if not os.path.exists(config_file):
-            # logger.debug("create configuration file: {}".format(args.conf))
-            try:
-                with open(
-                    config_file, mode="w", buffering=io.DEFAULT_BUFFER_SIZE
-                ) as ofp:
-                    ofp.write(config_template)
-                    sys.exit(0)
-            except IOError:
-                error_exit(
-                    "Error in creating configuration file: {}".format(config_file)
-                )
-        else:
-            error_exit("Erase {} before 'imediff -t'".format(args.conf))
     return args
 
 
@@ -252,6 +237,9 @@ def main():
     # preparation and arguments
     locale.setlocale(locale.LC_ALL, "")
     args = initialize_args()
+    if args.template:
+        create_template(config_file)
+        sys.exit(0)
 
     # logging
     logger.setLevel(logging.DEBUG)
