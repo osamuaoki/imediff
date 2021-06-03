@@ -1,6 +1,6 @@
 >>> args >>>>>>> key -> value >>>>>>>>>>>>>>>>
 >>> confs['section'] >>>>>>> 'key' = 'value' >>>>>>>>>>>>>>>>
->>> confs['config'] >>> 'version' = '2.0'
+>>> confs['config'] >>> 'version' = '2.3'
 >>> confs['config'] >>> 'confirm_exit' = 'True'
 >>> confs['config'] >>> 'confirm_quit' = 'True'
 >>> confs['key'] >>> 'select_a' = 'a'
@@ -19,6 +19,7 @@
 >>> confs['key'] >>> 'select_q' = 'q'
 >>> confs['key'] >>> 'select_s' = 's'
 >>> confs['key'] >>> 'select_t' = 't'
+>>> confs['key'] >>> 'select_w' = 'w'
 >>> confs['key'] >>> 'select_x' = 'x'
 >>> confs['key'] >>> 'select_y' = 'y'
 >>> confs['key'] >>> 'select_z' = 'z'
@@ -43,7 +44,7 @@
 >>> confs['word_separator'] >>> 'ws2' = '|'
 >>> confs['word_separator'] >>> 'ws3' = '}'
 >>> confs_internal['section'] >>>>>>> 'key' = 'value' >>>>>>>>>>>>>>>>
->>> confs['config'] >>> 'version' = '2.0'
+>>> confs['config'] >>> 'version' = '2.3'
 >>> confs['config'] >>> 'confirm_exit' = 'True'
 >>> confs['config'] >>> 'confirm_quit' = 'True'
 >>> confs['key'] >>> 'select_a' = 'a'
@@ -62,6 +63,7 @@
 >>> confs['key'] >>> 'select_q' = 'q'
 >>> confs['key'] >>> 'select_s' = 's'
 >>> confs['key'] >>> 'select_t' = 't'
+>>> confs['key'] >>> 'select_w' = 'w'
 >>> confs['key'] >>> 'select_x' = 'x'
 >>> confs['key'] >>> 'select_y' = 'y'
 >>> confs['key'] >>> 'select_z' = 'z'
