@@ -1,6 +1,6 @@
 <!DOCTYPE refentry PUBLIC "-//Norman Walsh/DTD DocBk XML V4.1.2//EN"
 "http://www.docbook.org/xml/4.1.2/docbookx.dtd" [
-
+  <!-- vim: set tw=78 et sw=2 sts=2 ft=txt: -->
   <!ENTITY holder1     "<personname> <firstname>Jarno</firstname>
   <surname>Elonen</surname> </personname> <email>elonen@iki.fi</email>">
   <!ENTITY holder2     "<personname> <firstname>Osamu</firstname>
@@ -136,10 +136,25 @@
 
       <varlistentry>
         <term><option>-n</option></term>
+        <term><option>--non-interactive</option></term>
         <listitem>
           <para>Non-interactive mode.</para>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term><option>--macro=<replaceable>MACRO</replaceable></option></term>
+        <listitem>
+          <para>
+            Pre-load MACRO to keyboard input. MACRO key binding is
+            the same as the normal keyboard input and can be
+            remapped by the configuration file. The only exception is
+            ':' which means end MACRO input and process keyboard
+            input interactively.
+          </para>
+        </listitem>
+      </varlistentry>
+
 
       <varlistentry>
         <term><option>-a</option></term>
@@ -219,10 +234,10 @@
     <variablelist>
 
       <varlistentry>
-        <term><keysym>x</keysym></term>
+	      <term><keysym>w</keysym></term> <term><keysym>x</keysym></term>
         <listitem>
-          <para>Save and exit if merge is resolved. (default behavior)</para>
-          <para>Save and exit unconditionally. (when <option>--sloppy</option> specified)</para>
+          <para>Write and eXit if merge is resolved. (default behavior)</para>
+          <para>Write and eXit unconditionally. (when <option>--sloppy</option> specified)</para>
         </listitem>
       </varlistentry>
 

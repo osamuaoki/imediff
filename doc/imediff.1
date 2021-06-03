@@ -1,7 +1,7 @@
 '\" t
 .\"     Title: imediff
 .\"    Author: Jarno Elonen <elonen@iki.fi>
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
 .\"      Date: 2018-12-11
 .\"    Manual: imediff User Manual
 .\"    Source: imediff
@@ -87,9 +87,14 @@ Force monochrome display\&.
 Allow one to save unresolved contents\&.
 .RE
 .PP
-\fB\-n\fR
+\fB\-n\fR, \fB\-\-non\-interactive\fR
 .RS 4
 Non\-interactive mode\&.
+.RE
+.PP
+\fB\-\-macro=\fR\fB\fIMACRO\fR\fR
+.RS 4
+Pre\-load MACRO to keyboard input\&. MACRO key binding is the same as the normal keyboard input and can be remapped by the configuration file\&. The only exception is \*(Aq:\*(Aq which means end MACRO input and process keyboard input interactively\&.
 .RE
 .PP
 \fB\-a\fR
@@ -150,11 +155,11 @@ Show version and exit\&.
 .PP
 The following keyboard commands are available in the editor as default\&.
 .PP
-x
+w, x
 .RS 4
-Save and exit if merge is resolved\&. (default behavior)
+Write and eXit if merge is resolved\&. (default behavior)
 .sp
-Save and exit unconditionally\&. (when
+Write and eXit unconditionally\&. (when
 \fB\-\-sloppy\fR
 specified)
 .RE

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: git-ime
 .\"    Author: Osamu Aoki
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2018-10-17
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2021-06-04
 .\"    Manual: git-ime User Manual
 .\"    Source: git-ime
 .\"  Language: English
 .\"
-.TH "GIT\-IME" "1" "2018\-10\-17" "git-ime" "git-ime User Manual"
+.TH "GIT\-IME" "1" "2021\-06\-04" "git-ime" "git-ime User Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -28,39 +28,33 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "NAME"
-git-ime \- An interactive git commit selection tool
+git-ime \- An interactive git commit split tool
 .SH "SYNOPSIS"
 .HP \w'\fBgit\-ime\fR\ 'u
-\fBgit\-ime\fR {\fIfile\fR}
+\fBgit\-ime\fR [\fB\-a\fR] [\fB\-\-auto\fR] [\fB\-v\fR] [\fB\-\-verbose\fR] [\fB\-h\fR] [\fB\-\-help\fR]
 .SH "DESCRIPTION"
 .PP
-This is a simple shell wrapper script on
-\fBimediff\fR
-to make it work well with
+This
+\fBgit ime\fR
+is a simple shell wrapper script on
 \fBgit\fR
-command\&.
-.PP
-If any local uncommitted change is found on
-\fIfile\fR,
+and
 \fBimediff\fR
-is executed with HEAD and local version of
-\fIfile\fR\&. With
-\fBimediff\fR, you can select a set of changes to the
-\fIfile\fR
-and to commit it to the git repository as a meaningful chunk\&. This script repeats this process until all changes are committed\&.
+to split the latest commit from HEAD^ to HEAD on the current git repository into multiple commits\&.
 .PP
-If no local uncommitted change is found on
-\fIfile\fR,
+If any staged changes or local uncommitted changes are found in the git repository,
+\fBgit ime\fR
+immediately exits without changes to be on the safe side\&.
+.PP
+If the latest commit involves multiple files, this big commit is split by the file into multiple smaller commits involving a single file\&.
+.PP
+If the latest commit involves only a single file, the commit is split into multiple smaller commits involving a set of meaningful partial changes selected by
 \fBimediff\fR
-is executed with HEAD^ and HEAD version of
-\fIfile\fR\&. With
-\fBimediff\fR, you can select a set of changes to the
-\fIfile\fR
-and to commit it to the git repository as a meaningful chunk\&. This script repeats this process until all changes are committed\&.
+interactively\&.
 .PP
 This
 \fBgit\-ime\fR
-is also useful during interactive execution of
+is not only useful at the checked out branch head but also at "edit" prompt during the interactive execution of
 \fBgit rebase \-i \fR\fB\fItreeish\fR\fR\&.
 .PP
 Please note this
@@ -68,6 +62,32 @@ Please note this
 creates or overwrites
 \fIfile\fR\&.tmp_a and
 \fIfile\fR\&.tmp_b files\&. So they should not exist before execution of this command\&.
+.SH "OPTIONS"
+.PP
+\fB\-a\fR, \fB\-\-auto\fR
+.RS 4
+The
+\fBgit ime\fR
+command executes
+\fBimediff\fR
+with
+\fB\-\-macro "Abw"\fR
+to select a series of minimum partial changes automatically, instead\&.
+.RE
+.PP
+\fB\-v\fR, \fB\-\-verbose\fR
+.RS 4
+The
+\fBgit ime\fR
+command is executed with verbose console outputs\&.
+.RE
+.PP
+\fB\-h\fR, \fB\-\-help\fR
+.RS 4
+The
+\fBgit ime\fR
+outputs help message\&.
+.RE
 .SH "SEE ALSO"
 .PP
 imediff (1), git(1), and git\-rebase(1)\&.
@@ -84,5 +104,5 @@ Original author of this script\&.
 .RE
 .SH "COPYRIGHT"
 .br
-Copyright \(co 2018 osamu <osamu@debian\&.org>
+Copyright \(co 2018-2021 Osamu Aoki <osamu@debian\&.org>
 .br
