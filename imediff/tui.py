@@ -50,7 +50,7 @@ imediff merges 2 different input files using 5 modes:
  * mode f: display wdiff2(a,b) by character in {color_f}
 
 key commands          induced actions
-{x:c}                     save and exit
+{w:c},{x:c}                   save and exit
 {q:c}                     quit without saving
 {a:c}/{b:c}/{d:c}/{e:c}/{f:c}             set a chunk to a/b/d/e/f mode
 1/2/4/5/6             set a chunk to a/b/d/e/f mode (alternative)
@@ -83,7 +83,7 @@ imediff merges 3 different input files using 7 modes:
            set mode (df) in case of conflicts
 
 key commands          induced actions
-{x:c}                     save and exit
+{w:c},{x:c}                   save and exit
 {q:c}                     quit without saving
 {a:c}/{b:c}/{c:c}/{d:c}/{e:c}/{f:c}/{g:c}         set a chunk to a/b/c/d/e/f/g mode
 1/2/3/4/5/6/7         set a chunk to a/b/c/d/e/f/g mode (alternative)
@@ -114,6 +114,24 @@ Chunk index   ={active: 5d} (total ={total: 5d}, unresolved ={unresolved: 5d})
 Line index    ={row: 5d} (total ={conth: 5d})
 Column offset ={col: 5d}"""
 )
+
+# Keep this under 74 char/line for better looks
+_nonclean = _(
+    """\
+This requirement of the clean merge for 'save and exit' can be disabled by
+specifying the "--sloppy" option to the imediff command.  Alternatively,
+you can effectively evade this requirement by pressing "m" on all
+non-clean merges to make them as the manually edited text data."""
+)
+
+# Keep this under 74 char/line for better looks
+# I need this hack to avoid translation of tutorial for now. XXX FIXME XXX
+nonclean = """\
+This requirement of the clean merge for 'save and exit' can be disabled by
+specifying the "--sloppy" option to the imediff command.  Alternatively,
+you can effectively evade this requirement by pressing "m" on all
+non-clean merges to make them as the manually edited text data."""
+
 
 # Keep this under 76 char/line to fit this in the 80 char terminal
 _tutorial = """\
@@ -173,7 +191,7 @@ single key command.  Pressing "a" displays the "file_a" content.  Pressing
 
 By alternating "a" and "b" keys, you can see the difference in place which
 is easy on you with the constant line of sight.  (This is the same great
-feature inherited from the original imediff2 program.)  
+feature inherited from the original imediff2 program.)
 
 You can display both the "file_a" content and the "file_b" content with 2
 key commands.  Pressing "d" displays 2 blocks of lines organized somewhat
@@ -182,7 +200,7 @@ lines organized somewhat like "wdiff" (mode "f").
 
 Pressing "m" starts an editor to edit the focused chunk from any modes to
 create a manually merged content.  Upon exiting the editor, its result is
-kept in the editor result buffer.  Even after pressing "a", "b", "d", or 
+kept in the editor result buffer.  Even after pressing "a", "b", "d", or
 "f", the content of the editor result buffer can be recalled and displayed
 by pressing "e".
 
@@ -191,11 +209,12 @@ Pressing "M" in mode "e" removes the editor result buffer.
 When you press one of the upper case "A", "B", "D", "E", "F", this sets
 all chunks to the corresponding lower case mode.
 
-Once you are satisfied with the cleanly merge result on screen, type "x" to
-save the displayed content to "file_o" and exit the imediff program.  Here,
-the editor buffer content is always treated as cleanly merged.  (This
-requirement of the cleanly merge result can be disabled by specifying the
-"--sloppy" option.)
+All parts of imediff data normally need to select "a", "b", or "e" (excluding
+"d" and "f") before writing the merge result unless "--sloppy" is specified
+before writing the result.  Type "w" or "x" to write the displayed content to
+"file_o" and exit the imediff program.
+
+{}
 
 Although the imediff program is practically WYSIWYG, there is one notable
 exception.  For the deleted content in mode "a" or "b", the imediff program
@@ -236,9 +255,14 @@ on a chunk for 3 files in the following order:
  * If the editor result buffer has content, mode is set to "e".
  * If a chunk is resolved cleanly, mode is set to "a", "c", or "g".
    This overrides previous manual settings such as "a", "b", or "c".
- * If a chunk isn't resolved cleanly, mode is left as mode "g" or "f".
+ * If a chunk isn't resolved cleanly, mode is left as mode "d" or "f".
 
 By alternating "a" and "c" keys, you can see the difference in place.
+
+All parts of imediff data normally need to select "a", "b", "c", "g" or "e"
+(excluding "d" and "f") before writing the merge result unless "--sloppy" is
+specified before writing the result.
+
 The rests are mostly the same as "Merge with 2 files".
 
 Terminal
@@ -280,7 +304,9 @@ Some keys are aliased for "Merge with 2 files" for your convenience:
 
 The "diff3 -m" has an odd feature for the merge when "file_a" and "file_c"
 undergo identical changes from "file_b".  This imediff program results in a
-more intuitive merge result."""
+more intuitive merge result.""".format(
+    nonclean
+)
 
 
 class TextPad(TextData):  # TUI data
@@ -431,12 +457,12 @@ class TextPad(TextData):  # TUI data
             else:
                 c = self.getch_translated()
             ch = chr(c)
-            if ch == "x" or c == curses.KEY_EXIT or c == curses.KEY_SAVE:
+            if ch == "w" or ch == "x" or c == curses.KEY_EXIT or c == curses.KEY_SAVE:
                 if self.sloppy or (
                     not self.sloppy and self.get_unresolved_count() == 0
                 ):
                     if not self.confirm_exit or self.popup(
-                        _("Do you save and exit? (Press '{y:c}' to exit)").format(
+                        _("Do you 'save and exit'? (Press '{y:c}' to exit)").format(
                             y=self.rkc["y"]
                         )
                     ):
@@ -446,12 +472,14 @@ class TextPad(TextData):  # TUI data
                 else:
                     self.popup(
                         _(
-                            "Unresolved contents exist. (Press '{y:c}' to continue)"
+                            "Can't 'save and exit' due to the non-clean merge. (Press '{y:c}' to continue)"
+                            + "\n\n"
+                            + _nonclean
                         ).format(y=self.rkc["y"])
                     )
             elif ch == "q":
                 if not self.confirm_exit or self.popup(
-                    _("Do you quit without saving? (Press '{y:c}' to quit)").format(
+                    _("Do you 'quit without saving'? (Press '{y:c}' to quit)").format(
                         y=self.rkc["y"]
                     )
                 ):
@@ -716,11 +744,20 @@ class TextPad(TextData):  # TUI data
         return
 
     def getch_translated(self):
-        try:
-            c = self.stdscr.getch()
-        except:
-            c = ord("q")  # quit w/o saving for ^C
-        c = self.c_translated(c)
+        """Macro parsing instead of curses getch"""
+        if len(self.macro):
+            c = ord(self.macro[:1])
+            c = self.c_translated(c)
+            if c == ord(":"):
+                try:
+                    c = self.stdscr.getch()
+                except:
+                    c = ord("q")  # quit w/o saving for ^C
+                c = self.c_translated(c)
+            else:
+                self.macro = self.macro[1:]
+        else:
+            c = 0  # End of MACRO
         return c
 
     def popup(self, text):
@@ -816,6 +853,7 @@ class TextPad(TextData):  # TUI data
                 color_d=self.color_d,
                 color_e=self.color_e,
                 color_f=self.color_f,
+                w=self.rkc["w"],
                 x=self.rkc["x"],
                 q=self.rkc["q"],
                 a=self.rkc["a"],
@@ -856,6 +894,7 @@ class TextPad(TextData):  # TUI data
                 color_d=self.color_d,
                 color_e=self.color_e,
                 color_f=self.color_f,
+                w=self.rkc["w"],
                 x=self.rkc["x"],
                 q=self.rkc["q"],
                 a=self.rkc["a"],

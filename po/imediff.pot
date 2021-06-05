@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-16 21:38+0900\n"
+"POT-Creation-Date: 2021-06-03 16:37+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,7 +30,7 @@ msgid ""
 " * mode f: display wdiff2(a,b) by character in {color_f}\n"
 "\n"
 "key commands          induced actions\n"
-"{x:c}                     save and exit\n"
+"{w:c},{x:c}                   save and exit\n"
 "{q:c}                     quit without saving\n"
 "{a:c}/{b:c}/{d:c}/{e:c}/{f:c}             set a chunk to a/b/d/e/f mode\n"
 "1/2/4/5/6             set a chunk to a/b/d/e/f mode (alternative)\n"
@@ -60,11 +60,11 @@ msgid ""
 " * mode d: display diff3(a,b,c) by line       in {color_d}\n"
 " * mode e: display editor result buffer       in {color_e}\n"
 " * mode f: display wdiff3(a,b,c) by character in {color_f}\n"
-" * mode g: set good mode from (a,b,c,e,f) if merged cleanly, or\n"
-"           set mode (d) in case of conflicts\n"
+" * mode g: set good mode from (a,b,c,e,g) if merged cleanly, or\n"
+"           set mode (df) in case of conflicts\n"
 "\n"
 "key commands          induced actions\n"
-"{x:c}                     save and exit\n"
+"{w:c},{x:c}                   save and exit\n"
 "{q:c}                     quit without saving\n"
 "{a:c}/{b:c}/{c:c}/{d:c}/{e:c}/{f:c}/{g:c}         set a chunk to a/b/c/d/e/f/"
 "g mode\n"
@@ -101,12 +101,28 @@ msgid ""
 "Column offset ={col: 5d}"
 msgstr ""
 
-#: ../imediff/tui.py:418
-#, python-brace-format
-msgid "Do you save and exit? (Press '{y:c}' to exit)"
+#: ../imediff/tui.py:120
+msgid ""
+"This requirement of the clean merge for 'save and exit' can be disabled by\n"
+"specifying the \"--sloppy\" option to the imediff command.  Alternatively,\n"
+"you can effectively evade this requirement by pressing \"m\" on all\n"
+"non-clean merges to make them as the manually edited text data."
 msgstr ""
 
-#: ../imediff/tui.py:427
+#: ../imediff/tui.py:465
 #, python-brace-format
-msgid "Do you quit without saving? (Press '{y:c}' to quit)"
+msgid "Do you 'save and exit'? (Press '{y:c}' to exit)"
+msgstr ""
+
+#: ../imediff/tui.py:475
+#, python-brace-format
+msgid ""
+"Can't 'save and exit' due to the non-clean merge. (Press '{y:c}' to "
+"continue)\n"
+"\n"
+msgstr ""
+
+#: ../imediff/tui.py:482
+#, python-brace-format
+msgid "Do you 'quit without saving'? (Press '{y:c}' to quit)"
 msgstr ""

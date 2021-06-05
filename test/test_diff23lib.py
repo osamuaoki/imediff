@@ -8,8 +8,13 @@ root of the source tree as:
 
  $ python3 setup.py test
 
+or execute in this directory as:
 
-To test the installed module, invoke this script directly as:
+ $ export PYTHONPATH=../
+ $ python3 test_diff23lib.py -v
+
+To test the system installed module, invoke this script directly in this
+directory as:
 
  $ python3 test_diff23lib.py -v
 

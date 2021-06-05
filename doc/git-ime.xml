@@ -1,12 +1,12 @@
 <!DOCTYPE refentry PUBLIC "-//Norman Walsh/DTD DocBk XML V4.1.2//EN"
 "http://www.docbook.org/xml/4.1.2/docbookx.dtd" [
-
+  <!-- vim: set tw=78 et sw=2 sts=2 ft=txt: -->
   <!ENTITY dhfirstname "<firstname>Osamu</firstname>">
   <!ENTITY dhsurname   "<surname>Aoki</surname>">
-  <!ENTITY dhdate      "<date>2018-10-17</date>">
+  <!ENTITY dhdate      "<date>2021-06-04</date>">
   <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
   <!ENTITY dhemail     "<email>osamu@debian.org</email>">
-  <!ENTITY dhusername  "osamu">
+  <!ENTITY dhusername  "Osamu Aoki">
   <!ENTITY dhucpackage "<refentrytitle>git-ime</refentrytitle>">
   <!ENTITY dhpackage   "git-ime">
   <!ENTITY dhtitle     "git-ime User Manual">
@@ -28,7 +28,7 @@
       <contrib>Original author of this script.</contrib>
     </author>
     <copyright>
-      <year>2018</year>
+      <year>2018-2021</year>
       <holder>&dhusername; &dhemail;</holder>
     </copyright>
     &dhdate;
@@ -40,62 +40,100 @@
   </refmeta>
   <refnamediv>
     <refname>&dhpackage;</refname>
-    <refpurpose>An interactive git commit selection tool</refpurpose>
+    <refpurpose>An interactive git commit split tool</refpurpose>
   </refnamediv>
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>&dhpackage;</command>
-      <arg choice="req"><replaceable>file</replaceable></arg>
+      <arg><option>-a</option></arg>
+      <arg><option>--auto</option></arg>
+      <arg><option>-v</option></arg>
+      <arg><option>--verbose</option></arg>
+      <arg><option>-h</option></arg>
+      <arg><option>--help</option></arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
 
-    <title>DESCRIPTION</title>
+   <title>DESCRIPTION</title>
 
-   <para>This is a simple shell wrapper script on
-   <command>imediff</command> to make it work well with
-   <command>git</command> command.</para>
+<para>This <command>git ime</command> is a simple shell wrapper script on
+<command>git</command> and <command>imediff</command> to split the latest
+commit from HEAD^ to HEAD on the current git repository into multiple
+commits.</para>
 
-   <para>If any local uncommitted change is found on
-   <replaceable>file</replaceable>, <command>imediff</command> is executed
-   with HEAD and local version of <replaceable>file</replaceable>.  With
-   <command>imediff</command>, you can select a set of changes to the
-   <replaceable>file</replaceable> and to commit it to the git repository as a
-   meaningful chunk.  This script repeats this process until all changes are
-   committed.</para>
+<para>If any staged changes or local uncommitted changes are found in the git
+repository, <command>git ime</command> immediately exits without changes to be
+on the safe side.</para>
 
-   <para>If no local uncommitted change is found on
-   <replaceable>file</replaceable>, <command>imediff</command> is executed
-   with HEAD^ and HEAD version of <replaceable>file</replaceable>.  With
-   <command>imediff</command>, you can select a set of changes to the
-   <replaceable>file</replaceable> and to commit it to the git repository as a
-   meaningful chunk.  This script repeats this process until all changes are
-   committed.</para>
+<para>If the latest commit involves multiple files, this big commit is split
+by the file into multiple smaller commits involving a single file.</para>
 
-   <para>This <command>git-ime</command> is also useful during interactive
-   execution of <command>git rebase -i
-   <replaceable>treeish</replaceable></command>.</para>
+<para>If the latest commit involves only a single file, the commit is split
+into multiple smaller commits involving  a set of meaningful partial changes
+selected by <command>imediff</command> interactively.</para>
 
-   <para>Please note this <command>git-ime</command> creates or overwrites
-   <replaceable>file</replaceable>.tmp_a and
-   <replaceable>file</replaceable>.tmp_b files.  So they should not exist
-   before execution of this command.</para>
+<para>This <command>git-ime</command> is not only useful at the checked out
+branch head but also at "edit" prompt during the interactive execution of
+<command>git rebase -i <replaceable>treeish</replaceable></command>.</para>
 
+<para>Please note this <command>git-ime</command> creates or overwrites
+<replaceable>file</replaceable>.tmp_a and
+<replaceable>file</replaceable>.tmp_b files.  So they should not exist before
+execution of this command.</para>
+
+  </refsect1>
+
+  <refsect1>
+    <title>OPTIONS</title>
+
+    <variablelist>
+
+      <varlistentry>
+      <term><option>-a</option></term> <term><option>--auto</option></term>
+        <listitem>
+
+<para>The <command>git ime</command> command executes
+<command>imediff</command> with <command>--macro "Abw"</command> to select a
+series of minimum partial changes automatically, instead.</para>
+
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+      <term><option>-v</option></term> <term><option>--verbose</option></term>
+        <listitem>
+
+<para>The <command>git ime</command> command is executed with verbose console
+outputs.</para>
+
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+      <term><option>-h</option></term> <term><option>--help</option></term>
+        <listitem>
+
+<para>The <command>git ime</command> outputs help message.</para>
+
+        </listitem>
+      </varlistentry>
+
+    </variablelist>
   </refsect1>
 
   <refsect1>
     <title>SEE ALSO</title>
 
-    <para>imediff (1), git(1), and git-rebase(1).</para>
+<para>imediff (1), git(1), and git-rebase(1).</para>
 
   </refsect1>
   <refsect1>
     <title>COPYRIGHT</title>
 
-    <para>This manual page as well as the program itself was written
-      by <author>&dhfirstname; &dhsurname;</author> (&dhemail;).
-      This document has been placed into the Public Domain.
-    </para>
+<para>This manual page as well as the program itself was written by
+<author>&dhfirstname; &dhsurname;</author> (&dhemail;).  This document has been
+placed into the Public Domain.  </para>
 
   </refsect1>
 </refentry>

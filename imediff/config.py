@@ -26,10 +26,7 @@ Boston, MA 02110-1301, USA.
 
 import curses
 
-# configuration
-
-VERSION = "2.0"
-PACKAGE = "imediff"
+# Update version below only when configuration API changes
 
 config_template = """\
 # imediff configuration file
@@ -39,7 +36,7 @@ config_template = """\
 # Key side is case insensitive.
 
 [config]
-version = 2.0       # DON'T EDIT THIS.  This is for future upgrade tracking.
+version = 2.3       # DON'T EDIT THIS.  This is for future upgrade tracking.
 confirm_exit = True # Set as "False" to save and exit without pause
 confirm_quit = True # Set as "False" to quit without pause
 #editor = vim       # Set this to override /usr/bin/editor and $EDITOR
@@ -52,18 +49,19 @@ select_d = d        # set mode d to select diff content
 select_e = e        # set mode e to select editor buffer
 select_f = f        # set mode f to select wdiff content
 select_g = g        # set _g_ood default mode (diff3)
-select_h = h        # show _h_elp screen 
+select_h = h        # show _h_elp screen
 select_j = j        # move down display scope
 select_k = k        # move up display scope
 select_m = m        # start editor to _m_odify content
 select_n = n        # move active selection to _n_ext
 select_p = p        # move active selection to _p_revious
 select_q = q        # _q_uit imediff without saving the result
-select_s = s        # show merge status
-select_t = t        # move active selection to home
-select_x = x        # save result and _e_xit program
+select_s = s        # merge _s_tatus
+select_t = t        # move active selection to home=_t_op
+select_w = w        # _w_rite result and e_x_it program
+select_x = x        # _w_rite result and e_x_it program
 select_y = y        # key for "_Y_es" answer
-select_z = z        # move active selection to end
+select_z = z        # move active selection to end=_z_
 
 [color_diff2]       # color assignment for imediff with 2 files
 color_a = BLUE      # color for mode a  (OLDER)
@@ -118,3 +116,26 @@ cc["CYAN"] = curses.COLOR_CYAN
 cc["MAGENTA"] = curses.COLOR_MAGENTA
 cc["WHITE"] = curses.COLOR_WHITE
 cc["BLACK"] = curses.COLOR_BLACK
+
+def create_template(config_file):
+    if not os.path.exists(config_file):
+        # logger.debug("create configuration file: {}".format(args.conf))
+        try:
+            with open(
+                config_file, mode="w", buffering=io.DEFAULT_BUFFER_SIZE
+            ) as ofp:
+                ofp.write(config_template)
+        except IOError:
+            error_exit(
+                "Error in creating configuration file: {}".format(config_file)
+            )
+    else:
+        error_exit("Erase {} before 'imediff -t'".format(args.conf))
+    return
+
+# Generate template file: TEMPLATE.imediff
+if __name__ == "__main__":
+    import os
+    import io
+    create_template("TEMPLATE.imediff")
+
