@@ -4,7 +4,7 @@ Source: https://github.com/osamuaoki/imediff
 
 Files:     *
 Copyright: 2003-2004 Jarno Elonen <elonen@iki.fi>
-           2015-2018 Osamu Aoki <osamu@debian.org>
+           2015-2021 Osamu Aoki <osamu@debian.org>
 License:   GPL-2.0+
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License as

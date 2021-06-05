@@ -43,6 +43,7 @@ Description: interactive full screen 2/3-way merge tool
  great feature of the imediff command. So for the non-overlapping changes, it
  always yields the clean merge.
  .
- This comes with git-ime script which helps you to split squished git commit
- using imediff and with a support script to use imediff as the backend of
- git-mergetool.
+ This comes with git-ime script which helps you to split a squished git commit
+ into smaller commits.  If the git commit involves only a single file, it is
+ split into smaller commits interactively using imediff.  Also, there is a
+ backend support script for git-mergetool to use imediff.

@@ -8,8 +8,16 @@ imediff (2.3-1) UNRELEASED; urgency=medium
   [ Osamu Aoki ]
   * Bump upstream version to 2.3.
   * dgit compatible source tree.
+  * imediff: factor out create_template
+  * imediff: remove tailing spaces in imediff/*
+  * imediff: refine UI for non-clean save etc.
+  * imediff: update test scripts
+  * git-ime: lint with shellcheck
+  * git-ime: address commit with multiple files
+  * doc: update manpage
+  * doc: update README.md
 
- -- Debian Janitor <janitor@jelmer.uk>  Tue, 28 Apr 2020 18:09:51 +0000
+ -- Osamu Aoki <osamu@debian.org>  Sat, 05 Jun 2021 13:53:55 +0900
 
 imediff (2.2-1.1) unstable; urgency=medium
 
