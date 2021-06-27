@@ -1,9 +1,9 @@
-imediff/cli.py
-imediff/config.py
-imediff/diff2lib.py
-imediff/diff3lib.py
-imediff/__init__.py
-imediff/main.py
-imediff/tui.py
-imediff/utils.py
+src/imediff/cli.py
+src/imediff/config.py
+src/imediff/diff2lib.py
+src/imediff/diff3lib.py
+src/imediff/__init__.py
+src/imediff/main.py
+src/imediff/tui.py
+src/imediff/utils.py
 
