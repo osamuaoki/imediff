@@ -3,14 +3,9 @@
 """
 Test many aspect of imediff package via unittest.
 
-To test the in-source-tree module, invoke this script from setup.py in the
-root of the source tree as:
+To test the in-source-tree module, invoke this script in this directory as:
 
- $ python3 setup.py test
-
-or execute in this directory as:
-
- $ export PYTHONPATH=../
+ $ export PYTHONPATH=../src
  $ python3 test_diff23lib.py -v
 
 To test the system installed module, invoke this script directly in this
@@ -81,14 +76,15 @@ class TestImediff(unittest.TestCase):
 
     def test_diff2lib_doctest(self):
         result = subprocess.call(
-            "cd " + pwd + ";PYTHONPATH=.. ../imediff/diff2lib.py", shell=True
+            "cd " + pwd + "; ./diff2lib.py", shell=True,
         )
         self.assertEqual(result, 0)
         return
 
     def test_diff3lib_doctest(self):
+#            "cd " + pwd + "; pwd; ls -lR",
         result = subprocess.call(
-            "cd " + pwd + ";PYTHONPATH=.. ../imediff/diff3lib.py", shell=True
+            "cd " + pwd + "; ./diff3lib.py", shell=True,
         )
         self.assertEqual(result, 0)
         return
