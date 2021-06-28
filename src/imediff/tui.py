@@ -6,7 +6,7 @@ IMEDIFF - an Interactive Merge Editor for DIFF2 and DIFF3
           Curses based single-pane fullscreen tool
 
 Copyright (C) 2003, 2004 Jarno Elonen <elonen@iki.fi>
-Copyright (C) 2018       Osamu Aoki <osamu@debian.org>
+Copyright (C) 2018-2021  Osamu Aoki <osamu@debian.org>
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -50,7 +50,7 @@ imediff merges 2 different input files using 5 modes:
  * mode f: display wdiff2(a,b) by character in {color_f}
 
 key commands          induced actions
-{w:c},{x:c}                   save and exit
+{w:c},{x:c}                   write and exit
 {q:c}                     quit without saving
 {a:c}/{b:c}/{d:c}/{e:c}/{f:c}             set a chunk to a/b/d/e/f mode
 1/2/4/5/6             set a chunk to a/b/d/e/f mode (alternative)
@@ -83,7 +83,7 @@ imediff merges 3 different input files using 7 modes:
            set mode (df) in case of conflicts
 
 key commands          induced actions
-{w:c},{x:c}                   save and exit
+{w:c},{x:c}                   write and exit
 {q:c}                     quit without saving
 {a:c}/{b:c}/{c:c}/{d:c}/{e:c}/{f:c}/{g:c}         set a chunk to a/b/c/d/e/f/g mode
 1/2/3/4/5/6/7         set a chunk to a/b/c/d/e/f/g mode (alternative)
@@ -141,7 +141,7 @@ Quick start:
 
 ---------------------------------------------------------------------------
     Tutorial for imediff (Interactive Merge Editor)
-                        Copyright (C) 2018 Osamu Aoki <osamu@debian.org>
+                        Copyright (C) 2021 Osamu Aoki <osamu@debian.org>
 ---------------------------------------------------------------------------
 
 The imediff command helps you to merge 2 slightly different files with an

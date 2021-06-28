@@ -6,7 +6,7 @@ IMEDIFF - an Interactive Merge Editor for DIFF2 and DIFF3
           Curses based single-pane fullscreen tool
 
 Copyright (C) 2003, 2004 Jarno Elonen <elonen@iki.fi>
-Copyright (C) 2018       Osamu Aoki <osamu@debian.org>
+Copyright (C) 2018-2021  Osamu Aoki <osamu@debian.org>
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
