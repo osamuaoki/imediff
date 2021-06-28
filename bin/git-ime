@@ -204,7 +204,13 @@ N_FILES="$(git diff --name-only HEAD^ HEAD|wc -l)"
 HASH_NEW="$(git rev-parse --verify --quiet HEAD)"
 HASH_OLD="$(git rev-parse --verify --quiet HEAD^)"
 # Set COMMIT_EDITMSG (repo may have unrelated COMMIT_EDITMSG)
-git commit --amend --no-edit
+vecho '------------------------------------------------------'
+vecho 'I: git commit --amend --no-edit -q'
+git commit --amend --no-edit -q
+vecho '------------------------------------------------------'
+vecho "I: commit message:"
+vecho "$(sed -e 's/^/I: > /' .git/COMMIT_EDITMSG)"
+vecho '------------------------------------------------------'
 
 if [  "$N_FILES" = "0" ]; then
     echo "E: no changes found on HEAD" >&2
@@ -214,24 +220,25 @@ elif [  "$N_FILES" = "1" ]; then
     vecho "I: working on $FILENAME (split single file)"
     apply_imediff "$FILENAME"
 else
-    vecho "I: split into $N_FILES commits ... starting"
-    #git diff --name-only "$HASH_OLD" "$HASH_NEW"
-    git reset "HEAD^"
-    #vecho "I: .... looping"
+    vecho "I: split into $N_FILES commits:"
+    vecho "$( git diff --name-only "$HASH_OLD" "$HASH_NEW" | \
+            sed -e 's/^/I: > /')"
+    vecho '------------------------------------------------------'
+    vecho 'I: git reset -q "HEAD^"'
+    git reset -q "HEAD^"
+    vecho '------------------------------------------------------'
     for FILENAME in $(git diff --name-only "$HASH_OLD" "$HASH_NEW") ; do
-        vecho "I: commit: $FILENAME"
         if [ -e "$FILENAME" ]; then
-            #vecho "I:  -- add/modify"
+            vecho "I: ... add    to   the index and commit: $FILENAME"
             git add "$FILENAME"
         else
-            #vecho "I:  -- remove"
-            git rm -q "$FILENAME"
+            vecho "I: ... remove from the index and commit: $FILENAME"
+            git rm --cached "$FILENAME"
         fi
         set_name "$FILENAME"
         git commit --no-edit -F ".git/COMMIT_EDITMSG"
     done
     vecho "I: split into $N_FILES commits ... done"
-    #git diff --name-only "$HASH_OLD" "$HASH_NEW"
 fi
 
 # vim:se tw=78 ai sts=4 sw=4 et:

@@ -93,9 +93,10 @@ execution of this command.</para>
       <term><option>-a</option></term> <term><option>--auto</option></term>
         <listitem>
 
-<para>The <command>git ime</command> command executes
-<command>imediff</command> with <command>--macro "Abw"</command> to select a
-series of minimum partial changes automatically, instead.</para>
+<para>When operating on a single file change commit, the <command>git
+ime</command> command executes <command>imediff</command> with
+<command>--macro "Abw"</command> to select a series of minimum partial changes
+automatically and repeatedly to create a series of commits, instead.</para>
 
         </listitem>
       </varlistentry>
