@@ -2,7 +2,8 @@ The Debian packaging of imediff is maintained in git, using the merging
 workflow described in dgit-maint-merge(7).  There isn't a patch queue
 that can be represented as a quilt series.
 
-Currently, bss is hosted at https://github.com/osamuaoki/imediff.git
+Currently, imediff is hosted at https://github.com/osamuaoki/imediff.git
+(Since I am the upstream.  I will move to salsa.debian.org as the primary)
 
 Seeing the git history in the above repository should give you good
 clear perspective what is in the single combined diff of this packge.

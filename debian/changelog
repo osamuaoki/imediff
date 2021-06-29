@@ -1,4 +1,4 @@
-imediff (2.3-1) UNRELEASED; urgency=medium
+imediff (2.3-1) unstable; urgency=medium
 
   [ Debian Janitor ]
   * Trim trailing whitespace.
@@ -7,17 +7,19 @@ imediff (2.3-1) UNRELEASED; urgency=medium
 
   [ Osamu Aoki ]
   * Bump upstream version to 2.3.
-  * dgit compatible source tree.
+  * dgit compatible git branch tree.
+  * Modern static setup.cfg and pyproject.toml with setuptools.
+  * Move module source under src/
   * imediff: factor out create_template
   * imediff: remove tailing spaces in imediff/*
   * imediff: refine UI for non-clean save etc.
   * imediff: update test scripts
   * git-ime: lint with shellcheck
-  * git-ime: address commit with multiple files
-  * doc: update manpage
-  * doc: update README.md
+  * git-ime: reorganized to address commit with multiple files
+  * doc: update manpage, update README.md
+  * Update standards version to 4.5.1 and debhelper-compat to 13.
 
- -- Osamu Aoki <osamu@debian.org>  Sat, 05 Jun 2021 13:53:55 +0900
+ -- Osamu Aoki <osamu@debian.org>  Tue, 29 Jun 2021 13:02:40 +0900
 
 imediff (2.2-1.1) unstable; urgency=medium
 
