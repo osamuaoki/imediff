@@ -37,7 +37,7 @@ help() {
     echo "\
 ${0##*/}, version @version@
 
-Usage: ${0##*/} [--verbose|-v] [--auto|-a]
+Usage: ${0##*/} [--verbose|-v] [-q] [--auto|-a]
 
 DESCRIPTION: Split changes into multiple git commits"
 }
@@ -112,8 +112,10 @@ apply_imediff () {
         : > "$FLNM.tmp_b"
     fi
     # older file
-    git checkout "$HASH_OLD" "$FLNM"
-    git reset "$HASH_OLD"
+    # shellcheck disable=SC2086
+    git checkout $OPTQ HEAD^ "$FLNM"
+    # shellcheck disable=SC2086
+    git reset $OPTQ HEAD^
     if [ -e "$FLNM" ]; then
         mv "$FLNM" "$FLNM.tmp_a"
     else
@@ -137,7 +139,8 @@ apply_imediff () {
             if [ -z "$AUTO" ]; then
                 git commit --edit -F ".git/COMMIT_EDITMSG"
             else
-                git commit --no-edit -F ".git/COMMIT_EDITMSG"
+                # shellcheck disable=SC2086
+                git commit $OPTQ --no-edit -F ".git/COMMIT_EDITMSG"
             fi
         fi
         if diff -q "$FLNM" "$FLNM.tmp_b" ; then
@@ -160,10 +163,14 @@ if [ ! -x $IMEDIFF ]; then
 fi
 
 AUTO=""
+OPTQ=""
 while true; do
     case "$1" in
         --auto|-a)
             AUTO="Yes"
+            ;;
+        --quiet|-q)
+            OPTQ="--quiet"
             ;;
         --verbose|-v)
             VERBOSE="Yes"
@@ -188,57 +195,83 @@ fi
 GIT_BASEDIR="$d"
 cd "$GIT_BASEDIR" >/dev/null
 unset d
-
+#############################################################################
+# Let's operate only on really clean repo
+#############################################################################
+## check for staged for the next commit vs. HEAD
 if ! git diff --cached --quiet ; then
     echo "E: staged changes exist.  Commit them or un-stage them first" >&2
+    echo "   --- option 1: git commit"
+    git commit $OPTQ --dry-run
+    echo "   --- option 2: git rm --cached"
+    git rm $OPTQ --dry-run --cached
     exit 1
 fi
 
+## check for working tree vs. HEAD
 if ! git diff --quiet ; then
-    echo "E: local changes found.  Commit them or un-stage them first" >&2
+    echo "E: local changes found.  Commit them or reset them first" >&2
+    echo "   --- option 1: git commit --all"
+    if [ "$OPTQ" != "-q" ] && [ "$OPTQ" != "--quiet" ]; then
+        # somehow --quiet doesn't work with --all
+        git commit --dry-run --all
+    fi
+    echo "   --- option 2: git reset --hard HEAD"
     exit 1
 fi
 
+## check for untracked files
+if [ "$(git ls-files . --exclude-standard --others --directory| wc -l)" != "0" ]; then
+    echo "E: untracked files exist.  Forcefully clean them all first" >&2
+    echo "   --- option 1: git clean -d -f -x"
+    git clean $OPTQ --dry-run -d -f -x
+    echo "   --- option 2: git add <file> ; git commit (if you need them)"
+    exit 1
+fi
+
+#############################################################################
 # Check how many files changed
-N_FILES="$(git diff --name-only HEAD^ HEAD|wc -l)"
-HASH_NEW="$(git rev-parse --verify --quiet HEAD)"
-HASH_OLD="$(git rev-parse --verify --quiet HEAD^)"
+#############################################################################
+# In this process, moved files should be counted as one delete and one add
+# This is not safe for file name with whitespace(SPC, TAB, NL) in it.
+# But without using --name-status, we overlook moved origin file.
+FILENAMES=$(git diff --name-status HEAD^ HEAD|cut -f 2-)
+N_FILENAMES="$(echo "$FILENAMES"|wc -w)"
+vecho "I: split into $N_FILENAMES commits:"
 # Set COMMIT_EDITMSG (repo may have unrelated COMMIT_EDITMSG)
 vecho '------------------------------------------------------'
 vecho 'I: git commit --amend --no-edit -q'
-git commit --amend --no-edit -q
+git commit $OPTQ --amend --no-edit -q
 vecho '------------------------------------------------------'
 vecho "I: commit message:"
 vecho "$(sed -e 's/^/I: > /' .git/COMMIT_EDITMSG)"
 vecho '------------------------------------------------------'
 
-if [  "$N_FILES" = "0" ]; then
+if [  "$N_FILENAMES" = "0" ]; then
     echo "E: no changes found on HEAD" >&2
     exit 1
-elif [  "$N_FILES" = "1" ]; then
-    FILENAME="$(git diff --name-only "$HASH_OLD" "$HASH_NEW")"
+elif [  "$N_FILENAMES" = "1" ]; then
+    FILENAME="$FILENAMES"
     vecho "I: working on $FILENAME (split single file)"
     apply_imediff "$FILENAME"
 else
-    vecho "I: split into $N_FILES commits:"
-    vecho "$( git diff --name-only "$HASH_OLD" "$HASH_NEW" | \
-            sed -e 's/^/I: > /')"
+    vecho "$( echo "$FILENAMES" | xargs -n1 echo | sed -e 's/^/I: > /')"
     vecho '------------------------------------------------------'
-    vecho 'I: git reset -q "HEAD^"'
-    git reset -q "HEAD^"
+    vecho 'I: git reset --quiet "HEAD^"'
+    git reset --quiet "HEAD^"
     vecho '------------------------------------------------------'
-    for FILENAME in $(git diff --name-only "$HASH_OLD" "$HASH_NEW") ; do
+    for FILENAME in $FILENAMES; do
         if [ -e "$FILENAME" ]; then
             vecho "I: ... add    to   the index and commit: $FILENAME"
             git add "$FILENAME"
         else
             vecho "I: ... remove from the index and commit: $FILENAME"
-            git rm --cached "$FILENAME"
+            git rm $OPTQ --cached "$FILENAME"
         fi
         set_name "$FILENAME"
-        git commit --no-edit -F ".git/COMMIT_EDITMSG"
+        git commit $OPTQ --no-edit -F ".git/COMMIT_EDITMSG"
     done
-    vecho "I: split into $N_FILES commits ... done"
+    vecho "I: split into $N_FILENAMES commits ... done"
 fi
 
 # vim:se tw=78 ai sts=4 sw=4 et:
