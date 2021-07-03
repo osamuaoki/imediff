@@ -1,3 +1,9 @@
+imediff (2.4-2) unstable; urgency=medium
+
+  * Fix main.py -> __main__.py change left over.
+
+ -- Osamu Aoki <osamu@debian.org>  Sat, 03 Jul 2021 22:32:58 +0900
+
 imediff (2.4-1) unstable; urgency=medium
 
   * Fix git-ime bug for the handling of moved file.
