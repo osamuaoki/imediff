@@ -42,7 +42,7 @@ from imediff.config import *
 from imediff.cli import *
 from imediff.tui import *
 
-VERSION = "2.3"
+VERSION = "2.4"
 PACKAGE = "imediff"
 
 _version = (
