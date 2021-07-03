@@ -1,7 +1,10 @@
-#!/bin/sh
+#!/bin/sh -e
 # vim: set sw=2 et sw=2 sts=2:
-export PYTHONPATH=../src
-
+CONTINUE_TEST=false
+if [ "$1" = "-t" ]; then
+  CONTINUE_TEST=true
+fi
+EXITSTATUS=true
 ./_diff23.py >z_diff23.new
 ./_imediff.py  -C BOGUS -n file_a file_b -o z_imediff2.new
 ./_imediff.py -C BOGUS -n file_a file_b file_c -o z_imediff3.new
@@ -10,6 +13,13 @@ export PYTHONPATH=../src
 for f in *.new; do
   g="${f%.new}.ref"
   echo " ==== COMPARE: $g vs. $f ==="
-  diff -u "$g" "$f" && echo " -> = NO_DIFF: $g" || echo " -> ! DIFF: $g"
+  if diff -u "$g" "$f" ; then
+    echo " -> = NO_DIFF: $g"
+  else
+    echo " -> ! DIFF: $g"
+    EXITSTATUS=false
+    $CONTINUE_TEST
+  fi
   echo
 done
+$EXITSTATUS
