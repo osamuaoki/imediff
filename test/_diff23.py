@@ -8,7 +8,7 @@ The diff3 logic is build on top of diff2 logic.
 Current diff2 uses Python standard library difflib which uses a variant of
 longest contiguous matching subsequence algorithm by Ratcliff and Obershelp
 developed in the late 1980's.  If I update this imediff program to use more
-modern algorithm, this test may yield slightly different result in some 
+modern algorithm, this test may yield slightly different result in some
 corner cases.
 """
 
