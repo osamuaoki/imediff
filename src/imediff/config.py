@@ -24,6 +24,8 @@ Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.
 """
 
+import os
+import io
 import curses
 
 # Update version below only when configuration API changes
@@ -117,25 +119,22 @@ cc["MAGENTA"] = curses.COLOR_MAGENTA
 cc["WHITE"] = curses.COLOR_WHITE
 cc["BLACK"] = curses.COLOR_BLACK
 
-def create_template(config_file):
+
+def create_template(conf):
+    config_file = os.path.expanduser(conf)
     if not os.path.exists(config_file):
         # logger.debug("create configuration file: {}".format(args.conf))
         try:
-            with open(
-                config_file, mode="w", buffering=io.DEFAULT_BUFFER_SIZE
-            ) as ofp:
+            with open(config_file, mode="w", buffering=io.DEFAULT_BUFFER_SIZE) as ofp:
                 ofp.write(config_template)
         except IOError:
-            error_exit(
-                "Error in creating configuration file: {}".format(config_file)
-            )
+            error_exit("Error in creating configuration file: {}".format(conf))
     else:
-        error_exit("Erase {} before 'imediff -t'".format(args.conf))
+        error_exit("Erase {} before 'imediff -t'".format(conf))
     return
+
 
 # Generate template file: TEMPLATE.imediff
 if __name__ == "__main__":
-    import os
-    import io
-    create_template("TEMPLATE.imediff")
 
+    create_template("TEMPLATE.imediff")

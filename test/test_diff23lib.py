@@ -76,15 +76,17 @@ class TestImediff(unittest.TestCase):
 
     def test_diff2lib_doctest(self):
         result = subprocess.call(
-            "cd " + pwd + "; ./diff2lib.py", shell=True,
+            "cd " + pwd + "; ./diff2lib.py",
+            shell=True,
         )
         self.assertEqual(result, 0)
         return
 
     def test_diff3lib_doctest(self):
-#            "cd " + pwd + "; pwd; ls -lR",
+        #            "cd " + pwd + "; pwd; ls -lR",
         result = subprocess.call(
-            "cd " + pwd + "; ./diff3lib.py", shell=True,
+            "cd " + pwd + "; ./diff3lib.py",
+            shell=True,
         )
         self.assertEqual(result, 0)
         return

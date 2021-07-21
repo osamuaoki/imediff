@@ -151,9 +151,7 @@ Specify configuration file to use.  (default="~/.imediff")',
     pa.add_argument(
         "--non-interactive", "-n", action="store_true", help="execution without curses"
     )
-    pa.add_argument(
-            "--macro", "-M", default=":", help="set MACRO string"
-    )
+    pa.add_argument("--macro", "-M", default=":", help="set MACRO string")
     pa.add_argument(
         "--template",
         "-t",
@@ -195,13 +193,12 @@ Specify configuration file to use.  (default="~/.imediff")',
             args.default_mode = "d"  # default diff2
         else:
             args.default_mode = "g"  # default diff3
-    config_file = os.path.expanduser(args.conf)
     return args
 
 
-def initialize_confs(config_file):
+def initialize_confs(conf):
     """Process configuration file"""
-    config_file = os.path.expanduser(config_file)
+    config_file = os.path.expanduser(conf)
     # Allow inline comment with #
     confs_i = configparser.ConfigParser(inline_comment_prefixes=("#"))
     confs_i.read_string(config_template)
@@ -216,13 +213,13 @@ def initialize_confs(config_file):
         else:
             error_exit(
                 '''\
-Error in ~/.imediff: version mismatch
-        the current version:  {}
-        the required version: {}
+Error in {0}: version mismatch
+        the current version:  {1}
+        the required version: {2}
 
-Rename ~/.imediff to ~/.imediff.bkup and make the new ~/.imediff by
+Rename {0} to {0}.bkup and make the new {0} by
 editing the template obtained by "imediff -t"'''.format(
-                    confs_f["config"]["version"], confs_i["config"]["version"]
+                    conf, confs_f["config"]["version"], confs_i["config"]["version"]
                 )
             )
     else:
@@ -245,7 +242,7 @@ def main():
     locale.setlocale(locale.LC_ALL, "")
     args = initialize_args()
     if args.template:
-        create_template(config_file)
+        create_template(args.conf)
         sys.exit(0)
 
     # logging

@@ -216,8 +216,7 @@ class SequenceMatcher3:
         self.chunks = None
 
     def set_seq1(self, a):
-        """Set the first sequence to be compared.
-        """
+        """Set the first sequence to be compared."""
 
         if a is self.a:
             return
@@ -225,8 +224,7 @@ class SequenceMatcher3:
         self.chunks = None
 
     def set_seq2(self, b):
-        """Set the second sequence to be compared.
-        """
+        """Set the second sequence to be compared."""
 
         if b is self.b:
             return
@@ -234,8 +232,7 @@ class SequenceMatcher3:
         self.chunks = None
 
     def set_seq3(self, c):
-        """Set the third sequence to be compared.
-        """
+        """Set the third sequence to be compared."""
 
         if c is self.c:
             return
@@ -243,8 +240,7 @@ class SequenceMatcher3:
         self.chunks = None
 
     def set_seqs(self, a, b, c):
-        """Set the two sequences to be compared.
-        """
+        """Set the two sequences to be compared."""
 
         self.set_seq1(a)
         self.set_seq2(b)
