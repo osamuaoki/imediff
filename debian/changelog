@@ -1,3 +1,10 @@
+imediff (2.4-3) unstable; urgency=medium
+
+  * Fix regression caused by refactoring 1810b81 (2021-06-03)
+    commit which caused broken -t option.
+
+ -- Osamu Aoki <osamu@debian.org>  Wed, 21 Jul 2021 10:57:53 +0900
+
 imediff (2.4-2) unstable; urgency=medium
 
   * Fix main.py -> __main__.py change left over.
