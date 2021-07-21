@@ -52,3 +52,170 @@ A single combined diff, containing all the changes, follows.
  """
 -from imediff.main import *
 +from imediff.__main__ import *
+--- imediff-2.4.orig/src/imediff/__main__.py
++++ imediff-2.4/src/imediff/__main__.py
+@@ -151,9 +151,7 @@ Specify configuration file to use.  (def
+     pa.add_argument(
+         "--non-interactive", "-n", action="store_true", help="execution without curses"
+     )
+-    pa.add_argument(
+-            "--macro", "-M", default=":", help="set MACRO string"
+-    )
++    pa.add_argument("--macro", "-M", default=":", help="set MACRO string")
+     pa.add_argument(
+         "--template",
+         "-t",
+@@ -195,13 +193,12 @@ Specify configuration file to use.  (def
+             args.default_mode = "d"  # default diff2
+         else:
+             args.default_mode = "g"  # default diff3
+-    config_file = os.path.expanduser(args.conf)
+     return args
+ 
+ 
+-def initialize_confs(config_file):
++def initialize_confs(conf):
+     """Process configuration file"""
+-    config_file = os.path.expanduser(config_file)
++    config_file = os.path.expanduser(conf)
+     # Allow inline comment with #
+     confs_i = configparser.ConfigParser(inline_comment_prefixes=("#"))
+     confs_i.read_string(config_template)
+@@ -216,13 +213,13 @@ def initialize_confs(config_file):
+         else:
+             error_exit(
+                 '''\
+-Error in ~/.imediff: version mismatch
+-        the current version:  {}
+-        the required version: {}
++Error in {0}: version mismatch
++        the current version:  {1}
++        the required version: {2}
+ 
+-Rename ~/.imediff to ~/.imediff.bkup and make the new ~/.imediff by
++Rename {0} to {0}.bkup and make the new {0} by
+ editing the template obtained by "imediff -t"'''.format(
+-                    confs_f["config"]["version"], confs_i["config"]["version"]
++                    conf, confs_f["config"]["version"], confs_i["config"]["version"]
+                 )
+             )
+     else:
+@@ -245,7 +242,7 @@ def main():
+     locale.setlocale(locale.LC_ALL, "")
+     args = initialize_args()
+     if args.template:
+-        create_template(config_file)
++        create_template(args.conf)
+         sys.exit(0)
+ 
+     # logging
+--- imediff-2.4.orig/src/imediff/config.py
++++ imediff-2.4/src/imediff/config.py
+@@ -24,6 +24,8 @@ Software Foundation, Inc., 51 Franklin S
+ Boston, MA 02110-1301, USA.
+ """
+ 
++import os
++import io
+ import curses
+ 
+ # Update version below only when configuration API changes
+@@ -117,25 +119,22 @@ cc["MAGENTA"] = curses.COLOR_MAGENTA
+ cc["WHITE"] = curses.COLOR_WHITE
+ cc["BLACK"] = curses.COLOR_BLACK
+ 
+-def create_template(config_file):
++
++def create_template(conf):
++    config_file = os.path.expanduser(conf)
+     if not os.path.exists(config_file):
+         # logger.debug("create configuration file: {}".format(args.conf))
+         try:
+-            with open(
+-                config_file, mode="w", buffering=io.DEFAULT_BUFFER_SIZE
+-            ) as ofp:
++            with open(config_file, mode="w", buffering=io.DEFAULT_BUFFER_SIZE) as ofp:
+                 ofp.write(config_template)
+         except IOError:
+-            error_exit(
+-                "Error in creating configuration file: {}".format(config_file)
+-            )
++            error_exit("Error in creating configuration file: {}".format(conf))
+     else:
+-        error_exit("Erase {} before 'imediff -t'".format(args.conf))
++        error_exit("Erase {} before 'imediff -t'".format(conf))
+     return
+ 
++
+ # Generate template file: TEMPLATE.imediff
+ if __name__ == "__main__":
+-    import os
+-    import io
+-    create_template("TEMPLATE.imediff")
+ 
++    create_template("TEMPLATE.imediff")
+--- imediff-2.4.orig/src/imediff/diff3lib.py
++++ imediff-2.4/src/imediff/diff3lib.py
+@@ -216,8 +216,7 @@ class SequenceMatcher3:
+         self.chunks = None
+ 
+     def set_seq1(self, a):
+-        """Set the first sequence to be compared.
+-        """
++        """Set the first sequence to be compared."""
+ 
+         if a is self.a:
+             return
+@@ -225,8 +224,7 @@ class SequenceMatcher3:
+         self.chunks = None
+ 
+     def set_seq2(self, b):
+-        """Set the second sequence to be compared.
+-        """
++        """Set the second sequence to be compared."""
+ 
+         if b is self.b:
+             return
+@@ -234,8 +232,7 @@ class SequenceMatcher3:
+         self.chunks = None
+ 
+     def set_seq3(self, c):
+-        """Set the third sequence to be compared.
+-        """
++        """Set the third sequence to be compared."""
+ 
+         if c is self.c:
+             return
+@@ -243,8 +240,7 @@ class SequenceMatcher3:
+         self.chunks = None
+ 
+     def set_seqs(self, a, b, c):
+-        """Set the two sequences to be compared.
+-        """
++        """Set the two sequences to be compared."""
+ 
+         self.set_seq1(a)
+         self.set_seq2(b)
+--- imediff-2.4.orig/test/test_diff23lib.py
++++ imediff-2.4/test/test_diff23lib.py
+@@ -76,15 +76,17 @@ class TestImediff(unittest.TestCase):
+ 
+     def test_diff2lib_doctest(self):
+         result = subprocess.call(
+-            "cd " + pwd + "; ./diff2lib.py", shell=True,
++            "cd " + pwd + "; ./diff2lib.py",
++            shell=True,
+         )
+         self.assertEqual(result, 0)
+         return
+ 
+     def test_diff3lib_doctest(self):
+-#            "cd " + pwd + "; pwd; ls -lR",
++        #            "cd " + pwd + "; pwd; ls -lR",
+         result = subprocess.call(
+-            "cd " + pwd + "; ./diff3lib.py", shell=True,
++            "cd " + pwd + "; ./diff3lib.py",
++            shell=True,
+         )
+         self.assertEqual(result, 0)
+         return
