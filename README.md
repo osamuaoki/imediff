@@ -139,7 +139,7 @@ The problematic one may be python3-distutils-extra which supports UI messages
 for non-English languages.  I have not tried this but here are points to
 disable i18n features and drop build dependency to the python3-distutils-extra.
 
-* Remove `i18n=True` (or change it to `i18n=False`) in `setup.cfg` .
+* Remove `i18n=True` and `icons=False` in `[build]` section of `setup.cfg` .
 * Replace `_ = gettext.gettext` with `_ = lambda x : x` in `src/utils.py`.
 * Comment out all lines containing "gettext" in the source under `src/` .
 
