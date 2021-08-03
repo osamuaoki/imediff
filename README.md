@@ -57,7 +57,9 @@ This git-ime is not only useful at the checked out branch head but also
 at "edit" prompt during the interactive execution of git rebase -i
 treeish.
 
-## Quick start
+## Quick start for Debian/Ubuntu derivative users
+
+Please install the `imediff` package from the APT repository.
 
 At the console command line prompt, type:
  * "imediff" to read the tutorial,
@@ -113,6 +115,44 @@ November-December 2018.  Osamu decided to release this as imediff after
 consulting with Jarno Elonen. Now program name is without "2", since it
 supports diff for not only 2 files but also 3 files.  The version number is
 bumped to 2.0.
+
+## Note to non-Debian/Ubuntu derivative users
+
+The building of rpm or wheel are not supported as out-of-box now (patch
+welcome).
+
+Since this is packaged with setuptools, I recommend to create a wheel package
+first and install it with `pip` or `pipx` to the system.
+
+You must have the full python3 environment.  Corresponding packages for the
+following Debian packages are needed.
+
+* python3-minimal  -- include all the Python standard libraries (curses, gettext)
+* python3-distutils -- You need this for `setup.py`
+* python3-setuptools -- You need this for `setup.py`
+* python3-distutils-extra -- You need this for i18n functionality.
+
+I am sure the first 3 packages are available if the platform system supports
+Python 3.
+
+The problematic one may be python3-distutils-extra which supports UI messages
+for non-English languages.  I have not tried this but here are points to
+disable i18n features and drop build dependency to the python3-distutils-extra.
+
+* Remove `i18n=True` (or change it to `i18n=False`) in `setup.cfg` .
+* Replace `_ = gettext.gettext` with `_ = lambda x : x` in `src/utils.py`.
+* Comment out all lines containing "gettext" in the source under `src/` .
+
+For the build dependencies listed in `debian/control`, `debhelper-compat` and
+`dh-python` are purely for the Debian package building, so these are not
+essential for other platforms. `docbook-xsl` and `xsltproc` are for building
+manpage from xml source.  Since manually refined resulting manpages are in the
+source, these are not really needed or used now.
+
+Code is not written for Windows compatibility in mind, yet.
+
+The `git-ime` command requires you to have some POSIX sell and the `git`
+command access.
 
 ## Note to developer and translator
 
