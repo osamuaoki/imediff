@@ -18,7 +18,6 @@ License along with the program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 """
 import setuptools
-from DistUtilsExtra.command import *
 from imediff import VERSION, PACKAGE
 
 with open("README.md", "r") as fh:
@@ -52,5 +51,4 @@ setuptools.setup(
         "Programming Language :: Python :: 3 :: Only",
         "Topic :: Text Processing :: General",
     ],
-    cmdclass={"build": build_extra.build_extra, "build_i18n": build_i18n.build_i18n},
 )

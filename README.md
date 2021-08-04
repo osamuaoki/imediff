@@ -1,12 +1,16 @@
 # IMEDIFF - an interactive fullscreen merge tool for DIFF2/3
 
  * Copyright (C) 2003,2004 Jarno Elonen <elonen@iki.fi>
- * Copyright (C) 2018 Osamu Aoki <osamu@debian.org>
+ * Copyright (C) 2018-2021 Osamu Aoki <osamu@debian.org>
+
+**This `alternative` branch is without i18n support for maximum compatibility with backported `git-ime`.**
 
 Released under the GNU General Public License, 2.0+.
 See LICENSE for details
 
 The latest upstream source: https://github.com/osamuaoki/imediff
+
+This provides the imediff command and git-ime command.
 
 ## What is imediff
 
@@ -34,9 +38,32 @@ difference by line but on the difference by character.  This is another
 great feature of the imediff command. So for the non-overlapping changes, it
 always yields the clean merge.
 
-## Quick start
+## What is git-ime
 
-From the console command line prompt, type:
+This git ime is a simple shell wrapper script on git and imediff to
+split the latest commit from HEAD^ to HEAD on the current git
+repository into multiple commits.
+
+If any staged changes or local uncommitted changes are found in the git
+repository, git ime immediately exits without changes to be on the safe
+side.
+
+If the latest commit involves multiple files, this big commit is split
+by the file into multiple smaller commits involving a single file.
+
+If the latest commit involves only a single file, the commit is split
+into multiple smaller commits involving a set of meaningful partial
+changes selected by imediff interactively.
+
+This git-ime is not only useful at the checked out branch head but also
+at "edit" prompt during the interactive execution of git rebase -i
+treeish.
+
+## Quick start for Debian/Ubuntu derivative users
+
+Please install the `imediff` package from the APT repository.
+
+At the console command line prompt, type:
  * "imediff" to read the tutorial,
  * "imediff -h" to get all the command line options,
  * "imediff -o output older newer" to merge 2 files, and
@@ -46,7 +73,7 @@ For usage instructions, type "h" and "H" in the interactive display.
 
 If you wish to translate "h" menu, send me a translation PO file :-)
 
-You can get Japanese help screen by setting and exporting "LANGUAGE=ja".
+You can get Japanese help screen by setting and exporting "LANGUAGE=ja:en".
 
 (This uses GNU gettext as its backend.  LANGUAGE setting has priority
 over setting of LC_ALL etc.)
@@ -82,6 +109,7 @@ Osamu also wanted to add some features:
  * Add decent test cases
  * Include simple tutorial within "imediff".
  * Add "git-mergetool" integration.
+ * Add "git-ime" to help making partial patch series commits to git.
  * Good CJK wide character support with East_Asian_Width on console.
 
 This was accomplished by practically a whole rewrite of the source code in
@@ -89,6 +117,39 @@ November-December 2018.  Osamu decided to release this as imediff after
 consulting with Jarno Elonen. Now program name is without "2", since it
 supports diff for not only 2 files but also 3 files.  The version number is
 bumped to 2.0.
+
+## Note to non-Debian/Ubuntu derivative users
+
+The building of rpm or wheel are not supported as out-of-box now (patch
+welcome).
+
+Since this is packaged with setuptools, I recommend to create a wheel package
+first and install it with `pip` or `pipx` to the system.
+
+This `alternative` branch contains non-i18n version program which should be
+more compatible with older Python 3 versions.  I backported `git-ime` to this
+`alternative` branch.
+
+You must have the full python 3 environment.  Corresponding packages for the
+following Debian packages are needed.
+
+* python3-minimal  -- include all the Python standard libraries (curses, gettext)
+* python3-distutils -- You need this for `setup.py`
+* python3-setuptools -- You need this for `setup.py`
+
+I am sure the these packages are available if the platform system supports
+Python 3.
+
+For the build dependencies listed in `debian/control`, `debhelper-compat` and
+`dh-python` are purely for the Debian package building, so these are not
+essential for other platforms. `docbook-xsl` and `xsltproc` are for building
+manpage from xml source.  Since manually refined resulting manpages are in the
+source, these are not really needed or used now.
+
+Code is not written for Windows compatibility in mind, yet.
+
+The `git-ime` command requires you to have some POSIX sell and the `git`
+command access.
 
 ## Note to developer and translator
 
@@ -98,51 +159,39 @@ You can make your own Debian package as:
 
     $ git clone https://github.com/osamuaoki/imediff.git
     $ cd imediff
-    $ git checkout master
-    $ git deborig # to make ../*.orig.tar.xz
-    $ pdebuild
-    $ sudo dpkg -i ../imediff_2.0-1_all.deb
-
-Here, we assume the upstream version to be 2.0, and the Debian revision to be
-1.
-
-Please make sure to use tailing backslash for --prefix argument and bump
-upstream version as needed.
-
-### sharing changed source tree
-
-You can fork this source to your account, e.g., `yourname`, and work on it as:
-
-    $ git clone git@github.com:yourname/imediff.git
-    $ cd imediff
-    $ git checkout --track origin/upstream
+    $ git checkout main
      ... hack source
-    $ git checkout master
-     ... hack source
+    $ git commit -a
     $ git checkout upstream
-     ... hack source
-    $ git push --all
+    $ git merge main
+    $ rm -rf debian
+    $ git add -A .
+    $ git commit
+    $ git tag 2.0
+    $ git checkout main
+    $ git deborig main # to make ../*.orig.tar.xz
+    $ sbuild
+    $ cd ..
+    $ sudo dpkg -i imediff_2.0-1_all.deb
 
-This way, you can share your changes back to me easily via "pull request".
+Here, we assume the upstream version to be 2.0, and the Debian revision to be 1
+as defined in debian/changelog.  I was using gbp-like
+main/upstream/pristine-tar work flow but I will probably my work flow simple by
+just updating main branch and will create upstream tagged release by removing
+`debian/*` for every *.*-1 release as above.
+
+If you have bug fixes or feature enhancement propose changes to me via "pull
+request"
 
 ### updating manpages
 
 Please make sure to fit each code below 80-88 chars. (Run "black" on python
-code)
+code)  In case if reformat errors, check its syntax by:
+
+   $ python3 -m py_compile program.py
 
 Manpages need to be updated from XML files with "make" first in doc/ directory
 when you edit it.
-
-### updating PO
-
-Tutorial contents should be within 76 chars/line to fit in console.
-
-Update PO with:
-
-    $ ./setup.py build_i18n -m
-
-If anyone wants more contents to be translated such as manpage and tutorial,
-adding po4a may be a good idea.  For now, let's keep it minimal.
 
 ### testing code
 
@@ -172,5 +221,5 @@ To test the installed module, invoke the test script directly as:
   * https://packages.debian.org/sid/imediff (binary package in Debian)
   * https://bugs.debian.org/cgi-bin/pkgreport.cgi?repeatmerged=0;src=imediff (BTS)
 
-This is written by Osamu Aoki on February 2019
+This is written and updated by Osamu Aoki on June 2021.
 

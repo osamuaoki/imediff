@@ -3,7 +3,7 @@
 #
 # git-ime: Split changes on a file into multiple git commits
 #
-#   Copyright (c) 2015 Osamu Aoki
+#   Copyright (c) 2015-2021 Osamu Aoki
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -23,124 +23,255 @@
 #############################################################################
 
 IMEDIFF="/usr/bin/imediff"
+VERBOSE=""
+
+vecho () {
+    if [ -n "$VERBOSE" ]; then
+        echo "$*" >&2
+    fi
+}
+
 
 help() {
 
     echo "\
 ${0##*/}, version @version@
 
-Usage: ${0##*/} <path>
+Usage: ${0##*/} [--verbose|-v] [-q] [--auto|-a]
 
-DESCRIPTION: Split changes on a file into multiple git commits"
+DESCRIPTION: Split changes into multiple git commits"
 }
 
-restore() {
-if [ -e $FILENAME.tmp_b ]; then
-    mv -f $FILENAME.tmp_b $FILENAME
-    rm -f $FILENAME.tmp_b
-fi
-rm -f $FILENAME.tmp_a
-echo "--------------------"
-git status || true
+
+init_version () {
+    HASH="$(git rev-parse --short=8 --quiet HEAD)"
+    if [ ! -r ".git/COMMIT_EDITMSG" ]; then
+        echo "Dummy commit message (init) $HASH" > ".git/COMMIT_EDITMSG"
+    fi
+    LAST_VERSION="$( sed -n -e '1s/^.*@_\([0-9]*\)_@$/\1/p' \
+            ".git/COMMIT_EDITMSG" )"
+    if [ -z "$LAST_VERSION" ]; then
+        LAST_VERSION="00"
+        sed -i -e '1s/$/ @_00_@/' ".git/COMMIT_EDITMSG"
+    else
+        LAST_VERSION=$(printf "%02i" $((LAST_VERSION + 1)))
+        sed -i -e "1s/@_[0-9]*_@/${LAST_VERSION} @_00_@/" ".git/COMMIT_EDITMSG"
+    fi
 }
-trap restore EXIT HUP INT QUIT BUS USR1 PIPE TERM
-# see "kill -l", signal(7)
-# +  0 EXIT: on exit
-# *  1 HUP:  hang-up (^\)
-# *  2 INT:  KB interrupt (^C)
-#    3 QUIT: QUIT (^D)
-#    7 BUS:  buffer overflow etc.
-#   10 USR1: user defined
-# * 13 PIPE: broken pipe
-# * 15 TERM: trappable termination
-# No trap for KILL(9)
 
-if [ ! -x $IMEDIFF ]; then
-    echo "Install the $(basename $IMEDIFF) program."
-    exit 1
-fi
-if [ "$1" = "--help" ] || [ "$1" = "-h" ] || [ -z "$1" ]; then
-    help
-    exit
-fi
-if [ ! -r "$1" ]; then
-    echo "Can not find <path>: $1" >&2
-    help
-    exit 1
-fi
-if [ -z "${1%%/*}" ]; then
-    FILENAME="$1"
-else
-    FILENAME="`pwd`/$1"
-fi
-shift
-# sanity checks
-if [ -e $FILENAME.tmp_a ]; then
-    echo "File conflict, aborting... : $FILENAME.tmp_a" >&2
-    help
-    exit 1
-elif [ -e $FILENAME.tmp_b ]; then
-    echo "File conflict, aborting... : $FILENAME.tmp_b" >&2
-    help
-    exit 1
-elif [ -n "${1%%#}" ]; then
-    echo "Extra arguments, aborting... : $1" >&2
-    help
-    exit 1
-fi
-# check for git repo
-d=`pwd`
-while [ ! -d "$d/.git" -a "$d" != / ];
-    do d="`readlink -f $d/..`"; done
-if [ -d "$d/.git" ] && [ -r "$d/.git/COMMIT_EDITMSG" ]; then
-    OPT_COMMIT0="-e -F $d/.git/COMMIT_EDITMSG"
-else
-    OPT_COMMIT0=''
-fi
-unset d
+set_version () {
+    HASH="$(git rev-parse --short=8 --quiet HEAD)"
+    if [ ! -r ".git/COMMIT_EDITMSG" ]; then
+        echo "Dummy commit message (set) $HASH" > ".git/COMMIT_EDITMSG"
+    fi
+    LAST_VERSION="$( sed -n -e '1s/^.*@_\([0-9]*\)_@$/\1/p' \
+            ".git/COMMIT_EDITMSG" )"
+    if [ -z "$LAST_VERSION" ]; then
+        LAST_VERSION="00"
+        sed -i -e '1s/$/ @_00_@/' ".git/COMMIT_EDITMSG"
+    else
+        LAST_VERSION=$(printf "%02i" $((LAST_VERSION + 1)))
+        sed -i -e "1s/@_[0-9]*_@/@_${LAST_VERSION}_@/" ".git/COMMIT_EDITMSG"
+    fi
+    # Drop old comments
+    sed -i -n -e '/^\([^#]\|$\)/p' ".git/COMMIT_EDITMSG"
+    vecho "I: LAST_VERSION: $LAST_VERSION"
+}
 
-if ! git diff --cached --quiet ; then
-    echo "Staged changes.  Commit it"
-    git commit -m "Commit staged changes"
-fi
+set_name () {
+    NAME="$(echo "$1"|sed 's/#/\\#/g')" # escape #
+    HASH="$(git rev-parse --short=8 --quiet HEAD)"
+    if [ ! -r ".git/COMMIT_EDITMSG" ]; then
+        echo "Dummy commit message (name) $HASH" > ".git/COMMIT_EDITMSG"
+    fi
+    # set name
+    sed -i -e '1s/:@: .*$//' ".git/COMMIT_EDITMSG"
+    sed -i -e "1s#\$#:@: ${NAME}#" ".git/COMMIT_EDITMSG"
+    # Drop old comments
+    sed -i -n -e '/^\([^#]\|$\)/p' ".git/COMMIT_EDITMSG"
+}
 
-if ! git diff --quiet $FILENAME ; then
-    echo "Local changes found.  Partial commit series from HEAD to local."
-    GIT_REV="HEAD"
-    OPT_COMMIT="$OPT_COMMIT0"
-else
-    echo "No local changes. Partial commit series from HEAD^ to HEAD"
-    GIT_REV="HEAD^"
-    OPT_COMMIT="--amend"
-    if git diff --quiet HEAD^..HEAD $FILENAME ; then
-        echo "No changes for HEAD^..HEAD, nothing to edit for $FILENAME"
+apply_imediff () {
+    # shellcheck disable=SC2039
+    local FLNM="$1"
+    # sanity checks
+    if [ -e "$FLNM.tmp_a" ]; then
+        echo "File conflict, aborting... : $FLNM.tmp_a" >&2
+        help
+        exit 1
+    elif [ -e "$FLNM.tmp_b" ]; then
+        echo "File conflict, aborting... : $FLNM.tmp_b" >&2
+        help
         exit 1
     fi
-fi
+    init_version
+    # newer file from local
+    if [ -e "$FLNM" ]; then
+        mv "$FLNM" "$FLNM.tmp_b"
+    else
+        : > "$FLNM.tmp_b"
+    fi
+    # older file
+    # shellcheck disable=SC2086
+    git checkout $OPTQ HEAD^ "$FLNM"
+    # shellcheck disable=SC2086
+    git reset $OPTQ HEAD^
+    if [ -e "$FLNM" ]; then
+        mv "$FLNM" "$FLNM.tmp_a"
+    else
+        : > "$FLNM.tmp_a"
+    fi
+    vecho "I: ready to loop"
+    while true
+    do
+        if [ -z "$AUTO" ]; then
+            "$IMEDIFF" -o "$FLNM" "$FLNM.tmp_a" "$FLNM.tmp_b"
+        else
+            "$IMEDIFF" --macro "Abw" --non-interactive -o "$FLNM" "$FLNM.tmp_a" "$FLNM.tmp_b"
+        fi
+        chmod --reference "$FLNM.tmp_b" "$FLNM"
+        if diff -q "$FLNM.tmp_a" "$FLNM" ; then
+            vecho "I: no changes to commit for $FLNM"
+        else
+            vecho "I: found changes to commit for $FLNM"
+            git add "$FLNM"
+            set_version
+            if [ -z "$AUTO" ]; then
+                git commit --edit -F ".git/COMMIT_EDITMSG"
+            else
+                # shellcheck disable=SC2086
+                git commit $OPTQ --no-edit -F ".git/COMMIT_EDITMSG"
+            fi
+        fi
+        if diff -q "$FLNM" "$FLNM.tmp_b" ; then
+            vecho "I: no more changes for $FLNM"
+            rm -f "$FLNM.tmp_a" "$FLNM.tmp_b"
+            break
+        fi
+        if [ -e "$FLNM" ]; then
+            mv -f "$FLNM" "$FLNM.tmp_a"
+        else
+            : > "$FLNM.tmp_a"
+        fi
+    done
+    vecho "I: finish committed series for $FLNM"
+}
 
-if ! git rev-parse --verify --quiet $GIT_REV >/dev/null ; then
-    echo "Can not find <rev>: $GIT_REV" >&2
+if [ ! -x $IMEDIFF ]; then
+    echo "E: install the $(basename $IMEDIFF) program." >&2
     exit 1
 fi
 
-# new
-mv $FILENAME $FILENAME.tmp_b
-#old
-git checkout $GIT_REV $FILENAME
-mv $FILENAME $FILENAME.tmp_a
-echo "ready to loop"
-while true
-do
-$IMEDIFF -o $FILENAME $FILENAME.tmp_a $FILENAME.tmp_b
-chmod --reference $FILENAME.tmp_b $FILENAME
-git add $FILENAME
-git commit $OPT_COMMIT $FILENAME
-mv $FILENAME $FILENAME.tmp_a
-if diff -q -w $FILENAME.tmp_a $FILENAME.tmp_b ; then
-    echo "No more changes"
-    break
-fi
-OPT_COMMIT="$OPT_COMMIT0"
+AUTO=""
+OPTQ=""
+while true; do
+    case "$1" in
+        --auto|-a)
+            AUTO="Yes"
+            ;;
+        --quiet|-q)
+            OPTQ="--quiet"
+            ;;
+        --verbose|-v)
+            VERBOSE="Yes"
+            ;;
+        '')
+            break
+            ;;
+        *)
+            help
+            exit
+            ;;
+    esac
+    shift
 done
-echo "$FILENAME committed in series."
-# vim:se tw=78 ai sts=4 et:
+d="$(pwd)"
+while [ ! -d "$d/.git" ] && [ "$d" != / ];
+do d="$(readlink -f "$d/..")"; done
+if [ "$d" = "/" ]; then
+    echo "Not in the git repository, aborting..." >&2
+    exit 1
+fi
+GIT_BASEDIR="$d"
+cd "$GIT_BASEDIR" >/dev/null
+unset d
+#############################################################################
+# Let's operate only on really clean repo
+#############################################################################
+## check for staged for the next commit vs. HEAD
+if ! git diff --cached --quiet ; then
+    echo "E: staged changes exist.  Commit them or un-stage them first" >&2
+    echo "   --- option 1: git commit"
+    git commit $OPTQ --dry-run
+    echo "   --- option 2: git rm --cached"
+    git rm $OPTQ --dry-run --cached
+    exit 1
+fi
+
+## check for working tree vs. HEAD
+if ! git diff --quiet ; then
+    echo "E: local changes found.  Commit them or reset them first" >&2
+    echo "   --- option 1: git commit --all"
+    if [ "$OPTQ" != "-q" ] && [ "$OPTQ" != "--quiet" ]; then
+        # somehow --quiet doesn't work with --all
+        git commit --dry-run --all
+    fi
+    echo "   --- option 2: git reset --hard HEAD"
+    exit 1
+fi
+
+## check for untracked files
+if [ "$(git ls-files . --exclude-standard --others --directory| wc -l)" != "0" ]; then
+    echo "E: untracked files exist.  Forcefully clean them all first" >&2
+    echo "   --- option 1: git clean -d -f -x"
+    git clean $OPTQ --dry-run -d -f -x
+    echo "   --- option 2: git add <file> ; git commit (if you need them)"
+    exit 1
+fi
+
+#############################################################################
+# Check how many files changed
+#############################################################################
+# In this process, moved files should be counted as one delete and one add
+# This is not safe for file name with whitespace(SPC, TAB, NL) in it.
+# But without using --name-status, we overlook moved origin file.
+FILENAMES=$(git diff --name-status HEAD^ HEAD|cut -f 2-)
+N_FILENAMES="$(echo "$FILENAMES"|wc -w)"
+vecho "I: split into $N_FILENAMES commits:"
+# Set COMMIT_EDITMSG (repo may have unrelated COMMIT_EDITMSG)
+vecho '------------------------------------------------------'
+vecho 'I: git commit --amend --no-edit -q'
+git commit $OPTQ --amend --no-edit -q
+vecho '------------------------------------------------------'
+vecho "I: commit message:"
+vecho "$(sed -e 's/^/I: > /' .git/COMMIT_EDITMSG)"
+vecho '------------------------------------------------------'
+
+if [  "$N_FILENAMES" = "0" ]; then
+    echo "E: no changes found on HEAD" >&2
+    exit 1
+elif [  "$N_FILENAMES" = "1" ]; then
+    FILENAME="$FILENAMES"
+    vecho "I: working on $FILENAME (split single file)"
+    apply_imediff "$FILENAME"
+else
+    vecho "$( echo "$FILENAMES" | xargs -n1 echo | sed -e 's/^/I: > /')"
+    vecho '------------------------------------------------------'
+    vecho 'I: git reset --quiet "HEAD^"'
+    git reset --quiet "HEAD^"
+    vecho '------------------------------------------------------'
+    for FILENAME in $FILENAMES; do
+        if [ -e "$FILENAME" ]; then
+            vecho "I: ... add    to   the index and commit: $FILENAME"
+            git add "$FILENAME"
+        else
+            vecho "I: ... remove from the index and commit: $FILENAME"
+            git rm $OPTQ --cached "$FILENAME"
+        fi
+        set_name "$FILENAME"
+        git commit $OPTQ --no-edit -F ".git/COMMIT_EDITMSG"
+    done
+    vecho "I: split into $N_FILENAMES commits ... done"
+fi
+
+# vim:se tw=78 ai sts=4 sw=4 et:

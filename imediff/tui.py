@@ -25,7 +25,7 @@ Boston, MA 02110-1301, USA.
 """
 
 import curses
-import gettext
+#import gettext
 import locale
 import sys
 import tempfile

@@ -27,7 +27,7 @@ Boston, MA 02110-1301, USA.
 import argparse
 import configparser
 import logging
-import gettext
+#import gettext
 import curses
 import locale
 import io
