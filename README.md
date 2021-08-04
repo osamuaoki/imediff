@@ -124,7 +124,7 @@ welcome).
 Since this is packaged with setuptools, I recommend to create a wheel package
 first and install it with `pip` or `pipx` to the system.
 
-You must have the full python3 environment.  Corresponding packages for the
+You must have the full python 3.9 environment.  Corresponding packages for the
 following Debian packages are needed.
 
 * python3-minimal  -- include all the Python standard libraries (curses, gettext)
@@ -133,15 +133,24 @@ following Debian packages are needed.
 * python3-distutils-extra -- You need this for i18n functionality.
 
 I am sure the first 3 packages are available if the platform system supports
-Python 3.
+Python 3.9.  It seems some older Python 3 seems to cause problem with the
+current `setup.py` probably due to the use of new archive style using `src/`
+directory.
+
+Since older version did not have this problem, I created the `alternative`
+branch which should support such older system.  Also, I backported `git-ime` to
+this `alternative` branch.
 
 The problematic one may be python3-distutils-extra which supports UI messages
-for non-English languages.  I have not tried this but here are points to
-disable i18n features and drop build dependency to the python3-distutils-extra.
+for non-English languages.  Here are points to disable i18n features and drop
+build dependency to the python3-distutils-extra.
 
 * Remove `i18n=True` and `icons=False` in `[build]` section of `setup.cfg` .
 * Replace `_ = gettext.gettext` with `_ = lambda x : x` in `src/utils.py`.
 * Comment out all lines containing "gettext" in the source under `src/` .
+
+The `alternative` branch also implements these changes to drop all i18n
+features for the maximum compatibility.
 
 For the build dependencies listed in `debian/control`, `debhelper-compat` and
 `dh-python` are purely for the Debian package building, so these are not
