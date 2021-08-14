@@ -13,8 +13,8 @@ This provides the imediff command and git-ime command.
 ## What is imediff
 
 The imediff command helps you to merge 2 slightly different files with an
-optional base file interactively using the in-place alternating display of
-the changed content on a single-pane full screen terminal user interface.
+optional base file interactively using the in-place alternating display of the
+changed content on a single-pane full screen terminal user interface.
 
 The source of line is clearly identified by the color of the line or the
 identifier character at the first column.
@@ -38,24 +38,25 @@ always yields the clean merge.
 
 ## What is git-ime
 
-This git ime is a simple shell wrapper script on git and imediff to
-split the latest commit from HEAD^ to HEAD on the current git
-repository into multiple commits.
+The "git ime" command helps you to merge 2 slightly different file trees
+committed to the consecutive commits (`HEAD^`, `HEAD`) of a git repository
+while using "git rebase -i *treeish*" and gitk as helper to select changes.
 
 If any staged changes or local uncommitted changes are found in the git
-repository, git ime immediately exits without changes to be on the safe
+repository, "git ime" immediately exits without changes to be on the safe
 side.
 
-If the latest commit involves multiple files, this big commit is split
-by the file into multiple smaller commits involving a single file.
+If the latest commit involves multiple files, this big commit is split by the
+file into multiple smaller commits involving a single file.
 
-If the latest commit involves only a single file, the commit is split
-into multiple smaller commits involving a set of meaningful partial
-changes selected by imediff interactively.
+If the latest commit involves only a single file, the commit is split into
+multiple smaller commits involving a set of meaningful partial changes by
+imediff and managed interactively.
 
-This git-ime is not only useful at the checked out branch head but also
-at "edit" prompt during the interactive execution of git rebase -i
-treeish.
+This "git ime" is not only useful at the checked out branch head but also at
+"edit" prompt during the interactive execution of "git rebase -i *treeish*".
+
+The "git ime" command is a simple shell wrapper script of git and imediff.
 
 ## Quick start for Debian/Ubuntu derivative users
 
