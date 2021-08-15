@@ -40,7 +40,7 @@
   </refmeta>
   <refnamediv>
     <refname>&dhpackage;</refname>
-    <refpurpose>An interactive git commit split tool</refpurpose>
+    <refpurpose>An interactive git commit split helper tool</refpurpose>
   </refnamediv>
   <refsynopsisdiv>
     <cmdsynopsis>
