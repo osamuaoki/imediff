@@ -1,3 +1,10 @@
+imediff (2.4-4) unstable; urgency=medium
+
+  * Update description of git-ime.
+  * Update documentation for non-Debian/Ubuntu system.
+
+ -- Osamu Aoki <osamu@debian.org>  Sun, 15 Aug 2021 16:49:12 +0900
+
 imediff (2.4-3) unstable; urgency=medium
 
   * Fix regression caused by refactoring 1810b81 (2021-06-03)
