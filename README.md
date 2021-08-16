@@ -155,13 +155,14 @@ features for the maximum compatibility.
 
 For the build dependencies listed in `debian/control`, `debhelper-compat` and
 `dh-python` are purely for the Debian package building, so these are not
-essential for other platforms. `docbook-xsl` and `xsltproc` are for building
-manpage from xml source.  Since manually refined resulting manpages are in the
-source, these are not really needed or used now.
+essential for other platforms.
+
+If you wish to update manpage from XML, `docbook-xsl` and `xsltproc` are needed
+for building manpage from xml source then manually touch up details.
 
 Code is not written for Windows compatibility in mind, yet.
 
-The `git-ime` command requires you to have some POSIX sell and the `git`
+The `git-ime` command requires you to have some POSIX shell and the `git`
 command access.
 
 ## Note to developer and translator
