@@ -23,6 +23,140 @@ upstream version 1.2.3, you could use:
 
 A single combined diff, containing all the changes, follows.
 
+--- imediff-2.4.orig/README.md
++++ imediff-2.4/README.md
+@@ -13,8 +13,8 @@ This provides the imediff command and gi
+ ## What is imediff
+ 
+ The imediff command helps you to merge 2 slightly different files with an
+-optional base file interactively using the in-place alternating display of
+-the changed content on a single-pane full screen terminal user interface.
++optional base file interactively using the in-place alternating display of the
++changed content on a single-pane full screen terminal user interface.
+ 
+ The source of line is clearly identified by the color of the line or the
+ identifier character at the first column.
+@@ -38,26 +38,29 @@ always yields the clean merge.
+ 
+ ## What is git-ime
+ 
+-This git ime is a simple shell wrapper script on git and imediff to
+-split the latest commit from HEAD^ to HEAD on the current git
+-repository into multiple commits.
++The "git ime" command helps you to merge 2 slightly different file trees
++committed to the consecutive commits (`HEAD^`, `HEAD`) of a git repository
++while using "git rebase -i *treeish*" and gitk as helper to select changes.
+ 
+ If any staged changes or local uncommitted changes are found in the git
+-repository, git ime immediately exits without changes to be on the safe
++repository, "git ime" immediately exits without changes to be on the safe
+ side.
+ 
+-If the latest commit involves multiple files, this big commit is split
+-by the file into multiple smaller commits involving a single file.
++If the latest commit involves multiple files, this big commit is split by the
++file into multiple smaller commits involving a single file.
+ 
+-If the latest commit involves only a single file, the commit is split
+-into multiple smaller commits involving a set of meaningful partial
+-changes selected by imediff interactively.
+-
+-This git-ime is not only useful at the checked out branch head but also
+-at "edit" prompt during the interactive execution of git rebase -i
+-treeish.
++If the latest commit involves only a single file, the commit is split into
++multiple smaller commits involving a set of meaningful partial changes by
++imediff and managed interactively.
+ 
+-## Quick start
++This "git ime" is not only useful at the checked out branch head but also at
++"edit" prompt during the interactive execution of "git rebase -i *treeish*".
++
++The "git ime" command is a simple shell wrapper script of git and imediff.
++
++## Quick start for Debian/Ubuntu derivative users
++
++Please install the `imediff` package from the APT repository.
+ 
+ At the console command line prompt, type:
+  * "imediff" to read the tutorial,
+@@ -114,6 +117,54 @@ consulting with Jarno Elonen. Now progra
+ supports diff for not only 2 files but also 3 files.  The version number is
+ bumped to 2.0.
+ 
++## Note to non-Debian/Ubuntu derivative users
++
++The building of rpm or wheel are not supported as out-of-box now (patch
++welcome).
++
++Since this is packaged with setuptools, I recommend to create a wheel package
++first and install it with `pip` or `pipx` to the system.
++
++You must have the full python 3.9 environment.  Corresponding packages for the
++following Debian packages are needed.
++
++* python3-minimal  -- include all the Python standard libraries (curses, gettext)
++* python3-distutils -- You need this for `setup.py`
++* python3-setuptools -- You need this for `setup.py`
++* python3-distutils-extra -- You need this for i18n functionality.
++
++I am sure the first 3 packages are available if the platform system supports
++Python 3.9.  It seems some older Python 3 seems to cause problem with the
++current `setup.py` probably due to the use of new archive style using `src/`
++directory.
++
++Since older version did not have this problem, I created the `alternative`
++branch which should support such older system.  Also, I backported `git-ime` to
++this `alternative` branch.
++
++The problematic one may be python3-distutils-extra which supports UI messages
++for non-English languages.  Here are points to disable i18n features and drop
++build dependency to the python3-distutils-extra.
++
++* Remove `i18n=True` and `icons=False` in `[build]` section of `setup.cfg` .
++* Replace `_ = gettext.gettext` with `_ = lambda x : x` in `src/utils.py`.
++* Comment out all lines containing "gettext" in the source under `src/` .
++
++The `alternative` branch also implements these changes to drop all i18n
++features for the maximum compatibility.
++
++For the build dependencies listed in `debian/control`, `debhelper-compat` and
++`dh-python` are purely for the Debian package building, so these are not
++essential for other platforms.
++
++If you wish to update manpage from XML, `docbook-xsl` and `xsltproc` are needed
++for building manpage from xml source then manually touch up details.
++
++Code is not written for Windows compatibility in mind, yet.
++
++The `git-ime` command requires you to have some POSIX shell and the `git`
++command access.
++
+ ## Note to developer and translator
+ 
+ ### making Debian package
+--- imediff-2.4.orig/doc/git-ime.1
++++ imediff-2.4/doc/git-ime.1
+@@ -28,7 +28,7 @@
+ .\" * MAIN CONTENT STARTS HERE *
+ .\" -----------------------------------------------------------------
+ .SH "NAME"
+-git-ime \- An interactive git commit split tool
++git-ime \- An interactive git commit split helper tool
+ .SH "SYNOPSIS"
+ .HP \w'\fBgit\-ime\fR\ 'u
+ \fBgit\-ime\fR [\fB\-a\fR] [\fB\-\-auto\fR] [\fB\-v\fR] [\fB\-\-verbose\fR] [\fB\-h\fR] [\fB\-\-help\fR]
+--- imediff-2.4.orig/doc/git-ime.xml
++++ imediff-2.4/doc/git-ime.xml
+@@ -40,7 +40,7 @@
+   </refmeta>
+   <refnamediv>
+     <refname>&dhpackage;</refname>
+-    <refpurpose>An interactive git commit split tool</refpurpose>
++    <refpurpose>An interactive git commit split helper tool</refpurpose>
+   </refnamediv>
+   <refsynopsisdiv>
+     <cmdsynopsis>
 --- imediff-2.4.orig/po/POTFILES.in
 +++ imediff-2.4/po/POTFILES.in
 @@ -3,7 +3,7 @@ src/imediff/config.py
@@ -44,6 +178,26 @@ A single combined diff, containing all the changes, follows.
  description = Interactive Merge Editor for DIFF2/3
  long_description = file: README.md
  classifiers =
+@@ -11,10 +11,6 @@ classifiers =
+         License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)
+ 	Programming Language :: Python
+ 	Programming Language :: Python :: 3
+-	Programming Language :: Python :: 3.5
+-	Programming Language :: Python :: 3.6
+-	Programming Language :: Python :: 3.7
+-	Programming Language :: Python :: 3.8
+ 	Programming Language :: Python :: 3.9
+         Operating System :: POSIX :: Linux
+ #author = Osamu Aoki
+@@ -42,7 +38,7 @@ cmdclass =
+ package_dir =
+ 	= src
+ packages = find:
+-python_requires = >=3.4
++python_requires = >=3.9
+ setup_requires = setuptools >= 42
+ 
+ [options.packages.find]
 --- imediff-2.4.orig/src/imediff/__init__.py
 +++ imediff-2.4/src/imediff/__init__.py
 @@ -23,4 +23,4 @@ License along with this program; if not,
