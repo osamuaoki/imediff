@@ -236,6 +236,12 @@ fi
 #############################################################################
 # Ensure to be tagged for recovery
 #############################################################################
+# Check if we are in rebase.
+# https://stackoverflow.com/questions/3921409/how-to-know-if-there-is-a-git-rebase-in-progress
+if [ -d "$(git rev-parse --git-path rebase-merge 2>/dev/null)" ] || \
+   [ -d "$(git rev-parse --git-path rebase-apply 2>/dev/null)" ]; then
+    NOTAG="yes"
+fi
 
 if -z "$NOTAG" && ! git describe --tags --exact-match HEAD 2>/dev/null; then
     git tag "git-ime-a$(date -u +%Y%m%d-%H%M%S)"
@@ -290,7 +296,7 @@ fi
 # Ensure to be tagged for recovery (we expect git rebase to follow)
 #############################################################################
 
-if -z "$NOTAG" ; then
+if [ -z "$NOTAG" ] ; then
     git tag "git-ime-z$(date -u +%Y%m%d-%H%M%S)"
 fi
 

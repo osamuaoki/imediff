@@ -84,7 +84,8 @@ branch head but also at "edit" prompt during the interactive execution of
 "git-ime-aYYYYMMDD-HHMMSS" if it hasn't been tagged.  Also this
 <command>git-ime</command> tags its final commit with
 "git-ime-zYYYYMMDD-HHMMSS" for the convenience of subsequent operations such
-as <command>git-rebase</command>.</para>
+as <command>git-rebase</command>. This is not applicable during
+<command>git-rebase</command> .</para>
 
 <para>Please note this <command>git-ime</command> creates or overwrites
 <replaceable>file</replaceable>.tmp_a and
@@ -124,9 +125,10 @@ outputs.</para>
       <term><option>-n</option></term> <term><option>--notag</option></term>
         <listitem>
 
-<para>Disable automatic tagging feature.  The use of this option may be
+<para>Disable automatic tagging feature.  Since the use of this option is
 desirable if this <command>git ime</command> command is used during the
-<command>git rebase</command> operation.</para>
+<command>git rebase</command> operation.  In such case, this is automatically
+turned on as the default behavior.</para>
 
         </listitem>
       </varlistentry>

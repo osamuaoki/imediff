@@ -1,3 +1,9 @@
+imediff (2.4-6) unstable; urgency=medium
+
+  * Disable automatic tagging during git-rebase.
+
+ -- Osamu Aoki <osamu@debian.org>  Tue, 14 Sep 2021 14:15:49 +0900
+
 imediff (2.4-5) unstable; urgency=medium
 
   * More CI-test codes.

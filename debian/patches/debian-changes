@@ -164,12 +164,19 @@ A single combined diff, containing all the changes, follows.
          --verbose|-v)
              VERBOSE="Yes"
              ;;
-@@ -230,6 +234,14 @@ if [ "$(git ls-files . --exclude-standar
+@@ -230,6 +234,21 @@ if [ "$(git ls-files . --exclude-standar
  fi
  
  #############################################################################
 +# Ensure to be tagged for recovery
 +#############################################################################
++# Check if we are in rebase.
++# https://stackoverflow.com/questions/3921409/how-to-know-if-there-is-a-git-rebase-in-progress
++if [ ( -d "$(git rev-parse --git-path rebase-merge)" || \
++       -d "$(git rev-parse --git-path rebase-apply)"
++     )  2>/dev/null ]; then
++    NOTAG="yes"
++fi
 +
 +if -z "$NOTAG" && ! git describe --tags --exact-match HEAD 2>/dev/null; then
 +    git tag "git-ime-a$(date -u +%Y%m%d-%H%M%S)"
@@ -179,7 +186,7 @@ A single combined diff, containing all the changes, follows.
  # Check how many files changed
  #############################################################################
  # In this process, moved files should be counted as one delete and one add
-@@ -274,4 +286,12 @@ else
+@@ -274,4 +293,12 @@ else
      vecho "I: split into $N_FILENAMES commits ... done"
  fi
  
@@ -256,7 +263,7 @@ A single combined diff, containing all the changes, follows.
        <arg><option>-v</option></arg>
        <arg><option>--verbose</option></arg>
        <arg><option>-h</option></arg>
-@@ -77,6 +79,13 @@ selected by <command>imediff</command> i
+@@ -77,6 +79,14 @@ selected by <command>imediff</command> i
  branch head but also at "edit" prompt during the interactive execution of
  <command>git rebase -i <replaceable>treeish</replaceable></command>.</para>
  
@@ -265,12 +272,13 @@ A single combined diff, containing all the changes, follows.
 +"git-ime-aYYYYMMDD-HHMMSS" if it hasn't been tagged.  Also this
 +<command>git-ime</command> tags its final commit with
 +"git-ime-zYYYYMMDD-HHMMSS" for the convenience of subsequent operations such
-+as <command>git-rebase</command>.</para>
++as <command>git-rebase</command>. This is not applicable during
++<command>git-rebase</command> .</para>
 +
  <para>Please note this <command>git-ime</command> creates or overwrites
  <replaceable>file</replaceable>.tmp_a and
  <replaceable>file</replaceable>.tmp_b files.  So they should not exist before
-@@ -110,6 +119,17 @@ outputs.</para>
+@@ -110,6 +120,18 @@ outputs.</para>
  
          </listitem>
        </varlistentry>
@@ -279,9 +287,10 @@ A single combined diff, containing all the changes, follows.
 +      <term><option>-n</option></term> <term><option>--notag</option></term>
 +        <listitem>
 +
-+<para>Disable automatic tagging feature.  The use of this option may be
++<para>Disable automatic tagging feature.  Since the use of this option is
 +desirable if this <command>git ime</command> command is used during the
-+<command>git rebase</command> operation.</para>
++<command>git rebase</command> operation.  In such case, this is automatically
++turned on as the default behavior.</para>
 +
 +        </listitem>
 +      </varlistentry>
