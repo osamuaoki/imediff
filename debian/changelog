@@ -1,3 +1,10 @@
+imediff (2.4-5) unstable; urgency=medium
+
+  * More CI-test codes.
+  * Automatic tagging for git-ime. 
+
+ -- Osamu Aoki <osamu@debian.org>  Tue, 14 Sep 2021 13:41:05 +0900
+
 imediff (2.4-4) unstable; urgency=medium
 
   * Update description of git-ime.

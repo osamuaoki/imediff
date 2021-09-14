@@ -47,6 +47,8 @@
       <command>&dhpackage;</command>
       <arg><option>-a</option></arg>
       <arg><option>--auto</option></arg>
+      <arg><option>-n</option></arg>
+      <arg><option>--notag</option></arg>
       <arg><option>-v</option></arg>
       <arg><option>--verbose</option></arg>
       <arg><option>-h</option></arg>
@@ -76,6 +78,13 @@ selected by <command>imediff</command> interactively.</para>
 <para>This <command>git-ime</command> is not only useful at the checked out
 branch head but also at "edit" prompt during the interactive execution of
 <command>git rebase -i <replaceable>treeish</replaceable></command>.</para>
+
+<para>To preserve good accessibility to the original state, this
+<command>git-ime</command> tags the original commit with
+"git-ime-aYYYYMMDD-HHMMSS" if it hasn't been tagged.  Also this
+<command>git-ime</command> tags its final commit with
+"git-ime-zYYYYMMDD-HHMMSS" for the convenience of subsequent operations such
+as <command>git-rebase</command>.</para>
 
 <para>Please note this <command>git-ime</command> creates or overwrites
 <replaceable>file</replaceable>.tmp_a and
@@ -107,6 +116,17 @@ automatically and repeatedly to create a series of commits, instead.</para>
 
 <para>The <command>git ime</command> command is executed with verbose console
 outputs.</para>
+
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+      <term><option>-n</option></term> <term><option>--notag</option></term>
+        <listitem>
+
+<para>Disable automatic tagging feature.  The use of this option may be
+desirable if this <command>git ime</command> command is used during the
+<command>git rebase</command> operation.</para>
 
         </listitem>
       </varlistentry>

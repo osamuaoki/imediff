@@ -37,7 +37,7 @@ help() {
     echo "\
 ${0##*/}, version @version@
 
-Usage: ${0##*/} [--verbose|-v] [-q] [--auto|-a]
+Usage: ${0##*/} [--verbose|-v] [-q] [--auto|-a] [--notag|-n]
 
 DESCRIPTION: Split changes into multiple git commits"
 }
@@ -163,6 +163,7 @@ if [ ! -x $IMEDIFF ]; then
 fi
 
 AUTO=""
+NOTAG=""
 OPTQ=""
 while true; do
     case "$1" in
@@ -171,6 +172,9 @@ while true; do
             ;;
         --quiet|-q)
             OPTQ="--quiet"
+            ;;
+        --notag|-n)
+            NOTAG="Yes"
             ;;
         --verbose|-v)
             VERBOSE="Yes"
@@ -230,6 +234,14 @@ if [ "$(git ls-files . --exclude-standard --others --directory| wc -l)" != "0" ]
 fi
 
 #############################################################################
+# Ensure to be tagged for recovery
+#############################################################################
+
+if -z "$NOTAG" && ! git describe --tags --exact-match HEAD 2>/dev/null; then
+    git tag "git-ime-a$(date -u +%Y%m%d-%H%M%S)"
+fi
+
+#############################################################################
 # Check how many files changed
 #############################################################################
 # In this process, moved files should be counted as one delete and one add
@@ -272,6 +284,14 @@ else
         git commit $OPTQ --no-edit -F ".git/COMMIT_EDITMSG"
     done
     vecho "I: split into $N_FILENAMES commits ... done"
+fi
+
+#############################################################################
+# Ensure to be tagged for recovery (we expect git rebase to follow)
+#############################################################################
+
+if -z "$NOTAG" ; then
+    git tag "git-ime-z$(date -u +%Y%m%d-%H%M%S)"
 fi
 
 # vim:se tw=78 ai sts=4 sw=4 et:

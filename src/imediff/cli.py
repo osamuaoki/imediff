@@ -304,7 +304,7 @@ class TextData:  # Non-TUI data
 
     def set_all_mode(self, new_mode):
         for i in range(len(self.chunks)):
-            logger.debug("set_all_mode: i={}".format(i, new_mode))
+            logger.debug("set_all_mode: i={} {}".format(i, new_mode))
             self.set_mode(i, new_mode)
         return
 

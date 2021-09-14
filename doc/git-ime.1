@@ -31,7 +31,7 @@
 git-ime \- An interactive git commit split helper tool
 .SH "SYNOPSIS"
 .HP \w'\fBgit\-ime\fR\ 'u
-\fBgit\-ime\fR [\fB\-a\fR] [\fB\-\-auto\fR] [\fB\-v\fR] [\fB\-\-verbose\fR] [\fB\-h\fR] [\fB\-\-help\fR]
+\fBgit\-ime\fR [\fB\-a\fR] [\fB\-\-auto\fR] [\fB\-n\fR] [\fB\-\-notag\fR] [\fB\-v\fR] [\fB\-\-verbose\fR] [\fB\-h\fR] [\fB\-\-help\fR]
 .SH "DESCRIPTION"
 .PP
 This
@@ -57,6 +57,13 @@ This
 is not only useful at the checked out branch head but also at "edit" prompt during the interactive execution of
 \fBgit rebase \-i \fR\fB\fItreeish\fR\fR\&.
 .PP
+To preserve good accessibility to the original state, this
+\fBgit\-ime\fR
+tags the original commit with "git\-ime\-aYYYYMMDD\-HHMMSS" if it hasn\*(Aqt been tagged\&. Also this
+\fBgit\-ime\fR
+tags its final commit with "git\-ime\-zYYYYMMDD\-HHMMSS" for the convenience of subsequent operations such as
+\fBgit\-rebase\fR\&.
+.PP
 Please note this
 \fBgit\-ime\fR
 creates or overwrites
@@ -80,6 +87,15 @@ to select a series of minimum partial changes automatically and repeatedly to cr
 The
 \fBgit ime\fR
 command is executed with verbose console outputs\&.
+.RE
+.PP
+\fB\-n\fR, \fB\-\-notag\fR
+.RS 4
+Disable automatic tagging feature\&. The use of this option may be desirable if this
+\fBgit ime\fR
+command is used during the
+\fBgit rebase\fR
+operation\&.
 .RE
 .PP
 \fB\-h\fR, \fB\-\-help\fR
