@@ -137,9 +137,12 @@ A single combined diff, containing all the changes, follows.
  ### making Debian package
 --- imediff-2.4.orig/bin/git-ime
 +++ imediff-2.4/bin/git-ime
-@@ -37,7 +37,7 @@ help() {
+@@ -35,9 +35,9 @@ vecho () {
+ help() {
+ 
      echo "\
- ${0##*/}, version @version@
+-${0##*/}, version @version@
++${0##*/}, $(imediff --version|sed -n -e '1s/^[^(]*//p')
  
 -Usage: ${0##*/} [--verbose|-v] [-q] [--auto|-a]
 +Usage: ${0##*/} [--verbose|-v] [-q] [--auto|-a] [--notag|-n]
@@ -164,7 +167,7 @@ A single combined diff, containing all the changes, follows.
          --verbose|-v)
              VERBOSE="Yes"
              ;;
-@@ -230,6 +234,21 @@ if [ "$(git ls-files . --exclude-standar
+@@ -230,6 +234,20 @@ if [ "$(git ls-files . --exclude-standar
  fi
  
  #############################################################################
@@ -172,9 +175,8 @@ A single combined diff, containing all the changes, follows.
 +#############################################################################
 +# Check if we are in rebase.
 +# https://stackoverflow.com/questions/3921409/how-to-know-if-there-is-a-git-rebase-in-progress
-+if [ ( -d "$(git rev-parse --git-path rebase-merge)" || \
-+       -d "$(git rev-parse --git-path rebase-apply)"
-+     )  2>/dev/null ]; then
++if [ -d "$(git rev-parse --git-path rebase-merge 2>/dev/null)" ] || \
++   [ -d "$(git rev-parse --git-path rebase-apply 2>/dev/null)" ]; then
 +    NOTAG="yes"
 +fi
 +
@@ -186,7 +188,7 @@ A single combined diff, containing all the changes, follows.
  # Check how many files changed
  #############################################################################
  # In this process, moved files should be counted as one delete and one add
-@@ -274,4 +293,12 @@ else
+@@ -274,4 +292,12 @@ else
      vecho "I: split into $N_FILENAMES commits ... done"
  fi
  
@@ -194,7 +196,7 @@ A single combined diff, containing all the changes, follows.
 +# Ensure to be tagged for recovery (we expect git rebase to follow)
 +#############################################################################
 +
-+if -z "$NOTAG" ; then
++if [ -z "$NOTAG" ] ; then
 +    git tag "git-ime-z$(date -u +%Y%m%d-%H%M%S)"
 +fi
 +
