@@ -35,7 +35,7 @@ vecho () {
 help() {
 
     echo "\
-${0##*/}, version @version@
+${0##*/}, $(imediff --version|sed -n -e '1s/^[^(]*//p')
 
 Usage: ${0##*/} [--verbose|-v] [-q] [--auto|-a] [--notag|-n]
 
