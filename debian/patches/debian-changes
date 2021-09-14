@@ -135,9 +135,66 @@ A single combined diff, containing all the changes, follows.
  ## Note to developer and translator
  
  ### making Debian package
+--- imediff-2.4.orig/bin/git-ime
++++ imediff-2.4/bin/git-ime
+@@ -37,7 +37,7 @@ help() {
+     echo "\
+ ${0##*/}, version @version@
+ 
+-Usage: ${0##*/} [--verbose|-v] [-q] [--auto|-a]
++Usage: ${0##*/} [--verbose|-v] [-q] [--auto|-a] [--notag|-n]
+ 
+ DESCRIPTION: Split changes into multiple git commits"
+ }
+@@ -163,6 +163,7 @@ if [ ! -x $IMEDIFF ]; then
+ fi
+ 
+ AUTO=""
++NOTAG=""
+ OPTQ=""
+ while true; do
+     case "$1" in
+@@ -172,6 +173,9 @@ while true; do
+         --quiet|-q)
+             OPTQ="--quiet"
+             ;;
++        --notag|-n)
++            NOTAG="Yes"
++            ;;
+         --verbose|-v)
+             VERBOSE="Yes"
+             ;;
+@@ -230,6 +234,14 @@ if [ "$(git ls-files . --exclude-standar
+ fi
+ 
+ #############################################################################
++# Ensure to be tagged for recovery
++#############################################################################
++
++if -z "$NOTAG" && ! git describe --tags --exact-match HEAD 2>/dev/null; then
++    git tag "git-ime-a$(date -u +%Y%m%d-%H%M%S)"
++fi
++
++#############################################################################
+ # Check how many files changed
+ #############################################################################
+ # In this process, moved files should be counted as one delete and one add
+@@ -274,4 +286,12 @@ else
+     vecho "I: split into $N_FILENAMES commits ... done"
+ fi
+ 
++#############################################################################
++# Ensure to be tagged for recovery (we expect git rebase to follow)
++#############################################################################
++
++if -z "$NOTAG" ; then
++    git tag "git-ime-z$(date -u +%Y%m%d-%H%M%S)"
++fi
++
+ # vim:se tw=78 ai sts=4 sw=4 et:
 --- imediff-2.4.orig/doc/git-ime.1
 +++ imediff-2.4/doc/git-ime.1
-@@ -28,7 +28,7 @@
+@@ -28,10 +28,10 @@
  .\" * MAIN CONTENT STARTS HERE *
  .\" -----------------------------------------------------------------
  .SH "NAME"
@@ -145,10 +202,44 @@ A single combined diff, containing all the changes, follows.
 +git-ime \- An interactive git commit split helper tool
  .SH "SYNOPSIS"
  .HP \w'\fBgit\-ime\fR\ 'u
- \fBgit\-ime\fR [\fB\-a\fR] [\fB\-\-auto\fR] [\fB\-v\fR] [\fB\-\-verbose\fR] [\fB\-h\fR] [\fB\-\-help\fR]
+-\fBgit\-ime\fR [\fB\-a\fR] [\fB\-\-auto\fR] [\fB\-v\fR] [\fB\-\-verbose\fR] [\fB\-h\fR] [\fB\-\-help\fR]
++\fBgit\-ime\fR [\fB\-a\fR] [\fB\-\-auto\fR] [\fB\-n\fR] [\fB\-\-notag\fR] [\fB\-v\fR] [\fB\-\-verbose\fR] [\fB\-h\fR] [\fB\-\-help\fR]
+ .SH "DESCRIPTION"
+ .PP
+ This
+@@ -57,6 +57,13 @@ This
+ is not only useful at the checked out branch head but also at "edit" prompt during the interactive execution of
+ \fBgit rebase \-i \fR\fB\fItreeish\fR\fR\&.
+ .PP
++To preserve good accessibility to the original state, this
++\fBgit\-ime\fR
++tags the original commit with "git\-ime\-aYYYYMMDD\-HHMMSS" if it hasn\*(Aqt been tagged\&. Also this
++\fBgit\-ime\fR
++tags its final commit with "git\-ime\-zYYYYMMDD\-HHMMSS" for the convenience of subsequent operations such as
++\fBgit\-rebase\fR\&.
++.PP
+ Please note this
+ \fBgit\-ime\fR
+ creates or overwrites
+@@ -82,6 +89,15 @@ The
+ command is executed with verbose console outputs\&.
+ .RE
+ .PP
++\fB\-n\fR, \fB\-\-notag\fR
++.RS 4
++Disable automatic tagging feature\&. The use of this option may be desirable if this
++\fBgit ime\fR
++command is used during the
++\fBgit rebase\fR
++operation\&.
++.RE
++.PP
+ \fB\-h\fR, \fB\-\-help\fR
+ .RS 4
+ The
 --- imediff-2.4.orig/doc/git-ime.xml
 +++ imediff-2.4/doc/git-ime.xml
-@@ -40,7 +40,7 @@
+@@ -40,13 +40,15 @@
    </refmeta>
    <refnamediv>
      <refname>&dhpackage;</refname>
@@ -157,6 +248,46 @@ A single combined diff, containing all the changes, follows.
    </refnamediv>
    <refsynopsisdiv>
      <cmdsynopsis>
+       <command>&dhpackage;</command>
+       <arg><option>-a</option></arg>
+       <arg><option>--auto</option></arg>
++      <arg><option>-n</option></arg>
++      <arg><option>--notag</option></arg>
+       <arg><option>-v</option></arg>
+       <arg><option>--verbose</option></arg>
+       <arg><option>-h</option></arg>
+@@ -77,6 +79,13 @@ selected by <command>imediff</command> i
+ branch head but also at "edit" prompt during the interactive execution of
+ <command>git rebase -i <replaceable>treeish</replaceable></command>.</para>
+ 
++<para>To preserve good accessibility to the original state, this
++<command>git-ime</command> tags the original commit with
++"git-ime-aYYYYMMDD-HHMMSS" if it hasn't been tagged.  Also this
++<command>git-ime</command> tags its final commit with
++"git-ime-zYYYYMMDD-HHMMSS" for the convenience of subsequent operations such
++as <command>git-rebase</command>.</para>
++
+ <para>Please note this <command>git-ime</command> creates or overwrites
+ <replaceable>file</replaceable>.tmp_a and
+ <replaceable>file</replaceable>.tmp_b files.  So they should not exist before
+@@ -110,6 +119,17 @@ outputs.</para>
+ 
+         </listitem>
+       </varlistentry>
++
++      <varlistentry>
++      <term><option>-n</option></term> <term><option>--notag</option></term>
++        <listitem>
++
++<para>Disable automatic tagging feature.  The use of this option may be
++desirable if this <command>git ime</command> command is used during the
++<command>git rebase</command> operation.</para>
++
++        </listitem>
++      </varlistentry>
+ 
+       <varlistentry>
+       <term><option>-h</option></term> <term><option>--help</option></term>
 --- imediff-2.4.orig/po/POTFILES.in
 +++ imediff-2.4/po/POTFILES.in
 @@ -3,7 +3,7 @@ src/imediff/config.py
@@ -263,6 +394,17 @@ A single combined diff, containing all the changes, follows.
          sys.exit(0)
  
      # logging
+--- imediff-2.4.orig/src/imediff/cli.py
++++ imediff-2.4/src/imediff/cli.py
+@@ -304,7 +304,7 @@ class TextData:  # Non-TUI data
+ 
+     def set_all_mode(self, new_mode):
+         for i in range(len(self.chunks)):
+-            logger.debug("set_all_mode: i={}".format(i, new_mode))
++            logger.debug("set_all_mode: i={} {}".format(i, new_mode))
+             self.set_mode(i, new_mode)
+         return
+ 
 --- imediff-2.4.orig/src/imediff/config.py
 +++ imediff-2.4/src/imediff/config.py
 @@ -24,6 +24,8 @@ Software Foundation, Inc., 51 Franklin S
