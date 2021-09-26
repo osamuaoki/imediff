@@ -132,7 +132,7 @@ class SequenceMatcher2(difflib.SequenceMatcher):
 
         'N':   a[i1:i2] should be replaced by b[j1:j2]
                   delete if j1==j2
-                  insert if j1==j2
+                  insert if i1==i2
         'E':   a[i1:i2] == b[j1:j2]
 
         >>> a = "qabxcd"

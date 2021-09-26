@@ -92,7 +92,7 @@ set_name () {
 }
 
 apply_imediff () {
-    # shellcheck disable=SC2039
+    # shellcheck disable=SC3043
     local FLNM="$1"
     # sanity checks
     if [ -e "$FLNM.tmp_a" ]; then
@@ -243,7 +243,7 @@ if [ -d "$(git rev-parse --git-path rebase-merge 2>/dev/null)" ] || \
     NOTAG="yes"
 fi
 
-if -z "$NOTAG" && ! git describe --tags --exact-match HEAD 2>/dev/null; then
+if [ -z "$NOTAG" ] && ! git describe --tags --exact-match HEAD 2>/dev/null; then
     git tag "git-ime-a$(date -u +%Y%m%d-%H%M%S)"
 fi
 
