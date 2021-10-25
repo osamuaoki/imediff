@@ -104,7 +104,7 @@ def error_exit(msg):
     trace = traceback.format_exc()
     if trace != "NoneType: None\n":
         logger.error(trace)
-    sys.exit(22)
+    sys.exit(2)
 
 
 # file output

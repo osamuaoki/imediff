@@ -44,6 +44,7 @@
       <arg><option>-m</option></arg>
       <arg><option>-n</option></arg>
       <arg><option>-t</option></arg>
+      <arg><option>-l <replaceable>N</replaceable></option></arg>
       <arg><option>-o <replaceable>file_out</replaceable></option></arg>
       <arg choice="req"><replaceable>file_older</replaceable></arg>
       <arg choice="req"><replaceable>file_newer</replaceable></arg>
@@ -60,6 +61,7 @@
       <arg><option>-m</option></arg>
       <arg><option>-n</option></arg>
       <arg><option>-t</option></arg>
+      <arg><option>-l <replaceable>N</replaceable></option></arg>
       <arg><option>-o <replaceable>file_out</replaceable></option></arg>
       <arg choice="req"><replaceable>file_yours</replaceable></arg>
       <arg choice="req"><replaceable>file_base</replaceable></arg>
@@ -110,6 +112,23 @@
         <term><option>-o <replaceable>file_output</replaceable></option></term> <term><option>--output=<replaceable>file_output</replaceable></option></term>
         <listitem>
           <para>Write output to a given file. If missing, STDERR is used.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-l <replaceable>N</replaceable></option></term> <term><option>--linerule=<replaceable>N</replaceable></option></term>
+        <listitem>
+          <para>Line alignment fuzzy matching rule.  (Partial string matches are tried on the top of this pre-filtering) </para>
+          <itemizedlist>
+          <listitem><para>N=0: Line alignment after stripping leading and tailing whitespaces</para></listitem>
+          <listitem><para>N=1: Line alignment after stripping all whitespaces</para></listitem>
+          <listitem><para>N=2: Line alignment after stripping all whitespaces and quotation marks (default)</para></listitem>
+          <listitem><para>N=3: Line alignment after stripping all non-alphanumerics</para></listitem>
+          <listitem><para>N=10: Line alignment after stripping leading and tailing whitespaces and lowecasing</para></listitem>
+          <listitem><para>N=11: Line alignment after stripping all whitespaces and lowecasing</para></listitem>
+          <listitem><para>N=12: Line alignment after stripping all whitespaces and quotation marks and lowecasing</para></listitem>
+          <listitem><para>N=13: Line alignment after stripping all non-alphanumerics and lowecasing</para></listitem>
+          </itemizedlist>
         </listitem>
       </varlistentry>
 

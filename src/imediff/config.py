@@ -28,6 +28,8 @@ import os
 import io
 import curses
 
+from imediff.utils import error_exit, logger
+
 # Update version below only when configuration API changes
 
 config_template = """\
@@ -123,7 +125,7 @@ cc["BLACK"] = curses.COLOR_BLACK
 def create_template(conf):
     config_file = os.path.expanduser(conf)
     if not os.path.exists(config_file):
-        # logger.debug("create configuration file: {}".format(args.conf))
+        logger.debug("create configuration file: {}".format(conf))
         try:
             with open(config_file, mode="w", buffering=io.DEFAULT_BUFFER_SIZE) as ofp:
                 ofp.write(config_template)

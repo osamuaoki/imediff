@@ -27,22 +27,18 @@ Boston, MA 02110-1301, USA.
 import argparse
 import configparser
 import logging
-import gettext
-import curses
 import locale
-import io
 import os
 import sys
 import shutil
-import traceback
 
 # utility diff functions
-from imediff.utils import *
-from imediff.config import *
+from imediff.utils import error_exit, logger, read_lines
+from imediff.config import config_template, create_template
 from imediff.cli import *
 from imediff.tui import *
 
-VERSION = "2.4"
+VERSION = "2.5"
 PACKAGE = "imediff"
 
 _version = (
@@ -125,6 +121,13 @@ def initialize_args():
         "--isjunk",
         action="store_true",
         help="Force isjunk to None instead of the default list",
+    )
+    pa.add_argument(
+        "--linerule",
+        "-l",
+        action="store",
+        default=2,
+        help="Line alignment matching rule (0,1,2,3,10,11,12,13)",
     )
     pa.add_argument("--mode", "-m", action="store_true", help="Display mode column")
     pa.add_argument("--mono", action="store_true", help="Force monochrome display")
@@ -308,20 +311,16 @@ def main():
         tutorial = False
     else:
         error_exit("imediff normally takes 2 or 3 files")
-    if args.isjunk:
-        isjunk = None
-    else:
-        isjunk = lambda x: x in ["\n", "#\n", "//\n"]
 
     # call main routine
     if not args.non_interactive:
-        display_instance = TextPad(list_a, list_b, list_c, args, confs, isjunk)
+        display_instance = TextPad(list_a, list_b, list_c, args, confs)
         display_instance.command_loop(tutorial=tutorial)
         del display_instance
     elif tutorial:
         print(_opening)
     else:
-        text_instance = TextData(list_a, list_b, list_c, args, confs, isjunk)
+        text_instance = TextData(list_a, list_b, list_c, args, confs)
         text_instance.command_loop()
         del text_instance
     sys.exit(0)

@@ -24,24 +24,23 @@ Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.
 """
 import tempfile
-import locale
 import os
 import io
 import time
 
-from imediff.utils import *
-from imediff.config import *
-from imediff.diff2lib import *
-from imediff.diff3lib import *
+from difflib import SequenceMatcher
+from imediff.utils import error_exit, logger, read_lines, write_file
+from imediff.lines2lib import LineMatcher
+from imediff.diff3lib import SequenceMatcher3
 
 
 class TextData:  # Non-TUI data
     """Non curses class to handle diff data for 2 or 3 lines"""
 
-    #     i: index for self.chunks
+    #     i: index for self.opcodes
     #     j: index for self.actives (non-persistent)
     #     self.active: index for self.actives (persistent)
-    def __init__(self, list_a, list_b, list_c, args, confs, isjunk=None):
+    def __init__(self, list_a, list_b, list_c, args, confs):
         self.diff_mode = args.diff_mode
         self.default_mode = args.default_mode
         self.file_a = args.file_a
@@ -53,10 +52,11 @@ class TextData:  # Non-TUI data
         self.list_c = list_c
         self.sloppy = args.sloppy
         self.isjunk = args.isjunk
+        self.linerule = args.linerule
         self.edit_cmd = args.edit_cmd
         self.macro = args.macro
         new_mode = self.default_mode
-        row = None  # used only by TUI to match index of chunks to textpad row
+        row = None  # used only by TUI to match index of opcodes to textpad row
         bf = None  # used only by TUI to store the editor result
         # set from confs
         if confs["config"]["confirm_exit"] != "False":
@@ -88,28 +88,28 @@ class TextData:  # Non-TUI data
             )
         # parse input data
         if self.diff_mode == 2:
-            sequence = SequenceMatcher2(isjunk, list_a, list_b, None)
-            chunks = sequence.get_chunks()
+            sequence = LineMatcher(list_a, list_b)
+            opcodes = sequence.get_opcodes()
             k1 = k2 = None
             # Set initial mode to "a" or "d"
-            self.chunks = [
+            self.opcodes = [
                 (tag, i1, i2, j1, j2, k1, k2, "a" if tag == "E" else "d", row, bf)
-                for (tag, i1, i2, j1, j2) in chunks
+                for (tag, i1, i2, j1, j2) in opcodes
             ]
             self.actives = [
-                j for j, (tag, i1, i2, j1, j2) in enumerate(chunks) if tag == "N"
+                j for j, (tag, i1, i2, j1, j2) in enumerate(opcodes) if tag != "E"
             ]
         else:
-            sequence = SequenceMatcher3(isjunk, list_a, list_b, list_c)
-            chunks = sequence.get_chunks()
+            sequence = SequenceMatcher3(list_a, list_b, list_c, 1)
+            opcodes = sequence.get_opcodes()
             # Set initial mode to "a" or "d"
-            self.chunks = [
+            self.opcodes = [
                 (tag, i1, i2, j1, j2, k1, k2, "a" if tag in "Ee" else "d", row, bf)
-                for (tag, i1, i2, j1, j2, k1, k2) in chunks
+                for (tag, i1, i2, j1, j2, k1, k2) in opcodes
             ]
             self.actives = [
                 j
-                for j, (tag, i1, i2, j1, j2, k1, k2) in enumerate(chunks)
+                for j, (tag, i1, i2, j1, j2, k1, k2) in enumerate(opcodes)
                 if tag not in "Ee"
             ]
         # self.actives[i] = j -> self.rev_actives[j] = i
@@ -126,13 +126,18 @@ class TextData:  # Non-TUI data
         self.update_active = True
         self.update_textpad = True
         # save memory
-        del chunks  # this is not "self.chunks"
+        del opcodes  # this is not "self.opcodes"
         del sequence
         return
 
     def merge_diff(self, i):
         """Return content for diff by line"""
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.chunks[i]
+        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
+        logger.debug(
+            "merge_wdiff: tag={} a[{}:{}]/b[{}:{}]/c[{}:{}] mode={}, row={}, bf='{}'".format(
+                tag, i1, i2, j1, j2, k1, k2, mode, row, bf
+            )
+        )
         content = list()
         content += [self.ls0 % self.file_a]
         content += self.list_a[i1:i2]
@@ -150,20 +155,25 @@ class TextData:  # Non-TUI data
 
     def merge_wdiff2(self, i):
         """Return content for wdiff by line (2 files)"""
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.chunks[i]
+        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
+        logger.debug(
+            "merge_wdiff2: tag={} a[{}:{}]/b[{}:{}]/c[{}:{}] mode={}, row={}, bf='{}'".format(
+                tag, i1, i2, j1, j2, k1, k2, mode, row, bf
+            )
+        )
         line_a = "".join(self.list_a[i1:i2])
         line_b = "".join(self.list_b[j1:j2])
         if self.isjunk:
             isjunk = None
         else:
             isjunk = lambda x: x in " \t"
-        seq = SequenceMatcher2(isjunk, line_a, line_b, None)
-        chunks = seq.get_chunks()
+        seq = SequenceMatcher(isjunk, line_a, line_b, None)
+        opcodes = seq.get_opcodes()
         line = ""
-        for tag, wi1, wi2, wj1, wj2 in chunks:
-            if tag == "E":
+        for tag, wi1, wi2, wj1, wj2 in opcodes:
+            if tag == "equal":
                 line += line_a[wi1:wi2]
-            else:  # tag == "N"
+            else:  # other tags
                 line += self.ws0
                 line += line_a[wi1:wi2]
                 line += self.ws1
@@ -174,7 +184,12 @@ class TextData:  # Non-TUI data
 
     def merge_wdiff3(self, i):
         """Return content for wdiff by line (3 files)"""
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.chunks[i]
+        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
+        logger.debug(
+            "merge_wdiff3: tag={} a[{}:{}]/b[{}:{}]/c[{}:{}] mode={}, row={}, bf='{}'".format(
+                tag, i1, i2, j1, j2, k1, k2, mode, row, bf
+            )
+        )
         line_a = "".join(self.list_a[i1:i2])
         line_b = "".join(self.list_b[j1:j2])
         line_c = "".join(self.list_c[k1:k2])
@@ -182,12 +197,12 @@ class TextData:  # Non-TUI data
             isjunk = None
         else:
             isjunk = lambda x: x in " \t"
-        wseq = SequenceMatcher3(isjunk, line_a, line_b, line_c)
-        wchunks = wseq.get_chunks()
-        # logger.debug("wdiff3: \nwchunksc >>>>> {}".format(wchunks))
+        wseq = SequenceMatcher3(line_a, line_b, line_c, 0, isjunk, True)
+        wopcodes = wseq.get_opcodes()
+        # logger.debug("wdiff3: \nwopcodesc >>>>> {}".format(wopcodes))
         line = ""
         clean_merge = True
-        for tag, wi1, wi2, wj1, wj2, wk1, wk2 in wchunks:
+        for tag, wi1, wi2, wj1, wj2, wk1, wk2 in wopcodes:
             if tag == "E" or tag == "e" or tag == "A":
                 line += line_a[wi1:wi2]
             elif tag == "C":
@@ -205,24 +220,24 @@ class TextData:  # Non-TUI data
         return (clean_merge, content)
 
     def get_tag(self, i):
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.chunks[i]
+        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
         return tag
 
     def get_mode(self, i):
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.chunks[i]
+        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
         return mode
 
     def get_row(self, i):
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.chunks[i]
+        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
         return row
 
     def get_bf(self, i):
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.chunks[i]
+        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
         return bf
 
     def get_content(self, i):
         """Return content based on mode"""
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.chunks[i]
+        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
         if tag == "E" or tag == "e":
             content = self.list_a[i1:i2]
         elif mode == "a":
@@ -256,7 +271,7 @@ class TextData:  # Non-TUI data
         return content
 
     def set_mode(self, i, new_mode):
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.chunks[i]
+        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
         if new_mode in "abd":
             mode = new_mode
         elif self.diff_mode == 2:  # mode is always in "abdef"
@@ -298,25 +313,25 @@ class TextData:  # Non-TUI data
                         mode = "g"
                     else:
                         pass  # mode to "d" or "f"
-        self.chunks[i] = (tag, i1, i2, j1, j2, k1, k2, mode, row, bf)
+        self.opcodes[i] = (tag, i1, i2, j1, j2, k1, k2, mode, row, bf)
         self.update_textpad = True
         return
 
     def set_all_mode(self, new_mode):
-        for i in range(len(self.chunks)):
+        for i in range(len(self.opcodes)):
             logger.debug("set_all_mode: i={} {}".format(i, new_mode))
             self.set_mode(i, new_mode)
         return
 
     def set_row(self, i, new_row):  # used by TUI
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.chunks[i]
+        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
         # row is passed by value but chunk is passed by reference !
-        self.chunks[i] = (tag, i1, i2, j1, j2, k1, k2, mode, new_row, bf)
+        self.opcodes[i] = (tag, i1, i2, j1, j2, k1, k2, mode, new_row, bf)
         return
 
     def set_bf(self, i, new_bf):
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.chunks[i]
-        self.chunks[i] = (tag, i1, i2, j1, j2, k1, k2, mode, row, new_bf)
+        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
+        self.opcodes[i] = (tag, i1, i2, j1, j2, k1, k2, mode, row, new_bf)
         return
 
     def editor(self, i):
@@ -358,7 +373,7 @@ class TextData:  # Non-TUI data
     def get_output(self):
         """Return output of all content"""
         output = ""
-        for i in range(len(self.chunks)):
+        for i in range(len(self.opcodes)):
             content = self.get_content(i)
             output += "".join(content)
         return output
@@ -404,7 +419,7 @@ class TextData:  # Non-TUI data
         return
 
     def get_unresolved_count(self):
-        """Count 'd' mode chunks"""
+        """Count 'd' or 'f' mode in active chunk"""
         count = 0
         for j, i in enumerate(self.actives):
             if self.get_mode(i) in "df":

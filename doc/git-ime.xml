@@ -77,7 +77,8 @@ selected by <command>imediff</command> interactively.</para>
 
 <para>This <command>git-ime</command> is not only useful at the checked out
 branch head but also at "edit" prompt during the interactive execution of
-<command>git rebase -i <replaceable>treeish</replaceable></command>.</para>
+<command>git rebase -i <replaceable>treeish</replaceable></command>.  Execute
+<command>git-ime</command> after committing the pending commit.</para>
 
 <para>To preserve good accessibility to the original state, this
 <command>git-ime</command> tags the original commit with

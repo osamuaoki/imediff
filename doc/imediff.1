@@ -31,9 +31,9 @@
 imediff \- An interactive fullscreen merge tool for 2 or 3 files
 .SH "SYNOPSIS"
 .HP \w'\fBimediff\fR\ 'u
-\fBimediff\fR [\fB\-a\fR] [\fB\-b\fR] [\fB\-d\fR] [\fB\-f\fR] [\fB\-h\fR] [\fB\-m\fR] [\fB\-n\fR] [\fB\-t\fR] [\fB\-o\ \fR\fB\fIfile_out\fR\fR] {\fIfile_older\fR} {\fIfile_newer\fR}
+\fBimediff\fR [\fB\-a\fR] [\fB\-b\fR] [\fB\-d\fR] [\fB\-f\fR] [\fB\-h\fR] [\fB\-m\fR] [\fB\-n\fR] [\fB\-t\fR] [\fB\-l\ \fR\fB\fIN\fR\fR] [\fB\-o\ \fR\fB\fIfile_out\fR\fR] {\fIfile_older\fR} {\fIfile_newer\fR}
 .HP \w'\fBimediff\fR\ 'u
-\fBimediff\fR [\fB\-a\fR] [\fB\-b\fR] [\fB\-c\fR] [\fB\-d\fR] [\fB\-f\fR] [\fB\-g\fR] [\fB\-h\fR] [\fB\-m\fR] [\fB\-n\fR] [\fB\-t\fR] [\fB\-o\ \fR\fB\fIfile_out\fR\fR] {\fIfile_yours\fR} {\fIfile_base\fR} {\fIfile_theirs\fR}
+\fBimediff\fR [\fB\-a\fR] [\fB\-b\fR] [\fB\-c\fR] [\fB\-d\fR] [\fB\-f\fR] [\fB\-g\fR] [\fB\-h\fR] [\fB\-m\fR] [\fB\-n\fR] [\fB\-t\fR] [\fB\-l\ \fR\fB\fIN\fR\fR] [\fB\-o\ \fR\fB\fIfile_out\fR\fR] {\fIfile_yours\fR} {\fIfile_base\fR} {\fIfile_theirs\fR}
 .SH "DESCRIPTION"
 .PP
 Merge two (slightly different) files with an optional common base file interactively with a user friendly fullscreen interface in the full screen text terminal mode\&.
@@ -70,6 +70,99 @@ The program exits with status 0 if the changes were saved, 1 if the merging was 
 \fB\-o \fR\fB\fIfile_output\fR\fR, \fB\-\-output=\fR\fB\fIfile_output\fR\fR
 .RS 4
 Write output to a given file\&. If missing, STDERR is used\&.
+.RE
+.PP
+\fB\-l \fR\fB\fIN\fR\fR, \fB\-\-linerule=\fR\fB\fIN\fR\fR
+.RS 4
+Line alignment fuzzy matching rule\&. (Partial string matches are tried on the top of this pre\-filtering)
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+N=0: Line alignment after stripping leading and tailing whitespaces
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+N=1: Line alignment after stripping all whitespaces
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+N=2: Line alignment after stripping all whitespaces and quotation marks (default)
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+N=3: Line alignment after stripping all non\-alphanumerics
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+N=10: Line alignment after stripping leading and tailing whitespaces and lowecasing
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+N=11: Line alignment after stripping all whitespaces and lowecasing
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+N=12: Line alignment after stripping all whitespaces and quotation marks and lowecasing
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+N=13: Line alignment after stripping all non\-alphanumerics and lowecasing
+.RE
 .RE
 .PP
 \fB\-m\fR, \fB\-\-mode\fR

@@ -25,16 +25,9 @@ Boston, MA 02110-1301, USA.
 """
 
 import curses
-import gettext
-import locale
-import sys
-import tempfile
-import time
 
-from imediff.utils import *
-from imediff.config import *
-from imediff.diff2lib import *
-from imediff.diff3lib import *
+from imediff.utils import _, console_width, error_exit, logger, write_file
+from imediff.config import cc
 from imediff.cli import *
 
 # Format stings
@@ -319,11 +312,11 @@ class TextPad(TextData):  # TUI data
     #     row, col: window top left position in textpad
     #     active: index for self.actives
     # non-persistent running variables
-    #     i: index as self.chunks[i]
+    #     i: index as self.opcodes[i]
     #     j: index as self.actives[j]
-    def __init__(self, list_a, list_b, list_c, args, confs, isjunk=None):
+    def __init__(self, list_a, list_b, list_c, args, confs):
         # Init from super class "TextData"
-        super().__init__(list_a, list_b, list_c, args, confs, isjunk)
+        super().__init__(list_a, list_b, list_c, args, confs)
         # Init from commandline/configuration parameters
         self.mode = args.mode
         self.mono = args.mono
@@ -483,8 +476,8 @@ class TextPad(TextData):  # TUI data
                         y=self.rkc["y"]
                     )
                 ):
-                    self.chunks = []
-                    sys.exit(1)
+                    self.opcodes = []
+                    error_exit("Quit without saving by the user request\n")
             elif ch == "h" or c == curses.KEY_HELP:
                 # Show help screen
                 self.popup(self.helptext())
@@ -597,7 +590,7 @@ class TextPad(TextData):  # TUI data
         # pre-scan content to get big enough textpad size
         conth = 0  # content height
         contw = 0  # content width
-        for i in range(len(self.chunks)):
+        for i in range(len(self.opcodes)):
             self.set_row(i, conth)  # record textpad row position in chunk
             tag = self.get_tag(i)
             content = self.get_content(i)  # list()
@@ -615,7 +608,7 @@ class TextPad(TextData):  # TUI data
         self.contw = contw
         # actual textpad size slightly bigger for safety margin
         self.textpad = curses.newpad(conth + 1, max(80, contw + 1))
-        for i in range(len(self.chunks)):
+        for i in range(len(self.opcodes)):
             self.textpad_addstr(i, False)
         if self.active is not None:
             logger.debug(
@@ -764,8 +757,8 @@ class TextPad(TextData):  # TUI data
         self.winh, self.winw = self.stdscr.getmaxyx()
         popupw = 0
         popuph = 0
-        for l in text.split("\n"):
-            popupw = max(popupw, console_width(l))
+        for line in text.split("\n"):
+            popupw = max(popupw, console_width(line))
             popuph += 1
         popuph = popuph + 2  # top/bottom border
         popupw = popupw + 4  # left/right (border + space)

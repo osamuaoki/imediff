@@ -2,12 +2,12 @@
 # vim:se tw=79 sts=4 ts=4 et ai fileencoding=utf-8 :
 
 """
-Module diff3lib -- wrapper for diff3
+Module diff3lib -- wrapper for diff3 (generic)
 
 Class SequenceMatcher3:
     A flexible class for comparing 3 of sequences of any type.
 
-Copyright (C) 2018       Osamu Aoki <osamu@debian.org>
+Copyright (C) 2018-2021       Osamu Aoki <osamu@debian.org>
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -25,17 +25,19 @@ Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.
 """
 
-import sys
-
-from imediff.diff2lib import SequenceMatcher2
-from imediff.utils import *
+from difflib import SequenceMatcher
+from imediff.lines2lib import LineMatcher
+from imediff.utils import logger
 
 
 class SequenceMatcher3:
 
     """
     SequenceMatcher3 is a matching class for comparing three of sequences of
-    any type, so long as the sequence elements are hashable.
+    any type, so long as the sequence elements are hashable for matcher=0.
+
+    SequenceMatcher3 is a matching class for comparing three of lists of
+    lines for matcher=1.
 
     Let's call these three sequences as A (yours), B (base), and C (theirs).
     Let's assume A and C are derivatives from B and try to merge C into A.
@@ -81,7 +83,7 @@ class SequenceMatcher3:
                 'N'    a[j1:j2] != b[i1:i2] != c[k1:k2] != a[j1:j2]
 
     This requires diff2lib which is a wrapper of difflib and provides
-    'get_chunks' method. Here tag for diff2:
+    'get_opcodes' method. Here tag for diff2:
 
                 'E'    a[j1:j2] == b[i1:i2]
                 'N'    a[j1:j2] != b[i1:i2]
@@ -91,13 +93,13 @@ class SequenceMatcher3:
     >>> a = "private Thread currentThread foo bar;"
     >>> b = "private volatile Thread currentThread;"
     >>> c = "private volatile currentThread foo;tail"
-    >>> s = SequenceMatcher3(None, a, b, c)
+    >>> s = SequenceMatcher3(a, b, c)
     >>>
 
     If you want to know how to change the first sequence into the second,
-    use .get_chunks():
+    use .get_opcodes():
 
-    >>> for tag, i1, i2, j1, j2, k1, k2 in s.get_chunks():
+    >>> for tag, i1, i2, j1, j2, k1, k2 in s.get_opcodes():
     ...     print("%s a[%d:%d],b[%d:%d],c[%d:%d] => '%s', '%s', '%s'" % (
     ...     tag, i1, i2, j1, j2, k1, k2, a[i1:i2], b[j1:j2], c[k1:k2]))
     ...
@@ -115,13 +117,13 @@ class SequenceMatcher3:
     >>> a = "private Thread currentThread foo bar;"
     >>> b = "private volatile Thread currentThread;"
     >>> c = "private volatile currentThread foo;tail"
-    >>> s = SequenceMatcher3(lambda x: x == " ", a, b, c)
+    >>> s = SequenceMatcher3(a, b, c, 0, lambda x: x == " ", True)
     >>>
 
     If you want to know how to change the first sequence into the second,
-    use .get_chunks():
+    use .get_opcodes():
 
-    >>> for tag, i1, i2, j1, j2, k1, k2 in s.get_chunks():
+    >>> for tag, i1, i2, j1, j2, k1, k2 in s.get_opcodes():
     ...     print("%s a[%d:%d],b[%d:%d],c[%d:%d] => '%s', '%s', '%s'" % (
     ...     tag, i1, i2, j1, j2, k1, k2, a[i1:i2], b[j1:j2], c[k1:k2]))
     ...
@@ -138,7 +140,7 @@ class SequenceMatcher3:
 
     Methods:
 
-    __init__(isjunk=None, a='', b='', c='')
+    __init__(a='', b='', c='', matcher=0, isjunk=None, autojunk=True, linerule=2)
         Construct a SequenceMatcher3.
 
     set_seqs(a, b)
@@ -153,21 +155,15 @@ class SequenceMatcher3:
     set_seq3(c)
         Set the third sequence to be compared.
 
-    get_chunks()
+    get_opcodes()
         Return list of 7-tuples describing how to merge c into a while b being
         common older version.
     """
 
-    def __init__(self, isjunk=None, a="", b="", c="", autojunk=True):
+    def __init__(
+        self, a="", b="", c="", matcher=0, isjunk=None, autojunk=True, linerule=2
+    ):
         """Construct a SequenceMatcher3.
-
-        Optional arg isjunk is None (the default), or a one-argument
-        function that takes a sequence element and returns true iff the
-        element is junk.  None is equivalent to passing "lambda x: 0", i.e.
-        no elements are considered to be junk.  For example, pass
-            lambda x: x in " \\t"
-        if you're comparing lines as sequences of characters, and don't
-        want to synch up on blanks or hard tabs.
 
         Optional arg a is the first of three sequences to be compared.  By
         default, an empty string.  The elements of a must be hashable.  See
@@ -181,6 +177,17 @@ class SequenceMatcher3:
         default, an empty string.  The elements of b must be hashable. See
         also .set_seqs() and .set_seq3().
 
+        Optional arg matcher should be set to 0 for hashables such as strings,
+        or 1 for lists of lines.
+
+        Optional arg isjunk is None (the default), or a one-argument
+        function that takes a sequence element and returns true iff the
+        element is junk.  None is equivalent to passing "lambda x: 0", i.e.
+        no elements are considered to be junk.  For example, pass
+            lambda x: x in " \\t"
+        if you're comparing lines as sequences of characters, and don't
+        want to synch up on blanks or hard tabs.
+
         Optional arg autojunk should be set to False to disable the
         "automatic junk heuristic" that treats popular elements as junk
         (see module documentation for more information).
@@ -193,7 +200,7 @@ class SequenceMatcher3:
         #      second sequence (old common, used to check who changed what)
         # c
         #      third sequence (theirs, data to be merged)
-        # chunks
+        # opcodes
         #      a list of (tag, i1, i2, j1, j2, k1, k2) tuples, where tag is
         #      one of
         #          'E'    a[i1:i2] == b[j1:j2] == c[k1:k2] == a[i1:i2]
@@ -208,12 +215,14 @@ class SequenceMatcher3:
         #      get around to writing up someday <0.9 wink>.
         #      DON'T USE!  Only __chain_b uses this.  Use "in self.bjunk".
 
-        self.isjunk = isjunk
         self.a = a
         self.b = b
         self.c = c
+        self.matcher = matcher
+        self.isjunk = isjunk
         self.autojunk = autojunk
-        self.chunks = None
+        self.linerule = linerule
+        self.opcodes = None
 
     def set_seq1(self, a):
         """Set the first sequence to be compared."""
@@ -221,7 +230,7 @@ class SequenceMatcher3:
         if a is self.a:
             return
         self.a = a
-        self.chunks = None
+        self.opcodes = None
 
     def set_seq2(self, b):
         """Set the second sequence to be compared."""
@@ -229,7 +238,7 @@ class SequenceMatcher3:
         if b is self.b:
             return
         self.b = b
-        self.chunks = None
+        self.opcodes = None
 
     def set_seq3(self, c):
         """Set the third sequence to be compared."""
@@ -237,7 +246,7 @@ class SequenceMatcher3:
         if c is self.c:
             return
         self.c = c
-        self.chunks = None
+        self.opcodes = None
 
     def set_seqs(self, a, b, c):
         """Set the two sequences to be compared."""
@@ -246,7 +255,7 @@ class SequenceMatcher3:
         self.set_seq2(b)
         self.set_seq3(c)
 
-    def get_chunks(self):
+    def get_opcodes(self):
         """Return list of 7-tuples describing how a, b, c matches.
 
         Each tuple is of the form (tag, i1, i2, j1, j2, k1, k2).  The first
@@ -265,8 +274,8 @@ class SequenceMatcher3:
         >>> a = "qabxcdsdgp"
         >>> b = "abycdfsdkg"
         >>> c = "abycdfzcpgp"
-        >>> s = SequenceMatcher3(None, a, b, c)
-        >>> for tag, i1, i2, j1, j2, k1, k2 in s.get_chunks():
+        >>> s = SequenceMatcher3(a, b, c)
+        >>> for tag, i1, i2, j1, j2, k1, k2 in s.get_opcodes():
         ...    print(("%s a[%d:%d] (%s) / b[%d:%d] (%s) / c[%d:%d] (%s)" %
         ...           (tag, i1, i2, a[i1:i2], j1, j2, b[j1:j2], k1, k2, c[k1:k2])))
         ...
@@ -283,41 +292,80 @@ class SequenceMatcher3:
         a = self.a
         b = self.b
         c = self.c
-        chunks_ba = SequenceMatcher2(self.isjunk, b, a).get_chunks()
-        chunks_bc = SequenceMatcher2(self.isjunk, b, c).get_chunks()
-        n_ba = 0  # walking index for chunks_ba
-        n_bc = 0  # walking index for chunks_bc
-        len_ba = len(chunks_ba)
-        len_bc = len(chunks_bc)
+        matcher = self.matcher
+        if matcher == 0:
+            opcodes_ba = SequenceMatcher(self.isjunk, b, a).get_opcodes()
+            opcodes_bc = SequenceMatcher(self.isjunk, b, c).get_opcodes()
+            tag_equal = "equal"
+        else:  # matcher == 1
+            opcodes_ba = LineMatcher(b, a, self.linerule).get_opcodes()
+            opcodes_bc = LineMatcher(b, c, self.linerule).get_opcodes()
+            tag_equal = "E"
+        n_ba = 0  # walking index for opcodes_ba
+        n_bc = 0  # walking index for opcodes_bc
+        len_ba = len(opcodes_ba)
+        len_bc = len(opcodes_bc)
+        logger.debug(
+            "diff3lib: matcher={} tag={} len_ba={} len_bc={}".format(
+                matcher, tag_equal, len_ba, len_bc
+            )
+        )
         il = jl = kl = 0  # range lower end for b, a, c (next in next round)
         ih = jh = kh = 0  # range high end for b, a, c (next in next round)
         answer = list()
         tag = ""
         while n_ba < len_ba or n_bc < len_bc:
-            # logger.debug("diff3lib: n_ba={} n_bc={} len_ba={} len_bc={}".format(n_ba, n_bc, len_ba, len_bc))
             # get a chunk data
             if n_ba < len_ba:
-                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = chunks_ba[n_ba]
+                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = opcodes_ba[n_ba]
+                logger.debug(
+                    "diff3lib: NORMAL n_bc={} < len_bc={}".format(n_bc, len_bc)
+                )
+            elif len_ba == 0:
+                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = (tag_equal, 0, 0, 0, 0)
+                logger.debug(
+                    "diff3lib: UNDERRUN n_ba={} len_ba={}".format(n_ba, len_ba)
+                )
             else:
-                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = chunks_ba[len_ba - 1]
-                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = ("E", ih_ba, ih_ba, jh_ba, jh_ba)
-                # print("diff3lib: OVERRUN n_ba={} len_ba={}".format(n_ba, len_ba), file=sys.stderr)
+                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = opcodes_ba[len_ba - 1]
+                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = (
+                    tag_equal,
+                    ih_ba,
+                    ih_ba,
+                    jh_ba,
+                    jh_ba,
+                )
+                logger.debug("diff3lib: OVERRUN n_ba={} len_ba={}".format(n_ba, len_ba))
             if n_bc < len_bc:
-                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = chunks_bc[n_bc]
+                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = opcodes_bc[n_bc]
+                logger.debug(
+                    "diff3lib: NORMAL n_bc={} < len_bc={}".format(n_bc, len_bc)
+                )
+            elif len_bc == 0:
+                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = (tag_equal, 0, 0, 0, 0)
+                logger.debug(
+                    "diff3lib: UNDERRUN n_bc={} len_bc={}".format(n_bc, len_bc)
+                )
             else:
-                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = chunks_bc[len_bc - 1]
-                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = ("E", ih_bc, ih_bc, kh_bc, kh_bc)
-                # print("diff3lib: OVERRUN n_bc={} len_bc={}".format( n_bc, len_bc), file=sys.stderr)
-            # get tag for this set of chunks if high range value is available
+                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = opcodes_bc[len_bc - 1]
+                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = (
+                    tag_equal,
+                    ih_bc,
+                    ih_bc,
+                    kh_bc,
+                    kh_bc,
+                )
+                logger.debug("diff3lib: OVERRUN n_bc={} len_bc={}".format(n_bc, len_bc))
+            # get tag for this set of opcodes if high range value is available
             if tag == "N":
                 pass  # All undecided comes in as tag == "N", otherwise tag == ""
-            elif tag_ba == "E" and tag_bc == "E":
+            elif tag_ba == tag_equal and tag_bc == tag_equal:
                 tag = "E"
-            elif tag_ba == "N" and tag_bc == "E":
+            elif tag_ba != tag_equal and tag_bc == tag_equal:
                 tag = "A"
-            elif tag_ba == "E" and tag_bc == "N":
+            elif tag_ba == tag_equal and tag_bc != tag_equal:
                 tag = "C"
-            elif tag_ba == "N" and tag_bc == "N":
+            elif tag_ba != tag_equal and tag_bc != tag_equal:
                 tag = "N"
             if ih_ba == ih_bc:
                 n_ba += 1
@@ -329,7 +377,7 @@ class SequenceMatcher3:
                 n_bc += 1
                 ih = ih_bc
                 kh = kh_bc
-                if tag_ba == "E":
+                if tag_ba == tag_equal:
                     jh = jh_ba - (ih_ba - ih_bc)
                 elif jh_ba == jl_ba:
                     jh = jh_ba
@@ -342,23 +390,40 @@ class SequenceMatcher3:
                 n_ba += 1
                 ih = ih_ba
                 jh = jh_ba
-                if tag_bc == "E":
+                if tag_bc == tag_equal:
                     kh = kh_bc - (ih_bc - ih_ba)
                 elif kh_bc == kl_bc:
                     kh = kh_bc
                 else:
                     kh = None  # undecided
                     tag = "N"
-            if jh is not None and kh is not None:
+            if jh is None:
+                logger.debug(
+                    "diff3lib: UNDECIDED_ba tag={}, jl={}, jh=None, il={}, ih={}, kl={}, kh={}".format(
+                        tag, jl, il, ih, kl, kh
+                    )
+                )
+            elif kh is None:
+                logger.debug(
+                    "diff3lib: UNDECIDED_bc tag={}, jl={}, jh={}, il={}, ih={}, kl={}, kh=None".format(
+                        tag, jl, jh, il, ih, kl
+                    )
+                )
+            else:
                 if tag == "N":
                     if a[jl:jh] == c[kl:kh]:
                         tag = "e"
                 answer.append((tag, jl, jh, il, ih, kl, kh))
+                logger.debug(
+                    "diff3lib: APPEND tag={}, jl={}, jh={}, il={}, ih={}, kl={}, kh={}".format(
+                        tag, jl, jh, il, ih, kl, kh
+                    )
+                )
                 il = ih
                 jl = jh
                 kl = kh
                 tag = ""
-        self.chunks = answer
+        self.opcodes = answer
         return answer
 
 

@@ -55,14 +55,18 @@ interactively\&.
 This
 \fBgit\-ime\fR
 is not only useful at the checked out branch head but also at "edit" prompt during the interactive execution of
-\fBgit rebase \-i \fR\fB\fItreeish\fR\fR\&.
+\fBgit rebase \-i \fR\fB\fItreeish\fR\fR\&. Execute
+\fBgit\-ime\fR
+after committing the pending commit\&.
 .PP
 To preserve good accessibility to the original state, this
 \fBgit\-ime\fR
 tags the original commit with "git\-ime\-aYYYYMMDD\-HHMMSS" if it hasn\*(Aqt been tagged\&. Also this
 \fBgit\-ime\fR
 tags its final commit with "git\-ime\-zYYYYMMDD\-HHMMSS" for the convenience of subsequent operations such as
-\fBgit\-rebase\fR\&.
+\fBgit\-rebase\fR\&. This is not applicable during
+\fBgit\-rebase\fR
+\&.
 .PP
 Please note this
 \fBgit\-ime\fR
@@ -91,11 +95,11 @@ command is executed with verbose console outputs\&.
 .PP
 \fB\-n\fR, \fB\-\-notag\fR
 .RS 4
-Disable automatic tagging feature\&. The use of this option may be desirable if this
+Disable automatic tagging feature\&. Since the use of this option is desirable if this
 \fBgit ime\fR
 command is used during the
 \fBgit rebase\fR
-operation\&.
+operation\&. In such case, this is automatically turned on as the default behavior\&.
 .RE
 .PP
 \fB\-h\fR, \fB\-\-help\fR
