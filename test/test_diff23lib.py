@@ -22,7 +22,6 @@ import unittest
 import subprocess
 import os
 import os.path
-import imediff.diff2lib
 import imediff.diff3lib
 
 # path to test directory
@@ -35,29 +34,12 @@ class TestImediff(unittest.TestCase):
     b = "123456789"
     c = "a1234b567c89d"
 
-    def test_diff2lib_ab(self):
-        a = "a12b345c6789d"
-        b = "123456789"
-        self.assertEqual(
-            imediff.diff2lib.SequenceMatcher2(None, a, b).get_chunks(),
-            [
-                ("N", 0, 1, 0, 0),
-                ("E", 1, 3, 0, 2),
-                ("N", 3, 4, 2, 2),
-                ("E", 4, 7, 2, 5),
-                ("N", 7, 8, 5, 5),
-                ("E", 8, 12, 5, 9),
-                ("N", 12, 13, 9, 9),
-            ],
-        )
-        return
-
     def test_diff3lib_abc(self):
         a = "a12b345c6789d"
         b = "123456789"
         c = "a1234b567c89d"
         self.assertEqual(
-            imediff.diff3lib.SequenceMatcher3(None, a, b, c).get_chunks(),
+            imediff.diff3lib.SequenceMatcher3(a, b, c, 0, None, True).get_opcodes(),
             [
                 ("e", 0, 1, 0, 0, 0, 1),
                 ("E", 1, 3, 0, 2, 1, 3),
@@ -72,14 +54,6 @@ class TestImediff(unittest.TestCase):
                 ("e", 12, 13, 9, 9, 12, 13),
             ],
         )
-        return
-
-    def test_diff2lib_doctest(self):
-        result = subprocess.call(
-            "cd " + pwd + "; ./diff2lib.py",
-            shell=True,
-        )
-        self.assertEqual(result, 0)
         return
 
     def test_diff3lib_doctest(self):

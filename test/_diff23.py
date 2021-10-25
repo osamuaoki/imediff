@@ -12,7 +12,7 @@ modern algorithm, this test may yield slightly different result in some
 corner cases.
 """
 
-import imediff.diff2lib
+import difflib
 import imediff.diff3lib
 
 
@@ -21,9 +21,9 @@ def diff23(a, b, c, name=""):
     print("  a='%s' -> %i" % (a, len(a)))
     print("  b='%s' -> %i" % (b, len(b)))
     print("  c='%s' -> %i" % (c, len(c)))
-    sa = imediff.diff2lib.SequenceMatcher2(None, a, b)
+    sa = difflib.SequenceMatcher(None, a, b)
     print("$ diff2 A B")
-    for tag, i1, i2, j1, j2 in sa.get_chunks():
+    for tag, i1, i2, j1, j2 in sa.get_opcodes():
         print(
             (
                 "  %s     a[%d:%d] (%s) / b[%d:%d] (%s)"
@@ -31,17 +31,17 @@ def diff23(a, b, c, name=""):
             )
         )
     print("$ diff2 C B")
-    sc = imediff.diff2lib.SequenceMatcher2(None, c, b)
-    for tag, i1, i2, j1, j2 in sc.get_chunks():
+    sc = difflib.SequenceMatcher(None, c, b)
+    for tag, i1, i2, j1, j2 in sc.get_opcodes():
         print(
             (
                 "  %s     c[%d:%d] (%s) / b[%d:%d] (%s)"
                 % (tag, i1, i2, c[i1:i2], j1, j2, b[j1:j2])
             )
         )
-    s = imediff.diff3lib.SequenceMatcher3(None, a, b, c)
+    s = imediff.diff3lib.SequenceMatcher3(a, b, c, 0, None, True)
     print("$ diff3 A B C")
-    for tag, i1, i2, j1, j2, k1, k2 in s.get_chunks():
+    for tag, i1, i2, j1, j2, k1, k2 in s.get_opcodes():
         print(
             (
                 "  %s     a[%d:%d] (%s) / b[%d:%d] (%s) / c[%d:%d] (%s)"
