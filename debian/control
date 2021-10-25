@@ -5,9 +5,8 @@ Maintainer: Osamu Aoki <osamu@debian.org>
 Build-Depends: debhelper-compat (= 13),
                dh-python,
                python3-all,
-               python3-distutils-extra,
                python3-setuptools
-Standards-Version: 4.5.1
+Standards-Version: 4.6.0
 VCS-Git: https://github.com/osamuaoki/imediff.git -b main
 Vcs-Browser: https://github.com/osamuaoki/imediff
 Homepage: https://github.com/osamuaoki/imediff
@@ -31,27 +30,31 @@ Description: interactive full screen 2/3-way merge tool
  The advantage of this user interface is the minimal movement of the line
  of sight for the user.
  .
- The automatic merge logic of the imediff command operates not only on
- the difference by line but on the difference by character.  This is
- another great feature of the imediff command. So for the non-overlapping
- changes, it always yields the clean merge.
+ The line matching logic of imediff has been improved to ignore whitespaces
+ and use partial line matches to provide the best presentation with small
+ chunk of lines.
  .
- The "git ime" command helps you to merge 2 slightly different file trees
- committed to the consecutive commits (`HEAD^`, `HEAD`) of a git
- repository while using "git rebase -i <treeish>" and gitk as helper to
- select changes.
+ The automatic 3 way merge logic of the imediff command operates not only on
+ the difference by line but on the difference by character.  This is another
+ great feature of the imediff command. So for the non-overlapping changes,
+ it always yields the clean merge.
+ .
+ The "git ime" command helps you to unsquash 2 consecutive commits (`HEAD^`,
+ `HEAD`) of a git repository.  The "git rebase -i <treeish>" and "gitk" can
+ be used to organize unsquashed changes.
  .
  If any staged changes or local uncommitted changes are found in the git
  repository, "git ime" immediately exits without changes to be on the
  safe side.
  .
- If the latest commit involves multiple files, this big commit is split
- by the file into multiple smaller commits involving a single file.
+ If the latest commit involves multiple files, "git ime" splits this big
+ commit by the file into multiple smaller commits involving a single file
+ for each commit.
  .
  If the latest commit involves only a single file, the commit is split
- into multiple smaller commits involving a set of meaningful partial
- changes by imediff and managed interactively.
+ into multiple smaller commits involving a set of minimal partial
+ changes by imediff to be managed interactively later.
  .
  This "git ime" is not only useful at the checked out branch head but
  also at "edit" prompt during the interactive execution of "git rebase -i
- <treeish>".
+ <treeish>".  Execute "git ime" after committing the pending commit.

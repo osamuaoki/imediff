@@ -1,6 +1,6 @@
 src/imediff/cli.py
 src/imediff/config.py
-src/imediff/diff2lib.py
+src/imediff/lines2lib.py
 src/imediff/diff3lib.py
 src/imediff/__init__.py
 src/imediff/__main__.py

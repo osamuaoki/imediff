@@ -1,0 +1,1 @@
+The PO file here is no more used.  If someone gives me decent PO file, I will reactivate it.

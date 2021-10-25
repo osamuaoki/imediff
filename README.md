@@ -12,51 +12,47 @@ This provides the imediff command and git-ime command.
 
 ## What is imediff
 
-The imediff command helps you to merge 2 slightly different files with an
-optional base file interactively using the in-place alternating display of the
-changed content on a single-pane full screen terminal user interface.
+The imediff command helps you to merge 2 slightly different files with
+an optional base file interactively using the in-place alternating
+display of the changed content on a single-pane full screen terminal
+user interface.
 
 The source of line is clearly identified by the color of the line or the
 identifier character at the first column.
 
-The advantage of this user interface is the minimal movement of the line of
-sight for the user.  Other great tools such as vimdiff, xxdiff, meld and
-kdiff3 require you to look at different points of display to find the exact
-position of changes.  This makes imediff the most stress-free tool.  (I
-realized this when I first used the original imediff2 program by Jarno
-Elonen <elonen@iki.fi>.  Please note that the command name is changed from
-imediff2 to imediff now.)
+The advantage of this user interface is the minimal movement of the line
+of sight for the user.
 
-Other great tools for merge such as "diff3 -m ..." and "git merge ..."
-operate only on the difference by line.  So even for the non-overlapping
-changes, they yield the merge conflict if changes happen on the same line.
+The line matching logic of imediff has been improved to ignore whitespaces
+and use partial line matches to provide the best presentation with small
+chunk of lines.
 
-The automatic merge logic of the imediff command operates not only on the
-difference by line but on the difference by character.  This is another
-great feature of the imediff command. So for the non-overlapping changes, it
-always yields the clean merge.
+The automatic 3 way merge logic of the imediff command operates not only on
+the difference by line but on the difference by character.  This is another
+great feature of the imediff command. So for the non-overlapping changes,
+it always yields the clean merge.
 
 ## What is git-ime
 
-The "git ime" command helps you to merge 2 slightly different file trees
-committed to the consecutive commits (`HEAD^`, `HEAD`) of a git repository
-while using "git rebase -i *treeish*" and gitk as helper to select changes.
+The "git ime" command helps you to unsquash 2 consecutive commits (`HEAD^`,
+`HEAD`) of a git repository.  The "`git rebase -i <treeish>`" and "`gitk`" can
+be used to organize unsquashed changes.
 
 If any staged changes or local uncommitted changes are found in the git
-repository, "git ime" immediately exits without changes to be on the safe
-side.
+repository, "git ime" immediately exits without changes to be on the
+safe side.
 
-If the latest commit involves multiple files, this big commit is split by the
-file into multiple smaller commits involving a single file.
+If the latest commit involves multiple files, "git ime" splits this big
+commit by the file into multiple smaller commits involving a single file
+for each commit.
 
-If the latest commit involves only a single file, the commit is split into
-multiple smaller commits involving a set of meaningful partial changes by
-imediff and managed interactively.
+If the latest commit involves only a single file, the commit is split
+into multiple smaller commits involving a set of minimal partial
+changes by imediff to be managed interactively later.
 
-This "git ime" is not only useful at the checked out branch head but also at
-"edit" prompt during the interactive execution of "git rebase -i *treeish*".
-
-The "git ime" command is a simple shell wrapper script of git and imediff.
+This "git ime" is not only useful at the checked out branch head but
+also at "edit" prompt during the interactive execution of "`git rebase -i
+<treeish>`".  Execute "git ime" after committing the pending commit.
 
 ## Quick start for Debian/Ubuntu derivative users
 
@@ -70,12 +66,7 @@ At the console command line prompt, type:
 
 For usage instructions, type "h" and "H" in the interactive display.
 
-If you wish to translate "h" menu, send me a translation PO file :-)
-
-You can get Japanese help screen by setting and exporting "LANGUAGE=ja:en".
-
-(This uses GNU gettext as its backend.  LANGUAGE setting has priority
-over setting of LC_ALL etc.)
+(The use of GNU gettext is disabled for the sake of portability.)
 
 ## History and features
 
@@ -115,7 +106,8 @@ This was accomplished by practically a whole rewrite of the source code in
 November-December 2018.  Osamu decided to release this as imediff after
 consulting with Jarno Elonen. Now program name is without "2", since it
 supports diff for not only 2 files but also 3 files.  The version number is
-bumped to 2.0.
+bumped to 2.0.  In version 2.5, line matching rules are updated to produce
+better diff presentation.
 
 ## Note to non-Debian/Ubuntu derivative users
 
@@ -128,30 +120,18 @@ first and install it with `pip` or `pipx` to the system.
 You must have the full python 3.9 environment.  Corresponding packages for the
 following Debian packages are needed.
 
-* python3-minimal  -- include all the Python standard libraries (curses, gettext)
+* python3-minimal  -- include all the Python standard libraries (curses)
 * python3-distutils -- You need this for `setup.py`
 * python3-setuptools -- You need this for `setup.py`
-* python3-distutils-extra -- You need this for i18n functionality.
 
-I am sure the first 3 packages are available if the platform system supports
-Python 3.9.  It seems some older Python 3 seems to cause problem with the
-current `setup.py` probably due to the use of new archive style using `src/`
-directory.
+These 3 packages are available if the platform system supports Python 3.9.  It
+seems some older Python 3 seems to cause problem with the current `setup.py` +
+`setup.cfg` combination probably due to the use of new archive style using
+`src/` directory.
 
 Since older version did not have this problem, I created the `alternative`
 branch which should support such older system.  Also, I backported `git-ime` to
 this `alternative` branch.
-
-The problematic one may be python3-distutils-extra which supports UI messages
-for non-English languages.  Here are points to disable i18n features and drop
-build dependency to the python3-distutils-extra.
-
-* Remove `i18n=True` and `icons=False` in `[build]` section of `setup.cfg` .
-* Replace `_ = gettext.gettext` with `_ = lambda x : x` in `src/utils.py`.
-* Comment out all lines containing "gettext" in the source under `src/` .
-
-The `alternative` branch also implements these changes to drop all i18n
-features for the maximum compatibility.
 
 For the build dependencies listed in `debian/control`, `debhelper-compat` and
 `dh-python` are purely for the Debian package building, so these are not
@@ -176,23 +156,17 @@ You can make your own Debian package as:
     $ git checkout main
      ... hack source
     $ git commit -a
-    $ git checkout upstream
-    $ git merge main
     $ rm -rf debian
     $ git add -A .
     $ git commit
-    $ git tag 2.0
-    $ git checkout main
-    $ git deborig main # to make ../*.orig.tar.xz
+    $ git tag 2.5
+    $ git reset --hard HEAD^
+    $ git deborig # to make ../*.orig.tar.xz
     $ sbuild
     $ cd ..
-    $ sudo dpkg -i imediff_2.0-1_all.deb
+    $ sudo dpkg -i imediff_2.5-1_all.deb
 
-Here, we assume the upstream version to be 2.0, and the Debian revision to be 1
-as defined in debian/changelog.  I was using gbp-like
-main/upstream/pristine-tar work flow but I will probably my work flow simple by
-just updating main branch and will create upstream tagged release by removing
-`debian/*` for every *.*-1 release as above.
+Here, we assume the upstream version to be 2.5, and the Debian revision to be 1.
 
 If you have bug fixes or feature enhancement propose changes to me via "pull
 request"
@@ -206,17 +180,6 @@ code)  In case if reformat errors, check its syntax by:
 
 Manpages need to be updated from XML files with "make" first in doc/ directory
 when you edit it.
-
-### updating PO
-
-Tutorial contents should be within 76 chars/line to fit in console.
-
-Update PO with:
-
-    $ ./setup.py build_i18n -m
-
-If anyone wants more contents to be translated such as manpage and tutorial,
-adding po4a may be a good idea.  For now, let's keep it minimal.
 
 ### testing code
 
@@ -246,5 +209,5 @@ To test the installed module, invoke the test script directly as:
   * https://packages.debian.org/sid/imediff (binary package in Debian)
   * https://bugs.debian.org/cgi-bin/pkgreport.cgi?repeatmerged=0;src=imediff (BTS)
 
-This is written and updated by Osamu Aoki on June 2021.
+This is written and updated by Osamu Aoki on October 2021.
 

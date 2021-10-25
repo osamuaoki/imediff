@@ -26,23 +26,25 @@ Boston, MA 02110-1301, USA.
 
 import logging
 import errno
-import gettext
-import locale
 import io
 import sys
 import traceback
-import types
 import curses
 import unicodedata
+
 
 __all__ = ["_", "console_width", "logger", "read_lines", "error_exit", "write_file"]
 
 # Utility functions
 
-# gettext for i18n
-gettext.bindtextdomain("imediff")
-gettext.textdomain("imediff")
-_ = gettext.gettext
+# gettext for i18n (commented out since gettext is not used)
+# gettext.bindtextdomain("imediff")
+# gettext.textdomain("imediff")
+# _ = gettext.gettext
+
+# Readable version of: _ = lambda x : x
+def _(x):
+    return x
 
 # Console width with Zenkaku=2, Hankaku=1 (Hankaku=ASCII etc.)
 # Latin-1, CJK focus simplification applied.
