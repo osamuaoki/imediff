@@ -38,7 +38,7 @@ from imediff.config import config_template, create_template
 from imediff.cli import *
 from imediff.tui import *
 
-VERSION = "2.5"
+VERSION = "2.6"
 PACKAGE = "imediff"
 
 _version = (

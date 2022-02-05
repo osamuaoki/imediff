@@ -1,3 +1,9 @@
+imediff (2.6-1) unstable; urgency=medium
+
+  * Fix bug in git-ime for diff split a file into many files ( >8)
+
+ -- Osamu Aoki <osamu@debian.org>  Sun, 06 Feb 2022 08:25:12 +0900
+
 imediff (2.5-1) unstable; urgency=medium
 
   * Match lines with whitespace changes.
