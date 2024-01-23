@@ -1,3 +1,13 @@
+imediff (2.7-1) unstable; urgency=medium
+
+  * More logging before curses-related crash
+  * Update README.md to address curses-related crash
+  * Enhance git-ime to use --auto for large file to avoid crash
+  * Add and enhance test cases (word diff)
+  * Add pybuild-plugin-pyproject
+
+ -- Osamu Aoki <osamu@debian.org>  Sun, 28 Jan 2024 17:44:25 +0900
+
 imediff (2.6-1) unstable; urgency=medium
 
   * Fix bug in git-ime for diff split a file into many files ( >8)

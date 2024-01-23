@@ -1,3 +1,10 @@
+<<<<<<< file_a
+2-way FILE_OLDER / 3-way FILE_YOURS
+||||||| file_b
+2-way FILE_NEWER / 3-way FILE_BASE
+=======
+2-way NOT_USED / 3-way FILE_THEIRS
+>>>>>>> file_c
 00 wsx
 01 add_c qaz add_a
 02 adf

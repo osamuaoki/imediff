@@ -1,13 +1,12 @@
-2-way FILE_NEWER / 3-way FILE_BASE
+2-way NOT_USED / 3-way FILE_{OLDE|NEWE|THEI}R{YOUR|BA|}S
 00 wsx
-01 qaz
+01 add_c qaz add_a
 02 adf
 03 zcv
-04 adv
+04 change_a
 05 tyu
 06 ghj
-07 ujj
-08 qaz
+08 change_c
 09 wsx
 10 tte
 11 iao
@@ -29,3 +28,4 @@
 27 wsc
 28 ugv
 29 ijp
+31 iao

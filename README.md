@@ -12,25 +12,33 @@ This provides the imediff command and git-ime command.
 
 ## What is imediff
 
-The imediff command helps you to merge 2 slightly different files with
-an optional base file interactively using the in-place alternating
-display of the changed content on a single-pane full screen terminal
-user interface.
+The imediff command helps you to merge 2 slightly different files with an
+optional base file interactively using the in-place alternating display of the
+changed content on a single-pane full screen terminal user interface.
 
 The source of line is clearly identified by the color of the line or the
 identifier character at the first column.
 
-The advantage of this user interface is the minimal movement of the line
-of sight for the user.
+The advantage of this user interface is the minimal movement of the line of
+sight for the user.
 
-The line matching logic of imediff has been improved to ignore whitespaces
-and use partial line matches to provide the best presentation with small
-chunk of lines.
+The line matching logic of imediff has been improved to ignore whitespaces and
+use partial line matches to provide the best presentation with small chunk of
+lines.
 
-The automatic 3 way merge logic of the imediff command operates not only on
-the difference by line but on the difference by character.  This is another
-great feature of the imediff command. So for the non-overlapping changes,
-it always yields the clean merge.
+The automatic 3 way merge logic of the imediff command operates not only on the
+difference by line but on the difference by character.  This is another great
+feature of the imediff command. So for the non-overlapping changes, it always
+yields the clean merge.
+
+When imediff is invoked with "-n" option, it yields normal diff-output for 2
+files and 3-way-merged-output like "diff3 -m" without opening full screen
+terminal user interface.  This 3-way-merged-output is smarter than "diff3 -m".
+This "-n" can be used with "-f" to generate word-diff-like output, too.
+
+NOTE: There seems to be some limitation (16K?) of acceptable input lines for
+imediff program running under full screen.  This causes imediff to crash.  The
+root cause seems to be the underlining ncurses binding which imediff uses.
 
 ## What is git-ime
 
@@ -39,20 +47,19 @@ The "git ime" command helps you to unsquash 2 consecutive commits (`HEAD^`,
 be used to organize unsquashed changes.
 
 If any staged changes or local uncommitted changes are found in the git
-repository, "git ime" immediately exits without changes to be on the
-safe side.
+repository, "git ime" immediately exits without changes to be on the safe side.
 
-If the latest commit involves multiple files, "git ime" splits this big
-commit by the file into multiple smaller commits involving a single file
-for each commit.
+If the latest commit involves multiple files, "git ime" splits this big commit
+by the file into multiple smaller commits involving a single file for each
+commit.
 
-If the latest commit involves only a single file, the commit is split
-into multiple smaller commits involving a set of minimal partial
-changes by imediff to be managed interactively later.
+If the latest commit involves only a single file, the commit is split into
+multiple smaller commits involving a set of minimal partial changes by imediff
+to be managed interactively later.
 
-This "git ime" is not only useful at the checked out branch head but
-also at "edit" prompt during the interactive execution of "`git rebase -i
-<treeish>`".  Execute "git ime" after committing the pending commit.
+This "git ime" is not only useful at the checked out branch head but also at
+"edit" prompt during the interactive execution of "`git rebase -i <treeish>`".
+Execute "git ime" after committing the pending commit.
 
 ## Quick start for Debian/Ubuntu derivative users
 
@@ -73,8 +80,8 @@ For usage instructions, type "h" and "H" in the interactive display.
 This was originally written by Jarno Elonen in Python2. The latest original
 upstream version was 1.1.2 released on 2007-8-18.
 
-The original author's website was https://elonen.iki.fi/code/imediff/ .
-Now it redirects to this site https://github.com/osamuaoki/imediff .
+The original author's website was https://elonen.iki.fi/code/imediff/ .  Now it
+redirects to this site https://github.com/osamuaoki/imediff .
 
 Osamu Aoki made a minor patched release for Debian buster in Oct 2018.
 
@@ -87,8 +94,8 @@ Osamu also wanted to add some features:
 
  * Use of Python3 with setup.py and setuptools to organize the source into
    multiple source files.
- * Use standard libraries for the flexible customization
-   (argparse, configparser, logging)
+ * Use standard libraries for the flexible customization (argparse,
+   configparser, logging)
  * Addition of diff3 merge capability
  * Addition of wdiff capability
  * Addition of cursor location display capability
@@ -151,22 +158,25 @@ command access.
 
 You can make your own Debian package as:
 
-    $ git clone https://github.com/osamuaoki/imediff.git
-    $ cd imediff
-    $ git checkout main
-     ... hack source
-    $ git commit -a
-    $ rm -rf debian
-    $ git add -A .
-    $ git commit
-    $ git tag 2.5
-    $ git reset --hard HEAD^
-    $ git deborig # to make ../*.orig.tar.xz
-    $ sbuild
-    $ cd ..
-    $ sudo dpkg -i imediff_2.5-1_all.deb
+```sh
+ $ git clone https://github.com/osamuaoki/imediff.git
+ $ cd imediff
+ $ git checkout main
+  ... hack source
+ $ git commit -a
+ $ rm -rf debian
+ $ git add -A .
+ $ git commit
+ $ git tag 2.5
+ $ git reset --hard HEAD^
+ $ git deborig # to make ../*.orig.tar.xz
+ $ sbuild
+ $ cd ..
+ $ sudo dpkg -i imediff_2.5-1_all.deb
+```
 
-Here, we assume the upstream version to be 2.5, and the Debian revision to be 1.
+Here, we assume the upstream version to be 2.5, and the Debian revision to be
+1.
 
 If you have bug fixes or feature enhancement propose changes to me via "pull
 request"
@@ -176,7 +186,9 @@ request"
 Please make sure to fit each code below 80-88 chars. (Run "black" on python
 code)  In case if reformat errors, check its syntax by:
 
-   $ python3 -m py_compile program.py
+```sh
+ $ python3 -m py_compile program.py
+```
 
 Manpages need to be updated from XML files with "make" first in doc/ directory
 when you edit it.
@@ -188,13 +200,16 @@ If you make changes, please test then.
 To test the in-source-tree module, invoke the test script from setup.py in the
 root of the source tree as:
 
-    $ python3 setup.py test
+```sh
+ $ python3 setup.py test
+```
 
 To test the installed module, invoke the test script directly as:
 
-    $ cd test
-    $ python3 test_diff23lib.py -v
-
+```sh
+ $ cd test
+ $ python3 test_diff23lib.py -v
+```
 ## Note on Debian package links
 
 * imediff2 (based on older python2 source for and before stretch)
@@ -209,5 +224,6 @@ To test the installed module, invoke the test script directly as:
   * https://packages.debian.org/sid/imediff (binary package in Debian)
   * https://bugs.debian.org/cgi-bin/pkgreport.cgi?repeatmerged=0;src=imediff (BTS)
 
-This is written and updated by Osamu Aoki on October 2021.
+This is written and updated by Osamu Aoki on January 2024.
 
+<!-- vim:set tw=78 si ai -->

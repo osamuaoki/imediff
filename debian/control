@@ -4,16 +4,17 @@ Priority: optional
 Maintainer: Osamu Aoki <osamu@debian.org>
 Build-Depends: debhelper-compat (= 13),
                dh-python,
+               pybuild-plugin-pyproject,
                python3-all,
                python3-setuptools
-Standards-Version: 4.6.0
+Standards-Version: 4.6.2
 VCS-Git: https://github.com/osamuaoki/imediff.git -b main
 Vcs-Browser: https://github.com/osamuaoki/imediff
 Homepage: https://github.com/osamuaoki/imediff
 
 Package: imediff
 Architecture: all
-Depends: ${misc:Depends}, ${python3:Depends}, vim | emacs | editor
+Depends: vim | emacs | editor, ${misc:Depends}, ${python3:Depends}
 Recommends: git
 Provides: imediff2
 Breaks: imediff2 (<< 1.1.2.1-3)

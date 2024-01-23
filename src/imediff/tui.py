@@ -606,6 +606,12 @@ class TextPad(TextData):  # TUI data
             contw += 2  # for the tag indicator + ' '
         self.conth = conth
         self.contw = contw
+        # log before possible crash
+        logger.debug(
+            "===  Before calling self.curses.newpad({}, {})".format(
+                self.conth + 1, max(80, contw + 1)
+            )
+        )
         # actual textpad size slightly bigger for safety margin
         self.textpad = curses.newpad(conth + 1, max(80, contw + 1))
         for i in range(len(self.opcodes)):

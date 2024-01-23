@@ -14,7 +14,8 @@ This will compare `*.new` created by `make_new_ref.sh` to `*.ref` in here.
 
 * `./_diff23.py >z_diff23.new` -- test with files (file_a, file_b file_c)
 * `./_imediff.py  -C BOGUS -n file_a file_b -o z_imediff2.new` -- test diff2
-* `./_imediff.py -C BOGUS -n file_a file_b file_c -o z_imediff3.new` -- test diff3
+* `./_imediff.py -C BOGUS -n file_a file_b file_c -o z_imediff3.new` -- test diff3 for line diff output
+* `./_imediff.py -C BOGUS -n -f file_a file_b file_c -o z_imediff3_f.new` -- test diff3 for word diff output
 * `./_initialize.py  > z_initialize.new` -- test initialization
 * `./_macrotrans.py -C alternative_imediff.conf -n file_a file_b file_c > z_macrotrans.new` -- test key bindings
 
