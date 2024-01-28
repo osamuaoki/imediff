@@ -1,7 +1,7 @@
-# IMEDIFF - an interactive fullscreen merge tool for DIFF2/3
+# IMEDIFF - 2-way/3-way merge tool (CLI, Ncurses)
 
- * Copyright (C) 2003,2004 Jarno Elonen <elonen@iki.fi>
- * Copyright (C) 2018-2021 Osamu Aoki <osamu@debian.org>
+* Copyright (C) 2003,2004 Jarno Elonen <elonen@iki.fi>
+* Copyright (C) 2018-2024 Osamu Aoki <osamu@debian.org>
 
 Released under the GNU General Public License, 2.0+.
 See LICENSE for details
@@ -13,14 +13,50 @@ This provides the imediff command and git-ime command.
 ## What is imediff
 
 The imediff command helps you to merge 2 slightly different files with an
-optional base file interactively using the in-place alternating display of the
-changed content on a single-pane full screen terminal user interface.
+optional base file interactively or non-interactively.
 
-The source of line is clearly identified by the color of the line or the
-identifier character at the first column.
+For non-interactive 2-way diff operation, this can express diffs with ordinary
+diff-format 
 
-The advantage of this user interface is the minimal movement of the line of
-sight for the user.
+```console
+ $ imediff -n older.txt newer.txt -o diff.txt
+```
+
+For non-interactive 2-way diff operation, this can also express diffs with
+wdiff format 
+
+```console
+ $ imediff -n -f older.txt newer.txt -o wdiff.txt
+```
+
+For non-interactive 3-way merge operation, this can not only express conflicts
+with ordinary diff3-format but also 3-way wdiff format 
+
+```console
+ $ imediff -n yours.txt base.txt theirs.txt -o merged.txt
+ $ imediff -n -f yours.txt base.txt theirs.txt -o wdiff-merged.txt
+```
+Here, this 3-way-merge logic is smarter than "diff3 -m".
+
+For interactive operation, this uses the in-place alternating display of the
+changed content on a single-pane full screen terminal user interface.  The
+source of line is clearly identified by the color of the line or the identifier
+character at the first column.  The advantage of this user interface is the
+minimal movement of the line of sight for the user.
+
+For interactive 2-way pick operation, this can select sections from input
+files.
+
+```console
+ $ imediff older.txt newer.txt -o picked.txt
+```
+
+For interactive 3-way merge operation, this can select sections from input
+files.
+
+```console
+ $ imediff yours.txt base.txt theirs.txt -o merged.txt
+```
 
 The line matching logic of imediff has been improved to ignore whitespaces and
 use partial line matches to provide the best presentation with small chunk of
@@ -31,10 +67,8 @@ difference by line but on the difference by character.  This is another great
 feature of the imediff command. So for the non-overlapping changes, it always
 yields the clean merge.
 
-When imediff is invoked with "-n" option, it yields normal diff-output for 2
-files and 3-way-merged-output like "diff3 -m" without opening full screen
-terminal user interface.  This 3-way-merged-output is smarter than "diff3 -m".
-This "-n" can be used with "-f" to generate word-diff-like output, too.
+You can also use the imediff command non-interactively from CLI with --macro
+option.
 
 NOTE: There seems to be some limitation (16K?) of acceptable input lines for
 imediff program running under full screen.  This causes imediff to crash.  The
@@ -53,9 +87,10 @@ If the latest commit involves multiple files, "git ime" splits this big commit
 by the file into multiple smaller commits involving a single file for each
 commit.
 
-If the latest commit involves only a single file, the commit is split into
-multiple smaller commits involving a set of minimal partial changes by imediff
-to be managed interactively later.
+If the latest commit involves only a single file, the commit may be split into
+multiple smaller commits involving a set of minimal partial changes.  If the
+target file is small, splitting process may be managed interactively by
+imediff.  (You can force non-interactive splitting by "-a" option.)
 
 This "git ime" is not only useful at the checked out branch head but also at
 "edit" prompt during the interactive execution of "`git rebase -i <treeish>`".
@@ -66,10 +101,11 @@ Execute "git ime" after committing the pending commit.
 Please install the `imediff` package from the APT repository.
 
 At the console command line prompt, type:
- * "imediff" to read the tutorial,
- * "imediff -h" to get all the command line options,
- * "imediff -o output older newer" to merge 2 files, and
- * "imediff -o output yours base theirs" to merge 3 files.
+
+* "imediff" to read the tutorial,
+* "imediff -h" to get all the command line options,
+* "imediff -o output older newer" to merge 2 files, and
+* "imediff -o output yours base theirs" to merge 3 files.
 
 For usage instructions, type "h" and "H" in the interactive display.
 
@@ -85,29 +121,29 @@ redirects to this site https://github.com/osamuaoki/imediff .
 
 Osamu Aoki made a minor patched release for Debian buster in Oct 2018.
 
- * No more surprise hitting "q".  You will be asked. (Fix Debian bug #799865)
- * Fix manpage generation issue (Fix Debian bug #860351)
- * New git-ime wrapper script (great for git rebase/un-squash commit)
- * You can customize key bindings.
+* No more surprise hitting "q".  You will be asked. (Fix Debian bug #799865)
+* Fix manpage generation issue (Fix Debian bug #860351)
+* New git-ime wrapper script (great for git rebase/un-squash commit)
+* You can customize key bindings.
 
 Osamu also wanted to add some features:
 
- * Use of Python3 with setup.py and setuptools to organize the source into
-   multiple source files.
- * Use standard libraries for the flexible customization (argparse,
-   configparser, logging)
- * Addition of diff3 merge capability
- * Addition of wdiff capability
- * Addition of cursor location display capability
- * Make it edit highlighted section only
- * Make its TUI more friendly under monochrome terminal
- * Use curses.wrapper()
- * CLI and logging interface for easy self-testing/debugging
- * Add decent test cases
- * Include simple tutorial within "imediff".
- * Add "git-mergetool" integration.
- * Add "git-ime" to help making partial patch series commits to git.
- * Good CJK wide character support with East_Asian_Width on console.
+* Use of Python3 with pyproject.toml and setuptools to organize the source
+   into a module with multiple source files.
+* Use standard libraries for the flexible customization (argparse,
+  configparser, logging)
+* Addition of diff3 merge capability
+* Addition of wdiff capability
+* Addition of cursor location display capability
+* Make it edit highlighted section only
+* Make its TUI more friendly under monochrome terminal
+* Use curses.wrapper()
+* CLI and logging interface for easy self-testing/debugging
+* Add decent test cases
+* Include simple tutorial within "imediff".
+* Add "git-mergetool" integration.
+* Add "git-ime" to help making partial patch series commits to git.
+* Good CJK wide character support with East_Asian_Width on console.
 
 This was accomplished by practically a whole rewrite of the source code in
 November-December 2018.  Osamu decided to release this as imediff after
@@ -116,49 +152,62 @@ supports diff for not only 2 files but also 3 files.  The version number is
 bumped to 2.0.  In version 2.5, line matching rules are updated to produce
 better diff presentation.
 
-## Note to non-Debian/Ubuntu derivative users
+## Package installation
 
-The building of rpm or wheel are not supported as out-of-box now (patch
-welcome).
+### Deb-package
 
-Since this is packaged with setuptools, I recommend to create a wheel package
-first and install it with `pip` or `pipx` to the system.
+You can install `imediff` package on Debian, Ubuntu, and derivatives.
 
-You must have the full python 3.9 environment.  Corresponding packages for the
-following Debian packages are needed.
+This provides `imediff` and `git-ime` commands.
 
-* python3-minimal  -- include all the Python standard libraries (curses)
-* python3-distutils -- You need this for `setup.py`
-* python3-setuptools -- You need this for `setup.py`
+### Wheel-package
 
-These 3 packages are available if the platform system supports Python 3.9.  It
-seems some older Python 3 seems to cause problem with the current `setup.py` +
-`setup.cfg` combination probably due to the use of new archive style using
-`src/` directory.
+You can install wheel package from https://pypi.org/project/imediff/
 
-Since older version did not have this problem, I created the `alternative`
-branch which should support such older system.  Also, I backported `git-ime` to
-this `alternative` branch.
+After installation of wheel package as a user, you need to run:
 
-For the build dependencies listed in `debian/control`, `debhelper-compat` and
-`dh-python` are purely for the Debian package building, so these are not
-essential for other platforms.
+```console
+ $ imediff_install
+```
 
-If you wish to update manpage from XML, `docbook-xsl` and `xsltproc` are needed
-for building manpage from xml source then manually touch up details.
+This installs `git-ime` shell command to the pertinent virtual environment etc.
 
-Code is not written for Windows compatibility in mind, yet.
+## Note to developer and translator
+
+### Building package
+
+* The building of deb-package is from "debian" branch.
+
+* The building of wheel-package is supported from "main" branch.
+
+You must have a relatively new system with python 3.9 equivalent of Debian 12.0
+(bookworm) released on June 10th, 2023 with:
+
+* https://github.com/pypa/setuptools (>=61.0.0)
+* https://github.com/pypa/installer/
+* https://github.com/pypa/build
+* https://github.com/hukkin/tomli
+
+```console
+ $ cd /path/to/source-root
+  ... hack
+ $ python3 -m build
+ $ cd build
+ $ pip install 
+```
+The building of rpm is not supported as out-of-box now (patch welcome).
+
+Code is not written for Windows compatibility in mind, yet. Gettext support was
+intentionally dropped in favor of better compatibility across various systems.
 
 The `git-ime` command requires you to have some POSIX shell and the `git`
 command access.
-
-## Note to developer and translator
 
 ### making Debian package
 
 You can make your own Debian package as:
 
-```sh
+```console
  $ git clone https://github.com/osamuaoki/imediff.git
  $ cd imediff
  $ git checkout main
@@ -181,35 +230,42 @@ Here, we assume the upstream version to be 2.5, and the Debian revision to be
 If you have bug fixes or feature enhancement propose changes to me via "pull
 request"
 
-### updating manpages
+### updating python source
 
 Please make sure to fit each code below 80-88 chars. (Run "black" on python
 code)  In case if reformat errors, check its syntax by:
 
-```sh
+```console
  $ python3 -m py_compile program.py
 ```
+
+### updating manpages
 
 Manpages need to be updated from XML files with "make" first in doc/ directory
 when you edit it.
 
-### testing code
+If you wish to update manpage from XML, `docbook-xsl` and `xsltproc` are needed
+for building manpage from xml source then manually touch up details.
 
-If you make changes, please test then.
+### testing python source
 
-To test the in-source-tree module, invoke the test script from setup.py in the
-root of the source tree as:
+Whenever you make changes, please test them.
 
-```sh
- $ python3 setup.py test
+To test the installed module, invoke the test script as:
+
+```console
+ $ cd /path/to/source-root
+ $ export PYTHONPATH=$(pwd)/src/
+ $ python3 test/test_unittest_all.py -v
 ```
 
-To test the installed module, invoke the test script directly as:
+To test the installed module, invoke the test script as:
 
-```sh
- $ cd test
- $ python3 test_diff23lib.py -v
+```console
+ $ cd /path/to/source-root
+ $ python3 test/test_unittest_all.py -v
 ```
+
 ## Note on Debian package links
 
 * imediff2 (based on older python2 source for and before stretch)
@@ -224,6 +280,5 @@ To test the installed module, invoke the test script directly as:
   * https://packages.debian.org/sid/imediff (binary package in Debian)
   * https://bugs.debian.org/cgi-bin/pkgreport.cgi?repeatmerged=0;src=imediff (BTS)
 
-This is written and updated by Osamu Aoki on January 2024.
+This is written and updated by Osamu Aoki on February 2024.
 
-<!-- vim:set tw=78 si ai -->
