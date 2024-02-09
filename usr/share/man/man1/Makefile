@@ -1,3 +1,9 @@
+# vim:set noet ts=8
+# All Linux/unix specific data installation by "make -C src/imediff/unix-data"
+
+all: manpages 
+
+
 # Generate manpage from DocBook XML
 #
 # Require xsltproc
@@ -12,11 +18,11 @@
 #
 MANPAGES = imediff.1 git-ime.1
 
-all: $(MANPAGES)
-
 %.1:  %.xml
 	xsltproc --novalid /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl $?
 
+# This is used by the upstream
+manpages:  $(MANPAGES)
 
 distclean: clean
 
