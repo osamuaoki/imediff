@@ -4,7 +4,7 @@
 """
 Module lines2lib -- matching 2 lines library
 
-Copyright (C) 2021       Osamu Aoki <osamu@debian.org>
+Copyright (C) 2018--2024 Osamu Aoki <osamu@debian.org>
 
 """
 
@@ -20,8 +20,11 @@ class LineMatcher:
     Linematcher
 
     A public class to help manage 2 lists of similar lines by finding
-    matching lines including partial matches while ignoring leading and
-    tailing whitespaces.
+    matching lines while dropping all whitespaces and quotes (default)
+
+    E: exact match
+    F: fuzzy match (ignore whitespacesi and quotes)
+    N: no match
 
     Example:
     >>> a = [   "line 1 abcde\\n",
@@ -60,7 +63,7 @@ class LineMatcher:
     match: 0 -> 0, tag = E
         a: line 1 abcde
         b: line 1 abcde
-    match: 1 -> 1, tag = N
+    match: 1 -> 1, tag = F
         a: line 2 qazws
         b:  line 2 qazws XXX
     match: 2 -> 2, tag = F
@@ -92,7 +95,7 @@ class LineMatcher:
     match: 11 -> 12, tag = F
         a: line A olpvb
         b:  line A  olpv b
-    match: 12 -> 13, tag = N
+    match: 12 -> 13, tag = F
         a: line B abcde
         b: B  abc
     match: 13 -> 14, tag = F
@@ -218,25 +221,25 @@ class _LineMatcher:
     match: 0 -> 0, tag = E
         a: line1abcde
         b: line1abcde
-    match: 1 -> 1, tag = N
+    match: 1 -> 1, tag = F
         a: line2qazws
         b: line2qazwsx
     match: 2 -> 2, tag = E
         a: line3edcrf
         b: line3edcrf
-    match: 3 -> 3, tag = N
+    match: 3 -> 3, tag = F
         a: line4tgbyh
         b: line4tgbyhx
     match: 4 -> 4, tag = E
         a: line5yhnuj
         b: line5yhnuj
-    match: 5 -> 5, tag = N
+    match: 5 -> 5, tag = F
         a: line6ujmik
         b: line6ujmikz
     match: 6 -> 6, tag = E
         a: line7olpvb
         b: line7olpvb
-    match: 7 -> 7, tag = N
+    match: 7 -> 7, tag = F
         a: line8abcde
         b: line8abcdez
     match: 8 -> 8, tag = E
@@ -245,7 +248,7 @@ class _LineMatcher:
     match: 9 -> 9, tag = E
         a: line0abcde
         b: line0abcde
-    match: 10 -> 10, tag = N
+    match: 10 -> 10, tag = F
         a: line0abcde
         b: line0abcdexx
     match: 11 -> 11, tag = E
@@ -254,7 +257,7 @@ class _LineMatcher:
     match: 12 -> 12, tag = E
         a: lineBabcde
         b: lineBabcde
-    match: 13 -> 13, tag = N
+    match: 13 -> 13, tag = F
         a: lineZabcde
         b: lineZabcdex
     """
@@ -458,5 +461,7 @@ class _LineMatcher:
 
 if __name__ == "__main__":
     import doctest
-
-    doctest.testmod()
+    flags = doctest.REPORT_NDIFF|doctest.FAIL_FAST
+    fail, total = doctest.testmod(optionflags=flags)
+    print("{} failures out of {} tests -- ".format(fail, total), end="")
+    exit(fail)

@@ -2,11 +2,12 @@
 # vim:se tw=79 sts=4 ts=4 et ai fileencoding=utf-8 :
 
 """
-IMEDIFF - an Interactive Merge Editor for DIFF2 and DIFF3
-          Curses based single-pane fullscreen tool
+IMEDIFF - Interactive Merge Editor for DIFF2 and DIFF3
+          Curses based single-pane fullscreen interactive tool
+          and CLI based non-interactive tool with --macro
 
 Copyright (C) 2003, 2004 Jarno Elonen <elonen@iki.fi>
-Copyright (C) 2018-2021  Osamu Aoki <osamu@debian.org>
+Copyright (C) 2018--2024 Osamu Aoki <osamu@debian.org>
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -29,9 +30,9 @@ import io
 import time
 
 from difflib import SequenceMatcher
-from imediff.utils import error_exit, logger, read_lines, write_file
-from imediff.lines2lib import LineMatcher
-from imediff.diff3lib import SequenceMatcher3
+from .utils import error_exit, logger, read_lines, write_file
+from .lines2lib import LineMatcher
+from .diff3lib import SequenceMatcher3
 
 
 class TextData:  # Non-TUI data

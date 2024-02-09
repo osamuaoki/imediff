@@ -2,11 +2,12 @@
 # vim:se tw=79 sts=4 ts=4 et ai fileencoding=utf-8 :
 
 """
-IMEDIFF - an Interactive Merge Editor for DIFF2 and DIFF3
-          Curses based single-pane fullscreen tool
+IMEDIFF - Interactive Merge Editor for DIFF2 and DIFF3
+          Curses based single-pane fullscreen interactive tool
+          and CLI based non-interactive tool with --macro
 
 Copyright (C) 2003, 2004 Jarno Elonen <elonen@iki.fi>
-Copyright (C) 2018       Osamu Aoki <osamu@debian.org>
+Copyright (C) 2018--2024 Osamu Aoki <osamu@debian.org>
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -28,7 +29,7 @@ import os
 import io
 import curses
 
-from imediff.utils import error_exit, logger
+from .utils import error_exit, logger
 
 # Update version below only when configuration API changes
 

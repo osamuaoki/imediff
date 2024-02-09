@@ -2,11 +2,12 @@
 # vim:se tw=79 sts=4 ts=4 et ai fileencoding=utf-8 :
 
 """
-IMEDIFF - an Interactive Merge Editor for DIFF2 and DIFF3
-          Curses based single-pane fullscreen tool
+IMEDIFF - Interactive Merge Editor for DIFF2 and DIFF3
+          Curses based single-pane fullscreen interactive tool
+          and CLI based non-interactive tool with --macro
 
 Copyright (C) 2003, 2004 Jarno Elonen <elonen@iki.fi>
-Copyright (C) 2018       Osamu Aoki <osamu@debian.org>
+Copyright (C) 2018--2024 Osamu Aoki <osamu@debian.org>
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -31,21 +32,22 @@ import locale
 import os
 import sys
 import shutil
+import subprocess
 
 # utility diff functions
-from imediff.utils import error_exit, logger, read_lines
-from imediff.config import config_template, create_template
-from imediff.cli import *
-from imediff.tui import *
+from .utils import error_exit, logger, read_lines
+from .config import config_template, create_template
+from .cli import *
+from .tui import *
+from ._version import *
 
-VERSION = "2.6"
 PACKAGE = "imediff"
 
 _version = (
     """\
 {p} (version {v})
 """.format(
-        p=PACKAGE, v=VERSION
+        p=PACKAGE, v=version
     )
     + __doc__
 )
@@ -70,12 +72,12 @@ From the console command line prompt, type:
 For usage instructions, type "h" and "H" in the interactive screen.
 
  * Copyright (C) 2003, 2004 Jarno Elonen <elonen@iki.fi>
- * Copyright (C) 2018       Osamu Aoki <osamu@debian.org>
+ * Copyright (C) 2018, 2024 Osamu Aoki <osamu@debian.org>
 
 License: GPL 2.0+
 ===============================================================================
 """.format(
-    p=PACKAGE, v=VERSION
+    p=PACKAGE, v=version
 )
 
 
@@ -229,7 +231,50 @@ editing the template obtained by "imediff -t"'''.format(
         confs = confs_i
     return confs
 
+##############################################################################
+#
+# XXX XXX XXX XXX XXX ONLY FOR PIP XXX XXX XXX XXX XXX START
+def install():
+    """
+    Entry point for imediff_install command
 
+    Exit value
+        0       normal exit
+        1       error exit after an internal error
+    """
+
+    if os.getuid == 0:
+        print("E: This imediff_install needs to be run from non-root user")
+        print("I: For system-wide install, use the Debian package or the upstream source.")
+        print("I:  * https://tracker.debian.org/pkg/imediff")
+        print("I:  * https://github.com/osamuaoki/imediff")
+        sys.exit(1)
+# check install path of imediff module for site-package
+    src_dir = os.path.dirname(os.path.abspath(__file__))
+# possible values for this_file
+# ~/.local/lib/python3.11/site-packages/imediff -- normal user-mode
+#  ~/.venv/lib/python3.11/site-packages/imediff -- after "python3 -m venv"
+    python_dir = os.path.dirname(os.path.dirname(src_dir))
+    lib_dir = os.path.dirname(python_dir)
+    dest_dir = os.path.dirname(lib_dir)
+    subprocess.run(['mkdir', '-p', dest_dir + "/bin"])
+    subprocess.run(['cp', '-f', src_dir + "/data/git-ime", dest_dir + "/bin"])
+    subprocess.run(['chmod', '755', dest_dir + "/bin/git-ime"])
+    print("I: successfully installed: " + dest_dir + "/bin/git-ime")
+    print("I: manual page for imediff can be found at: " + src_dir + "/imediff.1")
+    print("I: manual page for git-ime can be found at: " + src_dir + "/git-ime.1")
+    print("I: script for git-mergetool(1) can be found at: " + src_dir + "/imediff")
+    print("I: For more, see the upstream source site.")
+    print("I:   * https://github.com/osamuaoki/imediff")
+    #subprocess.run(['mkdir', '-p', usr_dir + "/lib/git-core/mergetools"])
+    #subprocess.run(['cp', '-f', src_dir + "/imediff", usr_dir + "/lib/git-core/mergetools"])
+    #subprocess.run(['mkdir -p', usr_dir + "/share/man/man1/"])
+    #subprocess.run(['cp', '-f', src_dir + "/imediff.1", usr_dir + "/share/man/man1/"])
+    #subprocess.run(['cp', '-f', src_dir + "/git-ime.1", usr_dir + "/share/man/man1/"])
+
+    sys.exit(0)
+# XXX XXX XXX XXX XXX ONLY FOR PIP XXX XXX XXX XXX XXX END
+#
 ##############################################################################
 def main():
     """
