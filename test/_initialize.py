@@ -7,7 +7,7 @@ Script to test imediff initializing code
 import imediff
 import configparser
 
-# print("VERSION={}".format(imediff.VERSION))
+# print("VERSION={}".format(imediff.version))
 # print("PACKAGE={}".format(imediff.PACKAGE))
 # print(">>> imediff >>>>>>> key -> value >>>>>>>>>>>>>>>>")
 # for k, v in imediff.__dict__.items():

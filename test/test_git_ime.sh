@@ -1,8 +1,14 @@
 #!/bin/sh -e
 # vim: set sw=2 et sw=2 sts=2:
+#
+# Manual test of git-ime
+#
+# Can be invoked by "bash $0" or "./$0"
+#
 # working toss-away repo location
-BASEDIR="${0%/*}"
-REPO_DIR="${BASEDIR}/repo"
+THISFILE="$(realpath $0)"
+THISDIR="${THISFILE%/*}"
+REPO_DIR="${THISDIR}/repo"
 OPTQ="--quiet"
 #OPTQ=""
 # If $GIT_IME is not set, use system one

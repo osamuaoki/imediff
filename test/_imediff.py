@@ -5,7 +5,7 @@ Script to test imediff module
 
 Use as:
 
- $ ./_imediff ...
+ $ python3 _imediff ...
 
 """
 import imediff
