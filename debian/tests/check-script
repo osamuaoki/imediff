@@ -1,11 +1,13 @@
 #!/bin/sh -e
 # check syntax of browser start script
 echo "Simple check of diff23lib library"
-unset PYTHONPATH; python3 test/test_diff23lib.py -v 2>&1
+unset PYTHONPATH
+python3 test/test_unittest_all.py -v 2>&1
 
 echo "Syntax check of installed imediff"
 cp /usr/bin/imediff ./
-unset PYTHONPATH; python3 -m py_compile ./imediff
+unset PYTHONPATH
+python3 -m py_compile ./imediff
 rm -f ./imediff
 rm -rf ./__pycache__
 
