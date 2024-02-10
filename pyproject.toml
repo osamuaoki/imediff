@@ -145,7 +145,7 @@ dev = ["check-manifest"]
 # which executes the function `main` from this package when invoked.
 [project.scripts]  # Optional
 imediff = "imediff:main"
-imediff_install = "imediff:install"
+#imediff_install = "imediff:install"
 
 # This is configuration specific to the `setuptools` build backend.
 # If you are using a different build backend, you will need to change this.
