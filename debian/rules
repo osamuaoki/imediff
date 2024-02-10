@@ -1,6 +1,0 @@
-#!/usr/bin/make -f
-# uncomment to enable verbose mode for debhelper
-#DH_VERBOSE = 1
-
-%:
-	dh $@ --with python3 --buildsystem=pybuild
