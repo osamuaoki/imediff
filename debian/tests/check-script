@@ -1,0 +1,23 @@
+#!/bin/sh -e
+# check syntax of browser start script
+echo "Simple check of diff23lib library"
+unset PYTHONPATH; python3 test/test_diff23lib.py -v 2>&1
+
+echo "Syntax check of installed imediff"
+cp /usr/bin/imediff ./
+unset PYTHONPATH; python3 -m py_compile ./imediff
+rm -f ./imediff
+rm -rf ./__pycache__
+
+echo "Syntax check of installed git-ime"
+sh -n /usr/bin/git-ime
+
+echo "Simple invocation check of imediff"
+imediff -h >/dev/null
+
+echo "Simple invocation check of git-ime"
+git-ime -h >/dev/null
+echo "============================================================"
+echo
+echo "Test results: OK"
+echo
