@@ -1,0 +1,108 @@
+The Debian packaging of imediff is maintained in git, using the merging
+workflow described in dgit-maint-merge(7).  There isn't a patch queue
+that can be represented as a quilt series.
+
+Currently, imediff is hosted at https://github.com/osamuaoki/imediff.git
+(Since I am the upstream.  I will move to salsa.debian.org as the primary)
+
+Seeing the git history in the above repository should give you good
+clear perspective what is in the single combined diff of this packge.
+
+If bss is ever uploaded to the Debian, the following may be used.
+
+A detailed breakdown of the changes is available from their canonical
+representation - git commits in the packaging repository.  For example,
+to see the changes made by the Debian maintainer in the first upload of
+upstream version 1.2.3, you could use:
+
+    % git clone https://git.dgit.debian.org/imediff
+    % cd foo
+    % git log --oneline 1.2.3..debian/1.2.3-1 -- . ':!debian'
+
+(If you have dgit, use `dgit clone imediff`, rather than plain `git clone`.)
+
+A single combined diff, containing all the changes, follows.
+
+--- imediff-2.8.orig/pyproject.toml
++++ imediff-2.8/pyproject.toml
+@@ -145,7 +145,7 @@ dev = ["check-manifest"]
+ # which executes the function `main` from this package when invoked.
+ [project.scripts]  # Optional
+ imediff = "imediff:main"
+-imediff_install = "imediff:install"
++#imediff_install = "imediff:install"
+ 
+ # This is configuration specific to the `setuptools` build backend.
+ # If you are using a different build backend, you will need to change this.
+@@ -167,16 +167,17 @@ version = {attr = "imediff.version"}
+ # https://github.com/pypa/setuptools_scm
+ # For release, git tag should match version in the following file
+ # Otherwise, build process will overwrite value based on git repo state.
+-# Currently for pipy.org dynamic updated for development build unless tag match.
+-# Prepend "# " for pipy.org static release build with matching tag in the git repo.
+-# Prepend "# " for debian release build with matching tag in the git repo.
+-version_file = "src/imediff/_version.py"
++# Changed: Currently not for pipy.org dynamic updated for development build unless tag match.
++# Prepended "# " for pipy.org static release build with matching tag in the git repo.
++# Prepended "# " for debian release build with matching tag in the git repo.
++# version_file = "src/imediff/_version.py"
+ 
+ [build-system]
+ # https://peps.python.org/pep-0518/
+ # https://github.com/pypa/setuptools/pull/3056 (drop wheel)
+-# https://setuptools-scm.readthedocs.io/en/latest/
+-requires = ["setuptools>=61.0.0", "setuptools-scm"]
++# https://setuptools-scm.readthedocs.io/en/latest/ -- don't use this for Debian
++requires = ["setuptools>=61.0.0"]
++#requires = ["setuptools>=61.0.0", "setuptools-scm"]
+ # https://peps.python.org/pep-0517/
+ build-backend = "setuptools.build_meta"
+ 
+--- imediff-2.8.orig/src/imediff/__main__.py
++++ imediff-2.8/src/imediff/__main__.py
+@@ -234,45 +234,6 @@ editing the template obtained by "imedif
+ ##############################################################################
+ #
+ # XXX XXX XXX XXX XXX ONLY FOR PIP XXX XXX XXX XXX XXX START
+-def install():
+-    """
+-    Entry point for imediff_install command
+-
+-    Exit value
+-        0       normal exit
+-        1       error exit after an internal error
+-    """
+-
+-    if os.getuid == 0:
+-        print("E: This imediff_install needs to be run from non-root user")
+-        print("I: For system-wide install, use the Debian package or the upstream source.")
+-        print("I:  * https://tracker.debian.org/pkg/imediff")
+-        print("I:  * https://github.com/osamuaoki/imediff")
+-        sys.exit(1)
+-# check install path of imediff module for site-package
+-    src_dir = os.path.dirname(os.path.abspath(__file__))
+-# possible values for this_file
+-# ~/.local/lib/python3.11/site-packages/imediff -- normal user-mode
+-#  ~/.venv/lib/python3.11/site-packages/imediff -- after "python3 -m venv"
+-    python_dir = os.path.dirname(os.path.dirname(src_dir))
+-    lib_dir = os.path.dirname(python_dir)
+-    dest_dir = os.path.dirname(lib_dir)
+-    subprocess.run(['mkdir', '-p', dest_dir + "/bin"])
+-    subprocess.run(['cp', '-f', src_dir + "/data/git-ime", dest_dir + "/bin"])
+-    subprocess.run(['chmod', '755', dest_dir + "/bin/git-ime"])
+-    print("I: successfully installed: " + dest_dir + "/bin/git-ime")
+-    print("I: manual page for imediff can be found at: " + src_dir + "/imediff.1")
+-    print("I: manual page for git-ime can be found at: " + src_dir + "/git-ime.1")
+-    print("I: script for git-mergetool(1) can be found at: " + src_dir + "/imediff")
+-    print("I: For more, see the upstream source site.")
+-    print("I:   * https://github.com/osamuaoki/imediff")
+-    #subprocess.run(['mkdir', '-p', usr_dir + "/lib/git-core/mergetools"])
+-    #subprocess.run(['cp', '-f', src_dir + "/imediff", usr_dir + "/lib/git-core/mergetools"])
+-    #subprocess.run(['mkdir -p', usr_dir + "/share/man/man1/"])
+-    #subprocess.run(['cp', '-f', src_dir + "/imediff.1", usr_dir + "/share/man/man1/"])
+-    #subprocess.run(['cp', '-f', src_dir + "/git-ime.1", usr_dir + "/share/man/man1/"])
+-
+-    sys.exit(0)
+ # XXX XXX XXX XXX XXX ONLY FOR PIP XXX XXX XXX XXX XXX END
+ #
+ ##############################################################################
