@@ -1,3 +1,9 @@
+imediff (2.9-1) UNRELEASED; urgency=medium
+
+  * New upstream release with license in METADATA
+
+ -- Osamu Aoki <osamu@debian.org>  Sat, 17 Feb 2024 23:29:44 +0900
+
 imediff (2.8-1) unstable; urgency=medium
 
   * Update src/imediff/*
