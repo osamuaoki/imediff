@@ -46,7 +46,7 @@ requires-python = ">=3.9"
 # https://packaging.python.org/en/latest/specifications/core-metadata/#license
 
 ## The following needed to be commented out to work with "twine check"
-#license = {file = "LICENSE"}
+license = {file = "LICENSE"}
 
 # This field adds keywords for your project which will appear on the
 # project page. What does your project relate to?
