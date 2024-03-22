@@ -44,9 +44,11 @@ __all__ = ["_", "console_width", "logger", "read_lines", "error_exit", "write_fi
 # gettext.textdomain("imediff")
 # _ = gettext.gettext
 
+
 # NOOP version of gettext: _ = lambda x : x
 def _(x):
     return x
+
 
 # Console width with Zenkaku=2, Hankaku=1 (Hankaku=ASCII etc.)
 # Latin-1, CJK focus simplification applied.
@@ -65,6 +67,7 @@ def console_width(text):
 
 # logger
 logger = logging.getLogger(__name__)
+
 
 # file read
 def read_lines(filename):

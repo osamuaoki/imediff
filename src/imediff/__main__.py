@@ -231,6 +231,7 @@ editing the template obtained by "imediff -t"'''.format(
         confs = confs_i
     return confs
 
+
 ##############################################################################
 #
 # XXX XXX XXX XXX XXX ONLY FOR PIP XXX XXX XXX XXX XXX START

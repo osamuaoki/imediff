@@ -139,5 +139,4 @@ def create_template(conf):
 
 # Generate template file: TEMPLATE.imediff
 if __name__ == "__main__":
-
     create_template("TEMPLATE.imediff")
