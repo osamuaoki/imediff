@@ -8,7 +8,10 @@ See LICENSE for details
 
 The latest upstream source: https://github.com/osamuaoki/imediff
 
-This provides the imediff command and git-ime command.
+This package provides the `imediff` command and `git-ime` command for use on
+unix-like systems.
+
+The Debian package tracker: https://tracker.debian.org/pkg/imediff
 
 ## What is imediff
 
@@ -16,21 +19,21 @@ The imediff command helps you to merge 2 slightly different files with an
 optional base file interactively or non-interactively.
 
 For non-interactive 2-way diff operation, this can express diffs with ordinary
-diff-format 
+diff-format
 
 ```console
  $ imediff -n older.txt newer.txt -o diff.txt
 ```
 
 For non-interactive 2-way diff operation, this can also express diffs with
-wdiff format 
+wdiff format
 
 ```console
  $ imediff -n -f older.txt newer.txt -o wdiff.txt
 ```
 
 For non-interactive 3-way merge operation, this can not only express conflicts
-with ordinary diff3-format but also 3-way wdiff format 
+with ordinary diff3-format but also 3-way wdiff format
 
 ```console
  $ imediff -n yours.txt base.txt theirs.txt -o merged.txt
@@ -85,7 +88,8 @@ repository, "git ime" immediately exits without changes to be on the safe side.
 
 If the latest commit involves multiple files, "git ime" splits this big commit
 by the file into multiple smaller commits involving a single file for each
-commit.
+commit.  When the first line of the commit message is "-", each split commit
+message becomes just filename only.
 
 If the latest commit involves only a single file, the commit may be split into
 multiple smaller commits involving a set of minimal partial changes.  If the
@@ -193,7 +197,7 @@ You must have a relatively new system with python 3.9 equivalent of Debian 12.0
   ... hack
  $ python3 -m build
  $ cd build
- $ pip install 
+ $ pip install
 ```
 The building of rpm is not supported as out-of-box now (patch welcome).
 
