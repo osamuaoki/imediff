@@ -427,9 +427,10 @@ class SequenceMatcher3:
         return answer
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
-    flags = doctest.REPORT_NDIFF|doctest.FAIL_FAST
+
+    flags = doctest.REPORT_NDIFF | doctest.FAIL_FAST
     fail, total = doctest.testmod(optionflags=flags)
     print("{} failures out of {} tests -- ".format(fail, total), end="")
     exit(fail)

@@ -231,6 +231,7 @@ editing the template obtained by "imediff -t"'''.format(
         confs = confs_i
     return confs
 
+
 ##############################################################################
 #
 # XXX XXX XXX XXX XXX ONLY FOR PIP XXX XXX XXX XXX XXX START
@@ -245,34 +246,38 @@ def install():
 
     if os.getuid == 0:
         print("E: This imediff_install needs to be run from non-root user")
-        print("I: For system-wide install, use the Debian package or the upstream source.")
+        print(
+            "I: For system-wide install, use the Debian package or the upstream source."
+        )
         print("I:  * https://tracker.debian.org/pkg/imediff")
         print("I:  * https://github.com/osamuaoki/imediff")
         sys.exit(1)
-# check install path of imediff module for site-package
+    # check install path of imediff module for site-package
     src_dir = os.path.dirname(os.path.abspath(__file__))
-# possible values for this_file
-# ~/.local/lib/python3.11/site-packages/imediff -- normal user-mode
-#  ~/.venv/lib/python3.11/site-packages/imediff -- after "python3 -m venv"
+    # possible values for this_file
+    # ~/.local/lib/python3.11/site-packages/imediff -- normal user-mode
+    #  ~/.venv/lib/python3.11/site-packages/imediff -- after "python3 -m venv"
     python_dir = os.path.dirname(os.path.dirname(src_dir))
     lib_dir = os.path.dirname(python_dir)
     dest_dir = os.path.dirname(lib_dir)
-    subprocess.run(['mkdir', '-p', dest_dir + "/bin"])
-    subprocess.run(['cp', '-f', src_dir + "/data/git-ime", dest_dir + "/bin"])
-    subprocess.run(['chmod', '755', dest_dir + "/bin/git-ime"])
+    subprocess.run(["mkdir", "-p", dest_dir + "/bin"])
+    subprocess.run(["cp", "-f", src_dir + "/data/git-ime", dest_dir + "/bin"])
+    subprocess.run(["chmod", "755", dest_dir + "/bin/git-ime"])
     print("I: successfully installed: " + dest_dir + "/bin/git-ime")
     print("I: manual page for imediff can be found at: " + src_dir + "/imediff.1")
     print("I: manual page for git-ime can be found at: " + src_dir + "/git-ime.1")
     print("I: script for git-mergetool(1) can be found at: " + src_dir + "/imediff")
     print("I: For more, see the upstream source site.")
     print("I:   * https://github.com/osamuaoki/imediff")
-    #subprocess.run(['mkdir', '-p', usr_dir + "/lib/git-core/mergetools"])
-    #subprocess.run(['cp', '-f', src_dir + "/imediff", usr_dir + "/lib/git-core/mergetools"])
-    #subprocess.run(['mkdir -p', usr_dir + "/share/man/man1/"])
-    #subprocess.run(['cp', '-f', src_dir + "/imediff.1", usr_dir + "/share/man/man1/"])
-    #subprocess.run(['cp', '-f', src_dir + "/git-ime.1", usr_dir + "/share/man/man1/"])
+    # subprocess.run(['mkdir', '-p', usr_dir + "/lib/git-core/mergetools"])
+    # subprocess.run(['cp', '-f', src_dir + "/imediff", usr_dir + "/lib/git-core/mergetools"])
+    # subprocess.run(['mkdir -p', usr_dir + "/share/man/man1/"])
+    # subprocess.run(['cp', '-f', src_dir + "/imediff.1", usr_dir + "/share/man/man1/"])
+    # subprocess.run(['cp', '-f', src_dir + "/git-ime.1", usr_dir + "/share/man/man1/"])
 
     sys.exit(0)
+
+
 # XXX XXX XXX XXX XXX ONLY FOR PIP XXX XXX XXX XXX XXX END
 #
 ##############################################################################

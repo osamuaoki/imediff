@@ -97,8 +97,8 @@ else:
 print("I: cwd_dir  ='{}'".format(cwd_dir))
 print("I: doctest_dir  ='{}'".format(doctest_dir))
 
-class TestImediff(unittest.TestCase):
 
+class TestImediff(unittest.TestCase):
     a = "a12b345c6789d"
     b = "123456789"
     c = "a1234b567c89d"
@@ -129,7 +129,7 @@ class TestImediff(unittest.TestCase):
         result = subprocess.call(
             "python3 " + doctest_dir + "lines2lib.py",
             shell=True,
-        ) 
+        )
         self.assertEqual(result, 0)
         return
 
@@ -137,7 +137,7 @@ class TestImediff(unittest.TestCase):
         result = subprocess.call(
             "python3 " + doctest_dir + "diff3lib.py",
             shell=True,
-        ) 
+        )
         self.assertEqual(result, 0)
         return
 
@@ -153,11 +153,14 @@ class TestImediff(unittest.TestCase):
 
     def test_imediff2(self):
         result = subprocess.call(
-            "cd " + test_dir + ";python3 _imediff.py  -C BOGUS -n file_a file_b -o z_imediff2.out",
+            "cd "
+            + test_dir
+            + ";python3 _imediff.py  -C BOGUS -n file_a file_b -o z_imediff2.out",
             shell=True,
         )
         result = subprocess.call(
-            "cd " + test_dir + ";diff z_imediff2.out z_imediff2.ref >/dev/null", shell=True
+            "cd " + test_dir + ";diff z_imediff2.out z_imediff2.ref >/dev/null",
+            shell=True,
         )
         self.assertEqual(result, 0)
         return
@@ -170,7 +173,8 @@ class TestImediff(unittest.TestCase):
             shell=True,
         )
         result = subprocess.call(
-            "cd " + test_dir + ";diff z_imediff3.out z_imediff3.ref >/dev/null", shell=True
+            "cd " + test_dir + ";diff z_imediff3.out z_imediff3.ref >/dev/null",
+            shell=True,
         )
         self.assertEqual(result, 0)
         return
