@@ -1,8 +1,10 @@
-imediff (2.10-1) UNRELEASED; urgency=medium
+imediff (2.10-1) unstable; urgency=medium
 
   * Update to new upstream version 2.10.
+    * revise documentation
+    * remove unused function in git-ime
 
- -- Osamu Aoki <osamu@debian.org>  Wed, 14 Aug 2024 14:16:40 +0900
+ -- Osamu Aoki <osamu@debian.org>  Wed, 14 Aug 2024 14:18:48 +0900
 
 imediff (2.9-1) unstable; urgency=medium
 
