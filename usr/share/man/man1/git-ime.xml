@@ -68,8 +68,10 @@ commits.</para>
 repository, <command>git ime</command> immediately exits without changes to be
 on the safe side.</para>
 
-<para>If the latest commit involves multiple files, this big commit is split
-by the file into multiple smaller commits involving a single file.</para>
+<para>If the latest commit involves multiple files, <command>git ime</command>
+splits this big commit into multiple smaller commits involving a single file
+for each commit.  When the first line of the commit message is "-", each split
+commit message becomes just filename only.</para>
 
 <para>If the latest commit involves only a single file, the commit is split
 into multiple smaller commits involving  a set of meaningful partial changes
@@ -149,7 +151,7 @@ turned on as the default behavior.</para>
   <refsect1>
     <title>SEE ALSO</title>
 
-<para>imediff (1), git(1), and git-rebase(1).</para>
+<para>imediff(1), git(1), and git-rebase(1).</para>
 
   </refsect1>
   <refsect1>

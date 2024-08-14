@@ -87,9 +87,9 @@ If any staged changes or local uncommitted changes are found in the git
 repository, "git ime" immediately exits without changes to be on the safe side.
 
 If the latest commit involves multiple files, "git ime" splits this big commit
-by the file into multiple smaller commits involving a single file for each
-commit.  When the first line of the commit message is "-", each split commit
-message becomes just filename only.
+into multiple smaller commits involving a single file for each commit.  When
+the first line of the commit message is "-", each split commit message becomes
+just filename only.
 
 If the latest commit involves only a single file, the commit may be split into
 multiple smaller commits involving a set of minimal partial changes.  If the
@@ -106,10 +106,10 @@ Please install the `imediff` package from the APT repository.
 
 At the console command line prompt, type:
 
-* "imediff" to read the tutorial,
-* "imediff -h" to get all the command line options,
-* "imediff -o output older newer" to merge 2 files, and
-* "imediff -o output yours base theirs" to merge 3 files.
+* "`imediff`" to read the tutorial,
+* "`imediff -h`" to get all the command line options,
+* "`imediff -o output older newer`" to merge 2 files, and
+* "`imediff -o output yours base theirs`" to merge 3 files.
 
 For usage instructions, type "h" and "H" in the interactive display.
 
