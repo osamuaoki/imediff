@@ -76,25 +76,6 @@ set_version() {
 	vecho "I: LAST_VERSION: $LAST_VERSION"
 }
 
-set_name() {
-	if [ ! -r ".git/COMMIT_EDITMSG" ]; then
-		echo "-" >".git/COMMIT_EDITMSG"
-	fi
-	CHOICE="$(head -n 1 ".git/COMMIT_EDITMSG")"
-	if [ "$CHOICE" = "-" ]; then
-		# commit message = filename
-		echo "$NAME" >".git/COMMIT_EDITMSG"
-	elif [ "$CHOICE" = "+" ]; then
-		# commit message = filename only and keep old messages
-		sed -i -e "1i$NAME\n" ".git/COMMIT_EDITMSG"
-	else
-		# commit message = prefix with filename and keep old messages
-		sed -i -e "1s/^\(.*\)\$/$NAME: \1/" ".git/COMMIT_EDITMSG"
-	fi
-	# Drop old comments
-	sed -i -n -e '/^\([^#]\|$\)/p' ".git/COMMIT_EDITMSG"
-}
-
 apply_imediff() {
 	# shellcheck disable=SC3043
 	local FLNM="$1"
