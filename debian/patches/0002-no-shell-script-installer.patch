@@ -1,0 +1,22 @@
+From: Osamu Aoki <osamu@debian.org>
+Date: Wed, 14 Aug 2024 00:24:59 +0900
+Subject: no shell script installer
+
+Signed-off-by: Osamu Aoki <osamu@debian.org>
+---
+ pyproject.toml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 0ac6d74..0c29219 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -145,7 +145,7 @@ dev = ["check-manifest"]
+ # which executes the function `main` from this package when invoked.
+ [project.scripts]  # Optional
+ imediff = "imediff:main"
+-imediff_install = "imediff:install"
++#imediff_install = "imediff:install"
+ 
+ # This is configuration specific to the `setuptools` build backend.
+ # If you are using a different build backend, you will need to change this.

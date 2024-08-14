@@ -1,0 +1,37 @@
+From: Osamu Aoki <osamu@debian.org>
+Date: Sat, 10 Feb 2024 13:49:58 +0900
+Subject: Don't use setuptools_scm
+
+Signed-off-by: Osamu Aoki <osamu@debian.org>
+---
+ pyproject.toml | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 521ab26..0ac6d74 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -167,16 +167,17 @@ version = {attr = "imediff.version"}
+ # https://github.com/pypa/setuptools_scm
+ # For release, git tag should match version in the following file
+ # Otherwise, build process will overwrite value based on git repo state.
+-# Currently for pipy.org dynamic updated for development build unless tag match.
+-# Prepend "# " for pipy.org static release build with matching tag in the git repo.
+-# Prepend "# " for debian release build with matching tag in the git repo.
+-version_file = "src/imediff/_version.py"
++# Changed: Currently not for pipy.org dynamic updated for development build unless tag match.
++# Prepended "# " for pipy.org static release build with matching tag in the git repo.
++# Prepended "# " for debian release build with matching tag in the git repo.
++# version_file = "src/imediff/_version.py"
+ 
+ [build-system]
+ # https://peps.python.org/pep-0518/
+ # https://github.com/pypa/setuptools/pull/3056 (drop wheel)
+-# https://setuptools-scm.readthedocs.io/en/latest/
+-requires = ["setuptools>=61.0.0", "setuptools-scm"]
++# https://setuptools-scm.readthedocs.io/en/latest/ -- don't use this for Debian
++requires = ["setuptools>=61.0.0"]
++#requires = ["setuptools>=61.0.0", "setuptools-scm"]
+ # https://peps.python.org/pep-0517/
+ build-backend = "setuptools.build_meta"
+ 
