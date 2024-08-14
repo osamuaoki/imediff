@@ -46,7 +46,9 @@ If any staged changes or local uncommitted changes are found in the git reposito
 \fBgit ime\fR
 immediately exits without changes to be on the safe side\&.
 .PP
-If the latest commit involves multiple files, this big commit is split by the file into multiple smaller commits involving a single file\&.
+If the latest commit involves multiple files,
+\fBgit ime\fR
+splits this big commit into multiple smaller commits involving a single file for each commit\&. When the first line of the commit message is "\-", each split commit message becomes just filename only\&.
 .PP
 If the latest commit involves only a single file, the commit is split into multiple smaller commits involving a set of meaningful partial changes selected by
 \fBimediff\fR
@@ -110,7 +112,7 @@ outputs help message\&.
 .RE
 .SH "SEE ALSO"
 .PP
-imediff (1), git(1), and git\-rebase(1)\&.
+imediff(1), git(1), and git\-rebase(1)\&.
 .SH "COPYRIGHT"
 .PP
 This manual page as well as the program itself was written by
