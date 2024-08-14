@@ -1,3 +1,9 @@
+imediff (2.10-1) UNRELEASED; urgency=medium
+
+  * Update to new upstream version 2.10.
+
+ -- Osamu Aoki <osamu@debian.org>  Wed, 14 Aug 2024 14:16:40 +0900
+
 imediff (2.9-1) unstable; urgency=medium
 
   * Updated git-ime
