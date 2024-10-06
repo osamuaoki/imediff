@@ -1,0 +1,4 @@
+# use debian/patches/debian-changes as automatic patch
+single-debian-patch
+# commit patch automatically to quilt queue
+auto-commit

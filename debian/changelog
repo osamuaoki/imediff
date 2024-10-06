@@ -1,3 +1,12 @@
+imediff (2.11-1) unstable; urgency=medium
+
+  * Fix major git-ime regression for changes on a single file.
+  * Improve git-ime to cope with renames and deletes.
+  * Stop using relative path import for imediff and clean up code.
+  * Simplify Debian packaging using quasi-native with auto-commit.
+
+ -- Osamu Aoki <osamu@debian.org>  Sun, 06 Oct 2024 17:03:25 +0900
+
 imediff (2.10-1) unstable; urgency=medium
 
   * Update to new upstream version 2.10.

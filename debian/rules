@@ -1,6 +1,23 @@
 #!/usr/bin/make -f
+# vim: set ts=8 noet sw=8 ai si:
 # uncomment to enable verbose mode for debhelper
 #DH_VERBOSE = 1
 
 %:
 	dh $@ --with python3 --buildsystem=pybuild
+
+override_dh_auto_clean:
+	debian/check_version
+	dh_auto_clean
+
+override_dh_auto_install:
+	dh_auto_install -O--buildsystem=pybuild
+	# dh-compat for all 13, 14, 15
+	if [ -e debian/imediff ]; then \
+	rm -f debian/imediff/usr/bin/imediff_install ; \
+	elif [ -e debian/tmp ]; then \
+	rm -f debian/tmp/usr/bin/imediff_install ; \
+	else \
+	echo "E: missing installed imediff_install" ; \
+	exit ; \
+	fi
