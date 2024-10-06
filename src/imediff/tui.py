@@ -26,10 +26,11 @@ Boston, MA 02110-1301, USA.
 """
 
 import curses
+import sys
 
-from .utils import _, console_width, error_exit, logger, write_file
-from .config import cc
-from .cli import *
+from imediff.utils import _, console_width, error_preexit, logger, write_file
+from imediff.config import cc
+from imediff.cli import TextData
 
 # Format stings
 _helptext2 = _(
@@ -374,7 +375,7 @@ class TextPad(TextData):  # TUI data
         curses.init_pair(23, cc["BLACK"], cc[color["color_e"]])
         curses.init_pair(24, cc["BLACK"], cc[color["color_f"]])
         #
-        if curses.has_colors() == False:
+        if not curses.has_colors():
             self.mono = True
         if self.mono:
             self.mode = True
@@ -478,7 +479,8 @@ class TextPad(TextData):  # TUI data
                     )
                 ):
                     self.opcodes = []
-                    error_exit("Quit without saving by the user request\n")
+                    error_preexit("Quit without saving by the user request\n")
+                    sys.exit(2)
             elif ch == "h" or c == curses.KEY_HELP:
                 # Show help screen
                 self.popup(self.helptext())
@@ -524,6 +526,7 @@ class TextPad(TextData):  # TUI data
             if self.active is not None:
                 # get active chunk
                 # Explicitly select chunk mode
+                mode = self.get_mode(self.actives[self.active])
                 if ch in "abdef":
                     self.set_mode(self.actives[self.active], ch)
                 elif ch in "12456":
@@ -541,7 +544,6 @@ class TextPad(TextData):  # TUI data
                 elif ch in "CG" and self.diff_mode == 3:
                     self.set_all_mode(ch.lower())
                 elif c == 10 or c == curses.KEY_COMMAND:
-                    mode = self.get_mode(self.actives[self.active])
                     if mode == "a":
                         self.set_mode(self.actives[self.active], "b")
                     elif mode == "b" and self.diff_mode == 2:

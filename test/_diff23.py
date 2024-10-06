@@ -12,6 +12,8 @@ modern algorithm, this test may yield slightly different result in some
 corner cases.
 """
 
+import os
+import sys
 import difflib
 import imediff.diff3lib
 
@@ -51,6 +53,17 @@ def diff23(a, b, c, name=""):
     print("===========================================================")
     return
 
+print("\nI: _diff23 start >>>", file=sys.stderr)
+cwd_dir = os.getcwd()
+print("I: cwd_dir     = '{}'".format(cwd_dir), file=sys.stderr)
+print("I: test_file   = '{}' (active)".format(__file__), file=sys.stderr)
+test_dir = os.path.dirname(os.path.abspath(__file__))
+print("I: test_dir    = '{}' (active)".format(test_dir), file=sys.stderr)
+if "PYTHONPATH" in os.environ:
+    print("I: PYTHONPATH  = '{}'".format(os.environ["PYTHONPATH"]), file=sys.stderr)
+else:
+    print("I: PYTHONPATH  = <undefined>", file=sys.stderr)
+print("I: _diff23 end   <<<", file=sys.stderr)
 
 diff23("12345", "12345", "12345", "same")
 

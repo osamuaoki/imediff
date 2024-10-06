@@ -26,13 +26,14 @@ Boston, MA 02110-1301, USA.
 """
 import tempfile
 import os
+import sys
 import io
 import time
 
 from difflib import SequenceMatcher
-from .utils import error_exit, logger, read_lines, write_file
-from .lines2lib import LineMatcher
-from .diff3lib import SequenceMatcher3
+from imediff.utils import error_preexit, logger, read_lines, write_file
+from imediff.lines2lib import LineMatcher
+from imediff.diff3lib import SequenceMatcher3
 
 
 class TextData:  # Non-TUI data
@@ -57,8 +58,6 @@ class TextData:  # Non-TUI data
         self.edit_cmd = args.edit_cmd
         self.macro = args.macro
         new_mode = self.default_mode
-        row = None  # used only by TUI to match index of opcodes to textpad row
-        bf = None  # used only by TUI to store the editor result
         # set from confs
         if confs["config"]["confirm_exit"] != "False":
             self.confirm_exit = True
@@ -91,26 +90,26 @@ class TextData:  # Non-TUI data
         if self.diff_mode == 2:
             sequence = LineMatcher(list_a, list_b)
             opcodes = sequence.get_opcodes()
-            k1 = k2 = None
             # Set initial mode to "a" or "d"
             self.opcodes = [
-                (tag, i1, i2, j1, j2, k1, k2, "a" if tag == "E" else "d", row, bf)
+                (tag, i1, i2, j1, j2, None, None, "a" if tag == "E" else "d", 0, None)
                 for (tag, i1, i2, j1, j2) in opcodes
             ]
             self.actives = [
-                j for j, (tag, i1, i2, j1, j2) in enumerate(opcodes) if tag != "E"
+                j for j, (tag, _, _, _, _) in enumerate(opcodes) if tag != "E"
             ]
         else:
-            sequence = SequenceMatcher3(list_a, list_b, list_c, 1)
+            use_LineMatcher = 1
+            sequence = SequenceMatcher3(list_a, list_b, list_c, use_LineMatcher)
             opcodes = sequence.get_opcodes()
             # Set initial mode to "a" or "d"
             self.opcodes = [
-                (tag, i1, i2, j1, j2, k1, k2, "a" if tag in "Ee" else "d", row, bf)
+                (tag, i1, i2, j1, j2, k1, k2, "a" if tag in "Ee" else "d", 0, None)
                 for (tag, i1, i2, j1, j2, k1, k2) in opcodes
             ]
             self.actives = [
                 j
-                for j, (tag, i1, i2, j1, j2, k1, k2) in enumerate(opcodes)
+                for j, (tag, _, _, _, _, _, _) in enumerate(opcodes)
                 if tag not in "Ee"
             ]
         # self.actives[i] = j -> self.rev_actives[j] = i
@@ -154,6 +153,9 @@ class TextData:  # Non-TUI data
             content += [self.ls3 % self.file_c]
         return content
 
+    def whitespace_is_junk(self, c):
+        return (c in " \t")
+
     def merge_wdiff2(self, i):
         """Return content for wdiff by line (2 files)"""
         (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
@@ -167,8 +169,8 @@ class TextData:  # Non-TUI data
         if self.isjunk:
             isjunk = None
         else:
-            isjunk = lambda x: x in " \t"
-        seq = SequenceMatcher(isjunk, line_a, line_b, None)
+            isjunk = self.whitespace_is_junk
+        seq = SequenceMatcher(isjunk, line_a, line_b, False)
         opcodes = seq.get_opcodes()
         line = ""
         for tag, wi1, wi2, wj1, wj2 in opcodes:
@@ -197,8 +199,10 @@ class TextData:  # Non-TUI data
         if self.isjunk:
             isjunk = None
         else:
-            isjunk = lambda x: x in " \t"
-        wseq = SequenceMatcher3(line_a, line_b, line_c, 0, isjunk, True)
+            isjunk = self.whitespace_is_junk
+        # wdiff uses SequenceMatcher
+        use_SequenceMatcher = 0
+        wseq = SequenceMatcher3(line_a, line_b, line_c, use_SequenceMatcher, isjunk, True)
         wopcodes = wseq.get_opcodes()
         # logger.debug("wdiff3: \nwopcodesc >>>>> {}".format(wopcodes))
         line = ""
@@ -221,24 +225,25 @@ class TextData:  # Non-TUI data
         return (clean_merge, content)
 
     def get_tag(self, i):
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
+        (tag, _, _, _, _, _, _, _, _, _) = self.opcodes[i]
         return tag
 
     def get_mode(self, i):
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
+        (_, _, _, _, _, _, _, mode, _, _) = self.opcodes[i]
         return mode
 
     def get_row(self, i):
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
+        (_, _, _, _, _, _, _, _, row, _) = self.opcodes[i]
         return row
 
     def get_bf(self, i):
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
+        (_, _, _, _, _, _, _, _, _, bf) = self.opcodes[i]
         return bf
 
     def get_content(self, i):
         """Return content based on mode"""
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
+        content = None
+        (tag, i1, i2, j1, j2, k1, k2, mode, _, bf) = self.opcodes[i]
         if tag == "E" or tag == "e":
             content = self.list_a[i1:i2]
         elif mode == "a":
@@ -253,22 +258,25 @@ class TextData:  # Non-TUI data
             if bf is not None:
                 content = bf
             else:
-                error_exit("Bad mode='e' with missing edited buffer text\n")
+                error_preexit("Bad mode='e' with missing edited buffer text\n")
+                sys.exit(2)
         elif mode == "f":
             if self.diff_mode == 2:
                 content = self.merge_wdiff2(i)
             else:  # self.diff_mode == 3
-                (clean_merge, content) = self.merge_wdiff3(i)
+                (_, content) = self.merge_wdiff3(i)
         elif mode == "g":
             if self.diff_mode == 2:
                 content = self.merge_diff(i)
             else:  # self.diff_mode == 3
-                (clean_merge, content) = self.merge_wdiff3(i)
+                (_, content) = self.merge_wdiff3(i)
         else:
-            error_exit("Bad mode='{}'\n".format(mode))
+            error_preexit("Bad mode='{}'\n".format(mode))
+            sys.exit(2)
         # content is at least [] (at least empty list)
         if content is None:
-            error_exit("content can't be None")
+            error_preexit("content can't be None")
+            sys.exit(2)
         return content
 
     def set_mode(self, i, new_mode):
@@ -289,7 +297,7 @@ class TextData:  # Non-TUI data
             if new_mode == "c":
                 mode = "c"
             elif new_mode == "f":
-                (clean_merge, content) = self.merge_wdiff3(i)
+                (clean_merge, _) = self.merge_wdiff3(i)
                 if clean_merge:
                     mode = "g"
                 else:
@@ -309,7 +317,7 @@ class TextData:  # Non-TUI data
                 elif mode in "abceg":
                     pass
                 else:  # for mode in "df" and tag == "N"
-                    (clean_merge, content) = self.merge_wdiff3(i)
+                    (clean_merge, _) = self.merge_wdiff3(i)
                     if clean_merge:
                         mode = "g"
                     else:
@@ -325,13 +333,13 @@ class TextData:  # Non-TUI data
         return
 
     def set_row(self, i, new_row):  # used by TUI
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
+        (tag, i1, i2, j1, j2, k1, k2, mode, _, bf) = self.opcodes[i]
         # row is passed by value but chunk is passed by reference !
         self.opcodes[i] = (tag, i1, i2, j1, j2, k1, k2, mode, new_row, bf)
         return
 
     def set_bf(self, i, new_bf):
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
+        (tag, i1, i2, j1, j2, k1, k2, mode, row, _) = self.opcodes[i]
         self.opcodes[i] = (tag, i1, i2, j1, j2, k1, k2, mode, row, new_bf)
         return
 
@@ -381,114 +389,114 @@ class TextData:  # Non-TUI data
 
     def active_next(self):
         """Jump to the next active chunk"""
-        self.active_old = self.active
         if self.active is not None:
-            self.active = min(self.active + 1, len(self.actives) - 1)
-        if self.active_old != self.active:
-            self.update_active = True
-        else:
-            self.row += 1
+            self.active_old = self.active
+            if self.active is not None:
+                self.active = min(self.active + 1, len(self.actives) - 1)
+            if self.active_old != self.active:
+                self.update_active = True
         return
 
     def active_prev(self):
         """Jump to the previous active chunk"""
-        self.active_old = self.active
         if self.active is not None:
-            self.active = max(self.active - 1, 0)
-        if self.active_old != self.active:
-            self.update_active = True
+            self.active_old = self.active
+            if self.active is not None:
+                self.active = max(self.active - 1, 0)
+            if self.active_old != self.active:
+                self.update_active = True
         return
 
     def active_home(self):
         """Jump to the first active chunk"""
-        self.active_old = self.active
         if self.active is not None:
-            self.active = 0
-        if self.active_old != self.active:
-            self.update_active = True
+            self.active_old = self.active
+            if self.active is not None:
+                self.active = 0
+            if self.active_old != self.active:
+                self.update_active = True
         return
 
     def active_end(self):
         """Jump to the last active chunk"""
-        self.active_old = self.active
         if self.active is not None:
-            self.active = len(self.actives) - 1
-        if self.active_old != self.active:
-            self.update_active = True
-        else:
-            self.row += 1
+            self.active_old = self.active
+            if self.active is not None:
+                self.active = len(self.actives) - 1
+            if self.active_old != self.active:
+                self.update_active = True
         return
 
     def get_unresolved_count(self):
         """Count 'd' or 'f' mode in active chunk"""
         count = 0
-        for j, i in enumerate(self.actives):
+        for _, i in enumerate(self.actives):
             if self.get_mode(i) in "df":
                 count += 1
         return count
 
     def diff_next(self):
         """Jump to the next diff chunk"""
-        self.active_old = self.active
-        active = None
-        for j in range(self.active + 1, len(self.actives)):
-            i = self.actives[j]
-            if self.get_mode(i) in "df":
-                active = j
-                break
-        if active is not None:
-            self.active = active
-        if self.active_old != self.active:
-            self.update_active = True
-        else:
-            self.row += 1
+        if self.active is not None:
+            self.active_old = self.active
+            active = None
+            for j in range(self.active + 1, len(self.actives)):
+                i = self.actives[j]
+                if self.get_mode(i) in "df":
+                    active = j
+                    break
+            if active is not None:
+                self.active = active
+            if self.active_old != self.active:
+                self.update_active = True
         return
 
     def diff_prev(self):
         """Jump to the previous diff chunk"""
-        self.active_old = self.active
-        active = None
-        for j in range(self.active - 1, -1, -1):
-            i = self.actives[j]
-            if self.get_mode(i) in "df":
-                active = j
-                break
-        if active is not None:
-            self.active = active
-        if self.active_old != self.active:
-            self.update_active = True
+        if self.active is not None:
+            self.active_old = self.active
+            active = None
+            for j in range(self.active - 1, -1, -1):
+                i = self.actives[j]
+                if self.get_mode(i) in "df":
+                    active = j
+                    break
+            if active is not None:
+                self.active = active
+            if self.active_old != self.active:
+                self.update_active = True
         return
 
     def diff_home(self):
         """Jump to the first diff chunk"""
-        self.active_old = self.active
-        active = None
-        for j in range(0, self.active):
-            i = self.actives[j]
-            if self.get_mode(i) in "df":
-                active = j
-                break
-        if active is not None:
-            self.active = active
-        if self.active_old != self.active:
-            self.update_active = True
+        if self.active is not None:
+            self.active_old = self.active
+            active = None
+            for j in range(0, self.active):
+                i = self.actives[j]
+                if self.get_mode(i) in "df":
+                    active = j
+                    break
+            if active is not None:
+                self.active = active
+            if self.active_old != self.active:
+                self.update_active = True
         return
 
     def diff_end(self):
         """Jump to the last diff chunk"""
-        self.active_old = self.active
-        active = None
-        for j in range(len(self.actives) - 1, self.active, -1):
-            i = self.actives[j]
-            if self.get_mode(i) in "df":
-                active = j
-                break
-        if active is not None:
-            self.active = active
-        if self.active_old != self.active:
-            self.update_active = True
-        else:
-            self.row += 1
+        if self.active is not None:
+            self.active_old = self.active
+            active = None
+            for j in range(len(self.actives) - 1, self.active, -1):
+                i = self.actives[j]
+                if self.get_mode(i) in "df":
+                    active = j
+                    break
+            if active is not None:
+                self.active = active
+            if self.active_old != self.active:
+                self.update_active = True
         return
 
     def c_translated(self, c):

@@ -25,6 +25,7 @@ Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.
 """
 
+import sys
 from difflib import SequenceMatcher
 from imediff.lines2lib import LineMatcher
 from imediff.utils import logger
@@ -75,18 +76,26 @@ class SequenceMatcher3:
             All "N" and "N*" containing ranges are conflict but are checked for
             A==C check (case "e")
 
-            Here tag for diff3:
+                tag for opcode of SequenceMatcher3
                 'E'    a[j1:j2] == b[i1:i2] == c[k1:k2] == a[j1:j2]
                 'A'    a[j1:j2] != b[i1:i2] == c[k1:k2] != a[j1:j2]
                 'C'    a[j1:j2] == b[i1:i2] != c[k1:k2] != a[j1:j2]
                 'e'    a[j1:j2] != b[i1:i2] != c[k1:k2] == a[j1:j2]
                 'N'    a[j1:j2] != b[i1:i2] != c[k1:k2] != a[j1:j2]
 
-    This requires diff2lib which is a wrapper of difflib and provides
-    'get_opcodes' method. Here tag for diff2:
+    For matcher=0, this uses bare SequenceMatcher class from difflib.
 
+                tag for opcode of equenceMatcher
+                'equal a[j1:j2] == b[i1:i2]
+
+                'delete' 'insert' 'replace'
+
+    For matcher=1, this uses bare LineMatcher class from diff2lib.py
+
+                tag for opcode of LineMatcher
                 'E'    a[j1:j2] == b[i1:i2]
                 'N'    a[j1:j2] != b[i1:i2]
+                'F'    a[j1:j2] != b[i1:i2] -- but similar
 
     Example1: comparing two strings, and considering None to be "junk"
 
@@ -266,7 +275,7 @@ class SequenceMatcher3:
         The tags are strings, with these meanings:
 
         'E':   a == b == c
-        'e':   a != b != c == A
+        'e':   a != b != c == a
         'A':   c == b --> a, change in a
         'C':   a == b --> c, change in c
         'N':   b-->a, b-->c, conflicting changes
@@ -433,4 +442,7 @@ if __name__ == "__main__":
     flags = doctest.REPORT_NDIFF | doctest.FAIL_FAST
     fail, total = doctest.testmod(optionflags=flags)
     print("{} failures out of {} tests -- ".format(fail, total), end="")
-    exit(fail)
+    if fail == 0:
+        sys.exit(0)
+    else:
+        sys.exit(1)

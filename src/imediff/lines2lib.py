@@ -9,10 +9,11 @@ Copyright (C) 2018--2024 Osamu Aoki <osamu@debian.org>
 """
 
 import re
+import sys
 from difflib import SequenceMatcher
 
 # utility functions
-from imediff.utils import logger, error_exit
+from imediff.utils import logger, error_preexit
 
 
 class LineMatcher:
@@ -23,7 +24,7 @@ class LineMatcher:
     matching lines while dropping all whitespaces and quotes (default)
 
     E: exact match
-    F: fuzzy match (ignore whitespacesi and quotes)
+    F: fuzzy match (ignore whitespaces and quotes)
     N: no match
 
     Example:
@@ -59,7 +60,7 @@ class LineMatcher:
     ...         "l i n e Z 'a b c d' \\\"e\\n",
     ...     ]
     >>> lines = LineMatcher(a, b)
-    >>> lines.print_opcodes()
+    >>> lines._dump_opcodes()
     match: 0 -> 0, tag = E
         a: line 1 abcde
         b: line 1 abcde
@@ -110,15 +111,16 @@ class LineMatcher:
         linerule=2,
     ):
         """
-        Construct a _LineMatcher
-
+        Construct a LineMatcher object using whitespace filtered object and _LineMatcher internal object
+        class
         """
 
         # initialize
         self.a = a
         self.b = b
         if not (linerule >= 0 and linerule < 20):
-            error_exit("E: linerule should be between 0 and 19 but {}".format(linerule))
+            error_preexit("E: linerule should be between 0 and 19 but {}".format(linerule))
+            sys.exit(2)
         # linerule:
         # 0      r""        -- drop none between text, but strip
         # 1      r"\s+"     -- drop all whitespaces
@@ -159,16 +161,22 @@ class LineMatcher:
     def get_opcodes(self):
         match = []
         for tag, i1, i2, j1, j2 in self.int.get_opcodes():
+            # this is match for self.int only
             if tag == "E":
                 if self.a[i1] == self.b[j1]:
+                    # real exact match
                     tag = "E"
                 else:
+                    # match after filter is fuzzy match
                     tag = "F"
             match.append((tag, i1, i2, j1, j2))
         return match
 
-    def print_opcodes(self):
-        """ """
+    def _dump_opcodes(self):
+        """
+        private function to dump internal data state of class object for
+        LineMatcher class
+        """
         for tag, i1, i2, j1, j2 in self.get_opcodes():
             if (i1 + 1) == i2 and (j1 + 1) == j2:
                 print("match: {} -> {}, tag = {}".format(i1, j1, tag))
@@ -183,7 +191,7 @@ class _LineMatcher:
     _LineMatcher
 
     A private class to help manage 2 lists of similar lines by finding
-    matching lines including partial matches.
+    matching lines including partial line matches.
 
     Example:
     >>> a = [   "line1abcde",
@@ -217,7 +225,7 @@ class _LineMatcher:
     ...         "lineZabcdex",
     ...     ]
     >>> lines = _LineMatcher(a, b, 0, len(a), 0, len(b))
-    >>> lines.print_opcodes()
+    >>> lines._dump_opcodes()
     match: 0 -> 0, tag = E
         a: line1abcde
         b: line1abcde
@@ -327,11 +335,12 @@ class _LineMatcher:
                     )
                 )
         else:
-            error_exit(
+            error_preexit(
                 "===  a[{}:{}]/b[{}:{}]  ===  d={:02d} should be non-negative".format(
                     self.is1, self.is2, self.js1, self.js2, self.depth
                 )
             )
+            sys.exit(2)
         if side == 0:
             # self.is1, self.is2, self.js1, self.js2 are known to cover all
             am = self.a
@@ -367,6 +376,7 @@ class _LineMatcher:
                 )
             )
             if tag == "equal":
+                # multi line section and equal for filtered lines
                 for i in range(i1, i2):
                     ip = self.is1 + i
                     jp = self.js1 + j1 + i - i1
@@ -377,17 +387,18 @@ class _LineMatcher:
                         # partial match only (F for fuzzy)
                         match.append(("F", ip, ip + 1, jp, jp + 1))
             elif i1 == i2 or j1 == j2:
-                # clean insert/delete
+                # delete "a" or delete "b" for filtered lines
                 match.append(
                     ("N", i1 + self.is1, i2 + self.is1, j1 + self.js1, j2 + self.js1)
                 )
             elif (i1 + 1) == i2 and (j1 + 1) == j2:
-                # single line change -> assume fuzzy match without checking
+                # single line match -> assume fuzzy match without checking
+                # since this is not equal
                 match.append(
                     ("F", i1 + self.is1, i2 + self.is1, j1 + self.js1, j2 + self.js1)
                 )
             else:
-                # dig deeper for multi-line changes
+                # dig deeper for multi-line changes to find fuzzy matches
                 if side == 0:
                     # full -> left side
                     match.extend(
@@ -448,8 +459,11 @@ class _LineMatcher:
             )
         return match
 
-    def print_opcodes(self):
-        """ """
+    def _dump_opcodes(self):
+        """
+        private function to dump internal data state of class object for
+        _LineMatcher class
+        """
         for tag, i1, i2, j1, j2 in self.get_opcodes():
             if (i1 + 1) == i2 and (j1 + 1) == j2:
                 print("match: {} -> {}, tag = {}".format(i1, j1, tag))
@@ -465,4 +479,7 @@ if __name__ == "__main__":
     flags = doctest.REPORT_NDIFF | doctest.FAIL_FAST
     fail, total = doctest.testmod(optionflags=flags)
     print("{} failures out of {} tests -- ".format(fail, total), end="")
-    exit(fail)
+    if fail == 0:
+        sys.exit(0)
+    else:
+        sys.exit(1)

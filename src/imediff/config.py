@@ -26,10 +26,11 @@ Boston, MA 02110-1301, USA.
 """
 
 import os
+import sys
 import io
 import curses
 
-from .utils import error_exit, logger
+from imediff.utils import error_preexit, logger
 
 # Update version below only when configuration API changes
 
@@ -131,9 +132,11 @@ def create_template(conf):
             with open(config_file, mode="w", buffering=io.DEFAULT_BUFFER_SIZE) as ofp:
                 ofp.write(config_template)
         except IOError:
-            error_exit("Error in creating configuration file: {}".format(conf))
+            error_preexit("Error in creating configuration file: {}".format(conf))
+            sys.exit(2)
     else:
-        error_exit("Erase {} before 'imediff -t'".format(conf))
+        error_preexit("Erase {} before 'imediff -t'".format(conf))
+        sys.exit(2)
     return
 
 

@@ -13,7 +13,7 @@ Test many aspect of imediff package via unittest.
 
 To test the in-source-tree module, invoke this script in this directory as:
 
- $ export PYTHONPATH=$(cwd)/../src
+ $ export PYTHONPATH=$(pwd)/../src
  $ python3 test_unittest_all.py -v
 
 To test the system installed module, invoke this script directly in this
@@ -30,15 +30,11 @@ import unittest
 import subprocess
 import os
 import os.path
-import imediff
+import imediff.diff3lib
 
-test_dir = os.path.dirname(os.path.abspath(__file__))
-cwd_dir = os.getcwd()
-
-### TEST in-package module
 # Deb package build dh_test
 #
-# test/ and imediff/ are copied to .../build/ directory and cwd is set to there
+# test/ and imediff/ are copied to ../build/ directory and cwd is set to there
 # test_dir = cwd_dir + "/test"
 # cwd_dir + "/imediff" -- exist
 # PYTHONPATH = 'PROJECT_ROOT/debian/tmp/usr/lib/python3.11/dist-packages:PROJECT_ROOT/.pybuild/cpython3_3.11/build'
@@ -70,9 +66,8 @@ cwd_dir = os.getcwd()
 # doctest_dir = "imediff/"
 
 ##### Build time
-##### This is run from copied files with PYTHONPATH set
-####print("I: PYTHONPATH = '{}'".format(os.environ["PYTHONPATH"]))
-##### I: PYTHONPATH = 'PROJECT_ROOT/debian/tmp/usr/lib/python3.11/dist-packages:PROJECT_ROOT/.pybuild/cpython3_3.11/build'
+# This is run from copied files with PYTHONPATH set
+# I: PYTHONPATH = 'PROJECT_ROOT/debian/tmp/usr/lib/python3.11/dist-packages:PROJECT_ROOT/.pybuild/cpython3_3.11/build'
 ##### path to test directory
 ####print("I: test_dir ='{}'".format(test_dir))
 ##### I: test_dir ='PROJECT_ROOT/.pybuild/cpython3_3.11/build/test'
@@ -84,19 +79,27 @@ cwd_dir = os.getcwd()
 ####
 ##### --- subprocess.run(["ls", "-laR"])
 
-if os.path.isdir("src") and os.path.isdir("src/imediff"):
-    # normal test from cwd=project_root
-    doctest_dir = "src/imediff/"
-elif os.path.isdir("../src") and os.path.isdir("../src/imediff"):
-    # normal test from cwd=project_root/test
-    doctest_dir = "../src/imediff/"
+cwd_dir = os.getcwd()
+print("I: cwd_dir     = '{}'".format(cwd_dir))
+print("I: test_file   = '{}' (active)".format(__file__))
+test_dir = os.path.dirname(os.path.abspath(__file__))
+print("I: test_dir    = '{}' (active)".format(test_dir))
+base_dir = os.path.dirname(test_dir)
+print("I: base_dir    = '{}'".format(base_dir))
+if os.path.isdir(base_dir + "/src"):
+    print("I: test in the original source tree invoked")
+    doctest_dir = base_dir + "/src/imediff"
+elif os.path.isdir(base_dir + "/imediff"):
+    print("I: test in the copied source tree in Debian pybuild invoked")
+    doctest_dir = base_dir + "/imediff"
 else:
-    # dh_test after copy module imediff to cwd=.../build/
-    doctest_dir = "imediff/"
-
-print("I: cwd_dir  ='{}'".format(cwd_dir))
-print("I: doctest_dir  ='{}'".format(doctest_dir))
-
+    print("I: test in an unknown environment invoked")
+    exit(1)
+print("I: doctest_dir = '{}'".format(doctest_dir))
+if "PYTHONPATH" in os.environ:
+    print("I: PYTHONPATH  = '{}'".format(os.environ["PYTHONPATH"]))
+else:
+    print("I: PYTHONPATH  = <undefined>")
 
 class TestImediff(unittest.TestCase):
     a = "a12b345c6789d"
@@ -127,7 +130,7 @@ class TestImediff(unittest.TestCase):
 
     def test_lines2lib_doctest(self):
         result = subprocess.call(
-            "python3 " + doctest_dir + "lines2lib.py",
+            "python3 " + doctest_dir + "/lines2lib.py",
             shell=True,
         )
         self.assertEqual(result, 0)
@@ -135,7 +138,7 @@ class TestImediff(unittest.TestCase):
 
     def test_diff3lib_doctest(self):
         result = subprocess.call(
-            "python3 " + doctest_dir + "diff3lib.py",
+            "python3 " + doctest_dir + "/diff3lib.py",
             shell=True,
         )
         self.assertEqual(result, 0)
@@ -155,7 +158,7 @@ class TestImediff(unittest.TestCase):
         result = subprocess.call(
             "cd "
             + test_dir
-            + ";python3 _imediff.py  -C BOGUS -n file_a file_b -o z_imediff2.out",
+            + ";python3 _imediff.py -C BOGUS -n file_a file_b -o z_imediff2.out",
             shell=True,
         )
         result = subprocess.call(

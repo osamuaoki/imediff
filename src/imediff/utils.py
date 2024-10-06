@@ -33,9 +33,8 @@ import traceback
 import curses
 import unicodedata
 
-
 # Explicit list needed for "_"
-__all__ = ["_", "console_width", "logger", "read_lines", "error_exit", "write_file"]
+__all__ = ["_", "console_width", "logger", "read_lines", "error_preexit", "write_file"]
 
 # Utility functions
 
@@ -71,6 +70,7 @@ logger = logging.getLogger(__name__)
 
 # file read
 def read_lines(filename):
+    logger.debug("read_lines: filename = '{}'".format(filename))
     if filename is None or filename == "":
         lines = []
     else:
@@ -82,18 +82,20 @@ def read_lines(filename):
             if error == errno.ENOENT:
                 lines = []
             else:
-                error_exit("Could not read '{}': {}\n".format(filename, message))
+                error_preexit("Could not read '{}': {}\n".format(filename, message))
+                sys.exit(2)
         except:
-            error_exit(
+            error_preexit(
                 "read_lines: Unexpected error: {} {}".format(
                     sys.exc_info()[0], sys.exc_info()[1]
                 )
             )
+            sys.exit(2)
     return lines
 
 
 # error exit
-def error_exit(msg):
+def error_preexit(msg):
     # time.sleep(5.0)
     try:
         curses.nocbreak()
@@ -102,11 +104,12 @@ def error_exit(msg):
     except curses.error:
         pass
     except:
-        error_exit(
-            "error_exit: Unexpected error: {} {}".format(
+        error_preexit(
+            "error_preexit: Unexpected error: {} {}".format(
                 sys.exc_info()[0], sys.exc_info()[1]
             )
         )
+        sys.exit(2)
     logger.error(msg)
     trace = traceback.format_exc()
     if trace != "NoneType: None\n":
@@ -123,5 +126,6 @@ def write_file(filename, output):
             with open(filename, mode="w", buffering=io.DEFAULT_BUFFER_SIZE) as fp:
                 fp.write(output)
         except IOError:
-            error_exit("Error in creating output file: {}".format(filename))
+            error_preexit("Error in creating output file: {}".format(filename))
+            sys.exit(2)
     return
