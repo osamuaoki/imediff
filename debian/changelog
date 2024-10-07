@@ -1,3 +1,9 @@
+imediff (2.12-1) UNRELEASED; urgency=medium
+
+  * Embed version in git-ime.
+
+ -- Osamu Aoki <osamu@debian.org>  Tue, 08 Oct 2024 00:33:00 +0900
+
 imediff (2.11-1) unstable; urgency=medium
 
   * Fix major git-ime regression for changes on a single file.
