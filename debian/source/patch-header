@@ -1,8 +1,0 @@
-The Debian packaging of imediff is maintained in git, using the merging
-workflow described in dgit-maint-merge(7) tweaked as quasi-native Debian
-packaging style.
-
-Upstream tarball is generated using "git deborig".
-
-See https://github.com/osamuaoki/imediff.git (debian, dgit/sid branch)
-
