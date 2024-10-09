@@ -79,6 +79,13 @@ def initialize_args(logfile="imediff.log"):
     pa.add_argument("--mode", "-m", action="store_true", help="Display mode column")
     pa.add_argument("--mono", action="store_true", help="Force monochrome display")
     pa.add_argument(
+        "--scope",
+        "-s",
+        action="store",
+        default=10000,
+        help="scope of lines in one ncurses screen (default=10000)",
+    )
+    pa.add_argument(
         "--sloppy", action="store_true", help="Allow one to save unresolved contents"
     )
     pa.add_argument(

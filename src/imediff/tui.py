@@ -322,6 +322,8 @@ class TextPad(TextData):  # TUI data
         # Init from commandline/configuration parameters
         self.mode = args.mode
         self.mono = args.mono
+        self.pointer = 0
+        self.scope = args.scope
         if self.diff_mode == 2:
             self.color = confs["color_diff2"]
         else:
@@ -588,12 +590,26 @@ class TextPad(TextData):  # TUI data
             logger.debug("command-loop")
         return
 
+    def next_textpad_scope(self):
+        if (self.pointer + self.scope ) < len(self.opcodes):
+            self.pointer = self.pointer + self.scope
+            self.new_textpad()
+        else:
+            pass # popup notification
+
+    def prev_textpad_scope(self):
+        if (self.pointer - self.scope ) >= 0:
+            self.pointer = self.pointer - self.scope
+            self.new_textpad()
+        else:
+            pass # popup notification
+
     def new_textpad(self):
         """Create new curses textpad"""
         # pre-scan content to get big enough textpad size
         conth = 0  # content height
         contw = 0  # content width
-        for i in range(len(self.opcodes)):
+        for i in range(self.pointer, min(self.pointer + self.scope, len(self.opcodes))):
             self.set_row(i, conth)  # record textpad row position in chunk
             tag = self.get_tag(i)
             content = self.get_content(i)  # list()
