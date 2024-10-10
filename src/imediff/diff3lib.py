@@ -326,18 +326,18 @@ class SequenceMatcher3:
         while n_ba < len_ba or n_bc < len_bc:
             # get a chunk data
             if n_ba < len_ba:
-                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = opcodes_ba[n_ba]
+                (tag_ba, _, ih_ba, jl_ba, jh_ba) = opcodes_ba[n_ba]
                 logger.debug(
                     "diff3lib: NORMAL n_bc={} < len_bc={}".format(n_bc, len_bc)
                 )
             elif len_ba == 0:
-                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = (tag_equal, 0, 0, 0, 0)
+                (tag_ba, _, ih_ba, jl_ba, jh_ba) = (tag_equal, 0, 0, 0, 0)
                 logger.debug(
                     "diff3lib: UNDERRUN n_ba={} len_ba={}".format(n_ba, len_ba)
                 )
             else:
-                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = opcodes_ba[len_ba - 1]
-                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = (
+                (tag_ba, _, ih_ba, jl_ba, jh_ba) = opcodes_ba[len_ba - 1]
+                (tag_ba, _, ih_ba, jl_ba, jh_ba) = (
                     tag_equal,
                     ih_ba,
                     ih_ba,
@@ -346,18 +346,18 @@ class SequenceMatcher3:
                 )
                 logger.debug("diff3lib: OVERRUN n_ba={} len_ba={}".format(n_ba, len_ba))
             if n_bc < len_bc:
-                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = opcodes_bc[n_bc]
+                (tag_bc, _, ih_bc, kl_bc, kh_bc) = opcodes_bc[n_bc]
                 logger.debug(
                     "diff3lib: NORMAL n_bc={} < len_bc={}".format(n_bc, len_bc)
                 )
             elif len_bc == 0:
-                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = (tag_equal, 0, 0, 0, 0)
+                (tag_bc, _, ih_bc, kl_bc, kh_bc) = (tag_equal, 0, 0, 0, 0)
                 logger.debug(
                     "diff3lib: UNDERRUN n_bc={} len_bc={}".format(n_bc, len_bc)
                 )
             else:
-                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = opcodes_bc[len_bc - 1]
-                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = (
+                (tag_bc, _, ih_bc, kl_bc, kh_bc) = opcodes_bc[len_bc - 1]
+                (tag_bc, _, ih_bc, kl_bc, kh_bc) = (
                     tag_equal,
                     ih_bc,
                     ih_bc,
