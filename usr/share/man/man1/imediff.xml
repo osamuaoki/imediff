@@ -41,7 +41,6 @@
       <arg><option>-d</option></arg>
       <arg><option>-f</option></arg>
       <arg><option>-h</option></arg>
-      <arg><option>-m</option></arg>
       <arg><option>-n</option></arg>
       <arg><option>-t</option></arg>
       <arg><option>-l <replaceable>N</replaceable></option></arg>
@@ -58,7 +57,6 @@
       <arg><option>-f</option></arg>
       <arg><option>-g</option></arg>
       <arg><option>-h</option></arg>
-      <arg><option>-m</option></arg>
       <arg><option>-n</option></arg>
       <arg><option>-t</option></arg>
       <arg><option>-l <replaceable>N</replaceable></option></arg>
@@ -133,13 +131,6 @@
       </varlistentry>
 
       <varlistentry>
-        <term><option>-m</option></term> <term><option>--mode</option></term>
-        <listitem>
-          <para>Display mode column.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term><option>--mono</option></term>
         <listitem>
           <para>Force monochrome display.</para>
@@ -165,11 +156,10 @@
         <term><option>--macro=<replaceable>MACRO</replaceable></option></term>
         <listitem>
           <para>
-            Pre-load MACRO to keyboard input. MACRO key binding is
-            the same as the normal keyboard input and can be
-            remapped by the configuration file. The only exception is
-            ':' which means end MACRO input and process keyboard
-            input interactively.
+            Pre-load MACRO to keyboard input. In non-interactive mode,
+          <literal>q</literal> is applied after the MACRO.  So you need to add
+          <literal>-Mw</literal> to the command line to write the result to a
+          file.  In TUI mode, TUI is started after the MACRO.
           </para>
         </listitem>
       </varlistentry>

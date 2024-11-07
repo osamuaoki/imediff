@@ -31,9 +31,9 @@
 imediff \- An interactive fullscreen merge tool for 2 or 3 files
 .SH "SYNOPSIS"
 .HP \w'\fBimediff\fR\ 'u
-\fBimediff\fR [\fB\-a\fR] [\fB\-b\fR] [\fB\-d\fR] [\fB\-f\fR] [\fB\-h\fR] [\fB\-m\fR] [\fB\-n\fR] [\fB\-t\fR] [\fB\-l\ \fR\fB\fIN\fR\fR] [\fB\-o\ \fR\fB\fIfile_out\fR\fR] {\fIfile_older\fR} {\fIfile_newer\fR}
+\fBimediff\fR [\fB\-a\fR] [\fB\-b\fR] [\fB\-d\fR] [\fB\-f\fR] [\fB\-h\fR] [\fB\-n\fR] [\fB\-t\fR] [\fB\-l\ \fR\fB\fIN\fR\fR] [\fB\-o\ \fR\fB\fIfile_out\fR\fR] {\fIfile_older\fR} {\fIfile_newer\fR}
 .HP \w'\fBimediff\fR\ 'u
-\fBimediff\fR [\fB\-a\fR] [\fB\-b\fR] [\fB\-c\fR] [\fB\-d\fR] [\fB\-f\fR] [\fB\-g\fR] [\fB\-h\fR] [\fB\-m\fR] [\fB\-n\fR] [\fB\-t\fR] [\fB\-l\ \fR\fB\fIN\fR\fR] [\fB\-o\ \fR\fB\fIfile_out\fR\fR] {\fIfile_yours\fR} {\fIfile_base\fR} {\fIfile_theirs\fR}
+\fBimediff\fR [\fB\-a\fR] [\fB\-b\fR] [\fB\-c\fR] [\fB\-d\fR] [\fB\-f\fR] [\fB\-g\fR] [\fB\-h\fR] [\fB\-n\fR] [\fB\-t\fR] [\fB\-l\ \fR\fB\fIN\fR\fR] [\fB\-o\ \fR\fB\fIfile_out\fR\fR] {\fIfile_yours\fR} {\fIfile_base\fR} {\fIfile_theirs\fR}
 .SH "DESCRIPTION"
 .PP
 Merge two (slightly different) files with an optional common base file interactively with a user friendly fullscreen interface in the full screen text terminal mode\&.
@@ -165,11 +165,6 @@ N=13: Line alignment after stripping all non\-alphanumerics and lowecasing
 .RE
 .RE
 .PP
-\fB\-m\fR, \fB\-\-mode\fR
-.RS 4
-Display mode column\&.
-.RE
-.PP
 \fB\-\-mono\fR
 .RS 4
 Force monochrome display\&.
@@ -187,7 +182,11 @@ Non\-interactive mode\&.
 .PP
 \fB\-\-macro=\fR\fB\fIMACRO\fR\fR
 .RS 4
-Pre\-load MACRO to keyboard input\&. MACRO key binding is the same as the normal keyboard input and can be remapped by the configuration file\&. The only exception is \*(Aq:\*(Aq which means end MACRO input and process keyboard input interactively\&.
+Pre\-load MACRO to keyboard input\&. In non\-interactive mode,
+q
+is applied after the MACRO\&. So you need to add
+\-Mw
+to the command line to write the result to a file\&. In TUI mode, TUI is started after the MACRO\&.
 .RE
 .PP
 \fB\-a\fR
