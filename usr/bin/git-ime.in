@@ -58,6 +58,9 @@ DESCRIPTION: Split changes into multiple git commits
         run git command with -q
     --verbose|-v
         verbose print to STDERR for internal details
+
+Copyright (c) 2015-2024 Osamu Aoki
+Version: @@version@@
 "
 }
 
