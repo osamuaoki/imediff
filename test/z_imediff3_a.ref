@@ -1,16 +1,10 @@
-<<<<<<< file_a
 EXTRA-LINE
 2-way OLDER_FILE / 3-way MYFILE
-||||||| file_b
-2-way NEWER_FILE / 3-way OLDFILE
-=======
-3-way YOURFILE
->>>>>>> file_c
 01 qaz 00 is missing only in C (above)
 02 adf
-ccc 03 zcv aaa [G]
+03 zcv aaa [G]
 04 adv
-05 t{qazwsx||dfg}yu
+05 tqazwsxyu
 06 ghj
 07 ujj
 08 qaz
@@ -20,12 +14,6 @@ ccc 03 zcv aaa [G]
 12 njk
 13 mop
 14 wdd
-<<<<<<< file_a
-||||||| file_b
-15 dsadsdedv
-=======
-15 edfsdsfdsfvsdf
->>>>>>> file_c
 16 ijb
 17 wsc
 18 ugv
@@ -34,7 +22,7 @@ ccc 03 zcv aaa [G]
 22 njk
 24 wdd
 25 edv
-26asdsdadadj{ssgsga||d}b
+26 ijssgsgab
 27 wsc
 28 ugv 29 ijp LESS LINE
 EXTRA LINE

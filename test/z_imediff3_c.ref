@@ -1,11 +1,9 @@
-EXTRA-LINE
-2-way OLDER_FILE / 3-way MYFILE
-00 wsx
-01 qaz
+3-way YOURFILE
+01 qaz 00 is missing only in C (above)
 02 adf
-03 zcv aaa [G]
+ccc 03 zcv
 04 adv
-05 tqazwsxyu
+05 tdfgyu
 06 ghj
 07 ujj
 08 qaz
@@ -15,6 +13,7 @@ EXTRA-LINE
 12 njk
 13 mop
 14 wdd
+15 edfsdsfdsfvsdf
 16 ijb
 17 wsc
 18 ugv
@@ -23,6 +22,7 @@ EXTRA-LINE
 22 njk
 24 wdd
 25 edv
-26 ijssgsgab
+26asdsdadadjdb
 27 wsc
 28 ugv 29 ijp LESS LINE
+EXTRA LINE

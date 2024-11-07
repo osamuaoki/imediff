@@ -11,6 +11,7 @@ Use as:
 import os
 import sys
 import imediff.main
+
 print("\nI: _imediff start >>>", file=sys.stderr)
 cwd_dir = os.getcwd()
 print("I: cwd_dir     = '{}'".format(cwd_dir), file=sys.stderr)

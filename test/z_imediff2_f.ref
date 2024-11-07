@@ -1,0 +1,54 @@
+<<<<<<< file_a
+EXTRA-LINE
+=======
+>>>>>>> file_b
+2-way {OLD|NEW}ER_FILE / 3-way {MY|OLD}FILE
+00 wsx
+01 qaz
+02 adf
+03{| bbb} zcv{ aaa [G]|}
+04 adv
+05 t{qazwsx|}yu
+06 {ghj|qwerrttt}
+07 ujj
+08 qaz
+09 {wsx|*****}
+10 tte
+11 iao
+<<<<<<< file_a
+12 njk
+=======
+>>>>>>> file_b
+13 mop
+14 wdd
+<<<<<<< file_a
+=======
+15 dsadsdedv
+>>>>>>> file_b
+16 ijb
+17 wsc
+<<<<<<< file_a
+=======
+12 njk
+>>>>>>> file_b
+18 ugv
+19 ijp
+<<<<<<< file_a
+=======
+20 tte
+>>>>>>> file_b
+21 iao
+22 njk
+<<<<<<< file_a
+=======
+23 mop
+>>>>>>> file_b
+24 wdd
+25 edv
+26 ij{ssgsga|}b
+27 wsc
+28 ugv{ 29 ijp LESS LINE|}
+<<<<<<< file_a
+=======
+29 ijp
+>>>>>>> file_b

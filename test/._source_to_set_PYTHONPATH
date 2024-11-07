@@ -1,4 +1,0 @@
-PYTHONPATH=$(pwd)/../src
-PYTHONPATH=$(realpath $PYTHONPATH)
-echo "I: Setting PYTHONPATH=$PYTHONPATH"
-export PYTHONPATH

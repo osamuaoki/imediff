@@ -53,6 +53,7 @@ def diff23(a, b, c, name=""):
     print("===========================================================")
     return
 
+
 print("\nI: _diff23 start >>>", file=sys.stderr)
 cwd_dir = os.getcwd()
 print("I: cwd_dir     = '{}'".format(cwd_dir), file=sys.stderr)
