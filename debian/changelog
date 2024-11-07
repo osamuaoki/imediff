@@ -1,3 +1,10 @@
+imediff (3.0-1) unstable; urgency=medium
+
+  * Embed version in git-ime.
+  * Rewite code to avoid hitting curses library limitations.
+
+ -- Osamu Aoki <osamu@debian.org>  Thu, 07 Nov 2024 22:13:19 +0900
+
 imediff (2.11-1) unstable; urgency=medium
 
   * Fix major git-ime regression for changes on a single file.
