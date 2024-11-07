@@ -24,40 +24,97 @@ License along with this program; if not, write to the Free
 Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.
 """
+
+from difflib import SequenceMatcher
+from imediff.utils import read_lines, write_file
+from imediff.lines2lib import LineMatcher
+from imediff.diff3lib import SequenceMatcher3
+
 import tempfile
 import os
 import sys
 import io
 import time
+import logging
 
-from difflib import SequenceMatcher
-from imediff.utils import error_preexit, logger, read_lines, write_file
-from imediff.lines2lib import LineMatcher
-from imediff.diff3lib import SequenceMatcher3
+logger = logging.getLogger(__name__)
 
 
 class TextData:  # Non-TUI data
-    """Non curses class to handle diff data for 2 or 3 lines"""
+    """
+        Non curses class to handle diff data for 2 or 3 list of lines
 
-    #     i: index for self.opcodes
-    #     j: index for self.actives (non-persistent)
-    #     self.active: index for self.actives (persistent)
+        If args.diff_mode == 2, LineMatcher is used.
+        * tag = 'E' or 'N' or 'F
+          * action: '=" for tag == 'E'
+          * action: 'd" for tag != 'E'
+
+        If args.diff_mode == 3, SequenceMatcher3 is used.
+        * tag = 'E' or 'A' or 'C' or 'e' or 'N'
+        * tag = 'n' -- special TextData tag for clean wdiff3 merge
+
+    Here:
+        * tag is static after initialization of TextData
+        * action is dynamic for tag=N/F due to the user interaction
+        * action =#AC are static since these are auto set only
+
+        The main class data self.chunk_list and its associated data
+        self.usr_chunk_list are shared between
+          "args.diff_mode == 2" and
+          "args.diff_mode == 3"
+        cases to ease common handling of them under TUI.
+
+            self.chunk_list[chunk_index] = (
+                tag,             # diff opcode tag EeNACn / ENF
+                i1,              # self.list_a (start)-index
+                i2,              # self.list_a (end+1)-index
+                j1,              # self.list_b (start)-index
+                j2,              # self.list_b (end+1)-index
+                k1,              # self.list_c (start)-index or 0 for diff_mode==2
+                k2,              # self.list_c (end+1)-index or 0 for diff_mode==2
+                action,          # data action abcdefgAC=# (self.default_action)
+                merge_buffer,    # merge_buffer for editor ([])
+            ) # 9-parameter tuple
+
+        Internally, tag is extended to add 'n' which is 1-line clean wdiff3 merge.
+        Merge result is automatically stored in merge_buffer.
+
+            self.usr_chunk_list: list of user accessible chunk_index
+
+            content = list of strings
+    """
+
+    ####################################################################
+    # Externally exposed initializer method
+    ####################################################################
     def __init__(self, list_a, list_b, list_c, args, confs):
+        logger.debug("starting initialization ...")
+        self.list_a = list_a
+        self.list_b = list_b
+        self.list_c = list_c
+        self.init_args(args)
+        self.init_config(confs)
+        self.init_chunk_list()
+        logger.debug("finished initialization")
+        return
+
+    def init_args(self, args):
         self.diff_mode = args.diff_mode
-        self.default_mode = args.default_mode
         self.file_a = args.file_a
         self.file_b = args.file_b
         self.file_c = args.file_c
         self.file_o = args.output
-        self.list_a = list_a
-        self.list_b = list_b
-        self.list_c = list_c
         self.sloppy = args.sloppy
         self.isjunk = args.isjunk
-        self.linerule = args.linerule
+        self.line_rule = args.line_rule
+        self.line_min = args.line_min
+        self.line_max = args.line_max
+        self.line_factor = args.line_factor
         self.edit_cmd = args.edit_cmd
         self.macro = args.macro
-        new_mode = self.default_mode
+        self.default_action = args.default_action  # 2: abdf / 3:abcdfg
+
+    def init_config(self, confs):
         # set from confs
         if confs["config"]["confirm_exit"] != "False":
             self.confirm_exit = True
@@ -75,69 +132,438 @@ class TextData:  # Non-TUI data
         self.ws1 = confs["word_separator"]["ws1"]
         self.ws2 = confs["word_separator"]["ws2"]
         self.ws3 = confs["word_separator"]["ws3"]
-        # command key translation
+        # set up command key translation table
+        # kc converts actual input command keyname to default key bindings command keyname
+        # This affects terminal input only (MACRO uses system key map only)
         self.kc = dict()  # customized key code to original key code
-        self.rkc = dict()  # original key chr to customized key chr
-        for cmd_name, key_char in confs["key"].items():
-            self.kc[ord(key_char[:1])] = ord(cmd_name[-1:])
-            self.rkc[cmd_name[-1:]] = ord(key_char[:1])
+        self.rkc = dict()  # original key chr to customized key char
+        for select_key, effective_key in confs["key"].items():
+            if select_key[:7] == "select_":
+                typed_key = select_key[7:]
+            else:
+                logger.error("E: unknown select_key: {}".format(select_key))
+                sys.exit(2)
+            if typed_key == "":
+                typed_key = " "
+            if len(typed_key) > 1:
+                typed_key = typed_key.upper()
+            if effective_key == "":
+                effective_key = " "
+            self.kc[typed_key] = effective_key
+            self.rkc[effective_key] = typed_key
+            if (
+                len(typed_key) == 1
+                and len(effective_key) == 1
+                and ord(typed_key) >= ord("a")
+                and ord(typed_key) <= ord("z")
+                and ord(effective_key) >= ord("a")
+                and ord(effective_key) <= ord("z")
+            ):
+                cap_typed_key = typed_key.upper()
+                cap_effective_key = effective_key.upper()
+                self.kc[cap_typed_key] = cap_effective_key
+                self.rkc[cap_effective_key] = cap_typed_key
+        # Enable debug output of key remapping
+        # for key, value in self.kc.items():
+        #     logger.debug("kc['{}']='{}'".format(key, value))
+        # for key, value in self.rkc.items():
+        #     logger.debug("** rkc['{}']='{}'".format(key, value))
+
+    def init_chunk_list(self):
+        # update self.chunk_list and self.usr_chunk_list
+        if self.diff_mode == 2:
+            matcher_internal = LineMatcher(self.list_a, self.list_b)
+            chunk_list_internal = matcher_internal.get_opcodes()
+            # Set initial action to "a" or "d"
+            self.chunk_list = [
+                (
+                    tag,
+                    i1,
+                    i2,
+                    j1,
+                    j2,
+                    0,  # dummy
+                    0,  # dummy
+                    "",  # dummy
+                    [],
+                )  # chunk_list item tuple (9 param)
+                for (tag, i1, i2, j1, j2) in chunk_list_internal
+            ]
+            # This set to "d"
+            for chunk_index in range(len(self.chunk_list)):
+                self.set_action(chunk_index, self.default_action)
+            for chunk_index, (
+                tag,
+                i1,
+                i2,
+                j1,
+                j2,
+                _,
+                _,
+                action,
+                merge_buffer,
+            ) in enumerate(self.chunk_list):
+                logger.debug(
+                    "chunk[{}]: tag={} === a[{}:{}], b[{}:{}] === action='{}' len(merge_buffer)={}".format(
+                        chunk_index,
+                        tag,
+                        i1,
+                        i2,
+                        j1,
+                        j2,
+                        action,
+                        len(merge_buffer),
+                    )
+                )
+        else:  # self.diff_mode == 3
+            use_LineMatcher = 1
+            matcher_internal = SequenceMatcher3(
+                self.list_a, self.list_b, self.list_c, use_LineMatcher
+            )
+            chunk_list_internal = matcher_internal.get_opcodes()
+            # Set initial action to "a" or "d"
+            self.chunk_list = [
+                (
+                    tag,
+                    i1,
+                    i2,
+                    j1,
+                    j2,
+                    k1,
+                    k2,
+                    "",  # dummy
+                    [],
+                )  # chunk_list item tuple (9 param)
+                for (tag, i1, i2, j1, j2, k1, k2) in chunk_list_internal
+            ]
+            # This set to "g"
+            for chunk_index in range(len(self.chunk_list)):
+                self.set_action(chunk_index, self.default_action)
+            for chunk_index, (
+                tag,
+                i1,
+                i2,
+                j1,
+                j2,
+                k1,
+                k2,
+                action,
+                merge_buffer,
+            ) in enumerate(self.chunk_list):
+                logger.debug(
+                    "chunk[{}]: tag={} === a[{}:{}], b[{}:{}], c[{}:{}] === action='{}' len(merge_buffer)={}".format(
+                        chunk_index,
+                        tag,
+                        i1,
+                        i2,
+                        j1,
+                        j2,
+                        k1,
+                        k2,
+                        action,
+                        len(merge_buffer),
+                    )
+                )
+        if self.diff_mode == 2:
+            self.usr_chunk_list = [
+                chunk_index
+                for chunk_index, (
+                    tag,
+                    _,
+                    _,
+                    _,
+                    _,
+                    _,
+                    _,
+                    _,
+                    _,
+                ) in enumerate(self.chunk_list)
+                if tag != "E"
+            ]
+        else:  # diff_mode == 3
+            self.usr_chunk_list = [
+                chunk_index
+                for chunk_index, (
+                    tag,
+                    _,
+                    _,
+                    _,
+                    _,
+                    _,
+                    _,
+                    _,
+                    _,
+                ) in enumerate(self.chunk_list)
+                if tag not in "EenAC"
+            ]
+        # debug
+        for usr_chunk_index, chunk_index in enumerate(self.usr_chunk_list):
             logger.debug(
-                "[key] section: left_side='{}' right_side='{}' : self.krc[{}] = '{}'".format(
-                    cmd_name, key_char, cmd_name[-1:], self.rkc[cmd_name[-1:]]
+                "usr_chunk_index={} --> chunk[{}]".format(
+                    usr_chunk_index,
+                    chunk_index,
                 )
             )
-        # parse input data
-        if self.diff_mode == 2:
-            sequence = LineMatcher(list_a, list_b)
-            opcodes = sequence.get_opcodes()
-            # Set initial mode to "a" or "d"
-            self.opcodes = [
-                (tag, i1, i2, j1, j2, None, None, "a" if tag == "E" else "d", 0, None)
-                for (tag, i1, i2, j1, j2) in opcodes
-            ]
-            self.actives = [
-                j for j, (tag, _, _, _, _) in enumerate(opcodes) if tag != "E"
-            ]
+        if len(self.usr_chunk_list) == 0:
+            self.focused_usr_chunk_index = None
         else:
-            use_LineMatcher = 1
-            sequence = SequenceMatcher3(list_a, list_b, list_c, use_LineMatcher)
-            opcodes = sequence.get_opcodes()
-            # Set initial mode to "a" or "d"
-            self.opcodes = [
-                (tag, i1, i2, j1, j2, k1, k2, "a" if tag in "Ee" else "d", 0, None)
-                for (tag, i1, i2, j1, j2, k1, k2) in opcodes
-            ]
-            self.actives = [
-                j
-                for j, (tag, _, _, _, _, _, _) in enumerate(opcodes)
-                if tag not in "Ee"
-            ]
-        # self.actives[i] = j -> self.rev_actives[j] = i
-        self.rev_actives = dict()
-        for i, j in enumerate(self.actives):
-            if new_mode != "d":
-                self.set_mode(j, new_mode)
-            self.rev_actives[j] = i
-        if len(self.actives) == 0:
-            self.active = None
-        else:
-            self.active = 0
-        self.active_old = self.active
-        self.update_active = True
-        self.update_textpad = True
+            self.focused_usr_chunk_index = 0
         # save memory
-        del opcodes  # this is not "self.opcodes"
-        del sequence
+        del chunk_list_internal
+        del matcher_internal
+
+    ####################################################################
+    # Externally used main method
+    ####################################################################
+    def main(self):  # overridden for TUI by subclassing
+        """Non-interactive driven by MACRO"""
+        logger.debug("start with macro = '{}'".format(self.macro))
+        # data update flag
+        chunk_index = 0
+        while True:
+            ch = self.get_macro_command()
+            logger.debug("macro ='{}' >> ch='{}')".format(self.macro, ch))
+            if ch in ["QUIT", "q"]:
+                # No prompt for CLI
+                break
+            elif ch in ["w", "x"] or len(self.macro) == 0:
+                write_file(self.file_o, self.get_string_from_content_for_file())
+                break
+            else:
+                # get user accessible chunk
+                # Explicitly select chunk action
+                chunk_index = self.get_chunk_index_from_usr_chunk_list(
+                    self.focused_usr_chunk_index
+                )
+                logger.debug(
+                    "usr_chunk_index = {}, chunk_index = {}, ch='{}'".format(
+                        self.focused_usr_chunk_index, chunk_index, ch
+                    ),
+                )
+                if ch in ["a", "b", "c", "d", "e", "f", "g"]:
+                    self.set_action(chunk_index, ch)
+                elif ch in ["1", "2", "3", "4", "5", "6", "7"]:
+                    self.set_action(
+                        chunk_index,
+                        chr(ord(ch) - ord("1") + ord("a")),
+                    )
+                elif ch in ["A", "B", "C", "D", "E", "F", "G"]:
+                    self.set_action_all(ch.lower())
+                elif ch == "m":
+                    self.set_updated_merge_buffer(chunk_index)
+                elif ch == "M":
+                    self.set_deleted_merge_buffer(chunk_index)
+                elif ch == "n":
+                    self.move_focus_to_any_resolvable_chunk_next()
+                elif ch == "p":
+                    self.move_focus_to_any_resolvable_chunk_prev()
+                elif ch == "t":
+                    self.move_focus_to_any_resolvable_chunk_home()
+                elif ch == "z":
+                    self.move_focus_to_any_resolvable_chunk_end()
+                elif ch == "N":
+                    self.move_focus_to_usr_chunk_next()
+                elif ch == "P":
+                    self.move_focus_to_usr_chunk_prev()
+                elif ch == "T":
+                    self.move_focus_to_usr_chunk_home()
+                elif ch == "Z":
+                    self.move_focus_to_usr_chunk_end()
+                else:
+                    pass
+        logger.debug("end")
         return
 
-    def merge_diff(self, i):
-        """Return content for diff by line"""
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
+    ####################################################################
+    # Internally used utility methods (class data get-access)
+    ####################################################################
+    def get_tag(self, chunk_index):
+        (tag, _, _, _, _, _, _, _, _) = self.chunk_list[chunk_index]
+        return tag
+
+    def get_action(self, chunk_index):
+        (_, _, _, _, _, _, _, action, _) = self.chunk_list[chunk_index]
+        return action
+
+    def get_merge_buffer(self, chunk_index):
+        (_, _, _, _, _, _, _, _, merge_buffer) = self.chunk_list[chunk_index]
+        return merge_buffer
+
+    def get_content_for_chunk(self, chunk_index):
+        """Return content as string based on action"""
+        content = None
+        (
+            tag,
+            i1,
+            i2,
+            j1,
+            j2,
+            k1,
+            k2,
+            action,
+            merge_buffer,
+        ) = self.chunk_list[
+            chunk_index
+        ]  # chunk_list item tuple (9 param)
         logger.debug(
-            "merge_wdiff: tag={} a[{}:{}]/b[{}:{}]/c[{}:{}] mode={}, row={}, bf='{}'".format(
-                tag, i1, i2, j1, j2, k1, k2, mode, row, bf
-            )
+            "chunk[{}]: tag={} a[{}:{}]/b[{}:{}]/c[{}:{}] action='{}' len(merge_buffer)={}".format(
+                chunk_index, tag, i1, i2, j1, j2, k1, k2, action, len(merge_buffer)
+            ),
         )
+        if action == "=" or action == "#":
+            content = self.list_a[i1:i2]
+        elif action == "a" or action == "A":
+            content = self.list_a[i1:i2]
+        elif action == "b" or action == "B":
+            content = self.list_b[j1:j2]
+        elif action == "c" or action == "C":
+            content = self.list_c[k1:k2]
+        elif action == "d":
+            content = self.get_merge_diff(chunk_index)
+        elif action == "e" or action == "G":
+            if len(merge_buffer) != 0:
+                content = merge_buffer
+            else:
+                logger.error(
+                    "chunk[{}]: Bad action='{}' with missing edited merge_buffer".format(
+                        chunk_index, action
+                    )
+                )
+                sys.exit(2)
+        elif action == "f" and self.diff_mode == 2 and i2 - i1 == 1 and j2 - j1 == 1:
+            content = self.get_merge_wdiff2(chunk_index)
+        elif (
+            action == "f"
+            and self.diff_mode == 3
+            and i2 - i1 == 1
+            and j2 - j1 == 1
+            and k2 - k1 == 1
+        ):  # wdiff
+            (clean_merge, content) = self.get_merge_wdiff3(chunk_index)
+            if clean_merge:
+                logger.error(
+                    "chunk[{}]: Bad action='f' for clean_merge".format(chunk_index)
+                )
+                sys.exit(2)
+        elif (
+            action == "g"
+            and self.diff_mode == 3
+            and i2 - i1 == 1
+            and j2 - j1 == 1
+            and k2 - k1 == 1
+        ):
+            (clean_merge, content) = self.get_merge_wdiff3(chunk_index)
+            if not clean_merge:
+                logger.error(
+                    "chunk[{}]: Bad action='g' for unclean_merge".format(chunk_index)
+                )
+                sys.exit(2)
+            if len(merge_buffer) != 0:
+                content = merge_buffer
+            else:
+                logger.error(
+                    "chunk[{}]: Bad action='g' with missing pre-loaded merge_buffer".format(
+                        chunk_index
+                    )
+                )
+                sys.exit(2)
+        else:
+            logger.error("chunk[{}]: Bad action='{}'".format(chunk_index, action))
+            sys.exit(2)
+        # content is at least [] (at least empty list)
+        if content is None:
+            logger.error("chunk[{}]: content can't be None".format(chunk_index))
+            sys.exit(2)
+        return content
+
+    def get_chunk_index_from_usr_chunk_list(self, usr_chunk_index):
+        if usr_chunk_index is None:
+            chunk_index = None
+        elif usr_chunk_index < 0:
+            logger.debug(
+                "underflow usr_chunk_index={}".format(usr_chunk_index),
+            )
+            chunk_index = None
+        elif usr_chunk_index >= len(self.usr_chunk_list):
+            logger.debug(
+                "overflow usr_chunk_index={}".format(usr_chunk_index),
+            )
+            chunk_index = None
+        elif len(self.usr_chunk_list) != 0:
+            chunk_index = self.usr_chunk_list[usr_chunk_index]
+            logger.debug(
+                "usr_chunk_index={} >> chunk_index={}".format(
+                    usr_chunk_index, chunk_index
+                ),
+            )
+        else:
+            chunk_index = None
+        # always return valid index (including None)
+        return chunk_index
+
+    def get_merge_count(self, actions):
+        """Count actions in user accessible chunk"""
+        count = 0
+        for usr_chunk_index in range(len(self.usr_chunk_list)):
+            chunk_index = self.usr_chunk_list[usr_chunk_index]
+            if self.get_action(chunk_index) in actions:
+                count += 1
+        return count
+
+    def get_unresolved_count(self):
+        """Count 'd' or 'f' action in user accessible chunk"""
+        return self.get_merge_count("df")
+
+    def get_macro_command(self):  # overriding for TUI
+        """Macro parsing instead of curses getch"""
+        if len(self.macro) == 0:
+            keyname = ""  # end of MACRO and exit
+        else:
+            keyname = self.macro[:1]
+            self.macro = self.macro[1:]
+            if keyname == "[":
+                pos = self.macro.find("]")
+                if pos >= 0:
+                    # look for ]
+                    keyname = self.macro[:pos]
+                    self.macro = self.macro[1 + pos :]
+        if keyname == "":  # interactive
+            keyname = "QUIT"  # quit w/o saving for ^C
+        logger.debug("key={}".format(keyname))
+        return keyname
+
+    def get_string_from_content_for_file(self):
+        """Return output of all content"""
+        output = ""
+        for chunk_index in range(len(self.chunk_list)):
+            content = self.get_content_for_chunk(chunk_index)
+            output += "".join(content)
+        return output
+
+    ####################################################################
+    # Internally used utility methods (class data merge get operation)
+    ####################################################################
+    def get_merge_diff(self, chunk_index):
+        """Return content for diff by line"""
+        (
+            tag,
+            i1,
+            i2,
+            j1,
+            j2,
+            k1,
+            k2,
+            action,
+            merge_buffer,
+        ) = self.chunk_list[
+            chunk_index
+        ]  # chunk_list item tuple (9 param)
+        logger.debug(
+            "chunk[{}]: tag={} a[{}:{}]/b[{}:{}]/c[{}:{}] action='{}' len(merge_buffer)={}".format(
+                chunk_index, tag, i1, i2, j1, j2, k1, k2, action, merge_buffer
+            ),
+        )
+        # mark up for diff display
         content = list()
         content += [self.ls0 % self.file_a]
         content += self.list_a[i1:i2]
@@ -154,208 +580,307 @@ class TextData:  # Non-TUI data
         return content
 
     def whitespace_is_junk(self, c):
-        return (c in " \t")
+        return c in " \t"
 
-    def merge_wdiff2(self, i):
+    def get_merge_wdiff2(self, chunk_index):
         """Return content for wdiff by line (2 files)"""
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
-        logger.debug(
-            "merge_wdiff2: tag={} a[{}:{}]/b[{}:{}]/c[{}:{}] mode={}, row={}, bf='{}'".format(
-                tag, i1, i2, j1, j2, k1, k2, mode, row, bf
+        (
+            tag,
+            i1,
+            i2,
+            j1,
+            j2,
+            k1,
+            k2,
+            action,
+            merge_buffer,
+        ) = self.chunk_list[
+            chunk_index
+        ]  # chunk_list item tuple (9 param)
+        if i2 - i1 != 1 or j2 - j1 != 1:
+            logger.error(
+                "chunk[{}]: tag={} a[{}:{}]/b[{}:{}] not for wdiff2".format(
+                    chunk_index, tag, i1, i2, j1, j2
+                ),
             )
+            sys.exit(2)
+        logger.debug(
+            "chunk[{}]: tag={} === a[{}:{}]/b[{}:{}]/_[{}:{}] action='{}' len(merge_buffer)={}".format(
+                chunk_index, tag, i1, i2, j1, j2, k1, k2, action, len(merge_buffer)
+            ),
         )
-        line_a = "".join(self.list_a[i1:i2])
-        line_b = "".join(self.list_b[j1:j2])
+        line_a = self.list_a[i1]
+        line_b = self.list_b[j1]
         if self.isjunk:
             isjunk = None
         else:
             isjunk = self.whitespace_is_junk
-        seq = SequenceMatcher(isjunk, line_a, line_b, False)
-        opcodes = seq.get_opcodes()
-        line = ""
-        for tag, wi1, wi2, wj1, wj2 in opcodes:
+        matcher_internal = SequenceMatcher(isjunk, line_a, line_b, False)
+        chunk_list_internal = matcher_internal.get_opcodes()
+        line_string = ""
+        for tag, i1, i2, j1, j2 in chunk_list_internal:
             if tag == "equal":
-                line += line_a[wi1:wi2]
-            else:  # other tags
-                line += self.ws0
-                line += line_a[wi1:wi2]
-                line += self.ws1
-                line += line_b[wj1:wj2]
-                line += self.ws3
-        content = line.splitlines(keepends=True)
-        return content
+                line_string += line_a[i1:i2]
+            else:  # other tags (mark up with word separator)
+                line_string += self.ws0
+                line_string += line_a[i1:i2]
+                line_string += self.ws1
+                line_string += line_b[j1:j2]
+                line_string += self.ws3
+        del chunk_list_internal
+        del matcher_internal
+        return [line_string]
 
-    def merge_wdiff3(self, i):
+    def get_merge_wdiff3(self, chunk_index):
         """Return content for wdiff by line (3 files)"""
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
-        logger.debug(
-            "merge_wdiff3: tag={} a[{}:{}]/b[{}:{}]/c[{}:{}] mode={}, row={}, bf='{}'".format(
-                tag, i1, i2, j1, j2, k1, k2, mode, row, bf
+        (
+            tag,
+            i1,
+            i2,
+            j1,
+            j2,
+            k1,
+            k2,
+            action,
+            _,
+        ) = self.chunk_list[
+            chunk_index
+        ]  # chunk_list item tuple (9 param)
+        if i2 - i1 != 1 or j2 - j1 != 1 or k2 - k1 != 1:
+            logger.error(
+                "chunk[{}]: tag={} === a[{}:{}]/b[{}:{}]/c[{}:{}] not for wdiff3".format(
+                    chunk_index, tag, i1, i2, j1, j2, k1, k2
+                ),
             )
+            sys.exit(2)
+        logger.debug(
+            "chunk[{}]: tag={} a[{}:{}]/b[{}:{}]/c[{}:{}] action='{}' wdiff3-merge-try".format(
+                chunk_index, tag, i1, i2, j1, j2, k1, k2, action
+            ),
         )
-        line_a = "".join(self.list_a[i1:i2])
-        line_b = "".join(self.list_b[j1:j2])
-        line_c = "".join(self.list_c[k1:k2])
+        line_a = self.list_a[i1]
+        line_b = self.list_b[j1]
+        line_c = self.list_c[k1]
         if self.isjunk:
             isjunk = None
         else:
             isjunk = self.whitespace_is_junk
         # wdiff uses SequenceMatcher
         use_SequenceMatcher = 0
-        wseq = SequenceMatcher3(line_a, line_b, line_c, use_SequenceMatcher, isjunk, True)
-        wopcodes = wseq.get_opcodes()
-        # logger.debug("wdiff3: \nwopcodesc >>>>> {}".format(wopcodes))
-        line = ""
+        matcher_internal = SequenceMatcher3(
+            line_a, line_b, line_c, use_SequenceMatcher, isjunk, True
+        )
+        chunk_list_internal = matcher_internal.get_opcodes()
+        # logger.debug("wdiff3: \nwchunk_list_internal >>>>> {}".format(wchunk_list_internal))
+        line_string = ""
         clean_merge = True
-        for tag, wi1, wi2, wj1, wj2, wk1, wk2 in wopcodes:
+        for tag, i1, i2, j1, j2, k1, k2 in chunk_list_internal:
             if tag == "E" or tag == "e" or tag == "A":
-                line += line_a[wi1:wi2]
+                line_string += line_a[i1:i2]
             elif tag == "C":
-                line += line_c[wk1:wk2]
-            else:  # tag == "N"
+                line_string += line_c[k1:k2]
+            else:  # tag == "N" (mark up with word separator)
                 clean_merge = False
-                line += self.ws0
-                line += line_a[wi1:wi2]
-                line += self.ws1
-                line += line_b[wj1:wj2]
-                line += self.ws2
-                line += line_c[wk1:wk2]
-                line += self.ws3
-        content = line.splitlines(keepends=True)
-        return (clean_merge, content)
+                line_string += self.ws0
+                line_string += line_a[i1:i2]
+                line_string += self.ws1
+                line_string += line_b[j1:j2]
+                line_string += self.ws2
+                line_string += line_c[k1:k2]
+                line_string += self.ws3
+        del matcher_internal
+        del chunk_list_internal
+        logger.debug(
+            "chunk[{}]: clean_merge={} === tag={} a[{}:{}]/b[{}:{}]/c[{}:{}] action='{}'".format(
+                chunk_index, clean_merge, tag, i1, i2, j1, j2, k1, k2, action
+            ),
+        )
+        return (clean_merge, [line_string])
 
-    def get_tag(self, i):
-        (tag, _, _, _, _, _, _, _, _, _) = self.opcodes[i]
-        return tag
-
-    def get_mode(self, i):
-        (_, _, _, _, _, _, _, mode, _, _) = self.opcodes[i]
-        return mode
-
-    def get_row(self, i):
-        (_, _, _, _, _, _, _, _, row, _) = self.opcodes[i]
-        return row
-
-    def get_bf(self, i):
-        (_, _, _, _, _, _, _, _, _, bf) = self.opcodes[i]
-        return bf
-
-    def get_content(self, i):
-        """Return content based on mode"""
-        content = None
-        (tag, i1, i2, j1, j2, k1, k2, mode, _, bf) = self.opcodes[i]
-        if tag == "E" or tag == "e":
-            content = self.list_a[i1:i2]
-        elif mode == "a":
-            content = self.list_a[i1:i2]
-        elif mode == "b":
-            content = self.list_b[j1:j2]
-        elif mode == "c":
-            content = self.list_c[k1:k2]
-        elif mode == "d":
-            content = self.merge_diff(i)
-        elif mode == "e":
-            if bf is not None:
-                content = bf
+    ####################################################################
+    # Internally used utility methods (class data set-access)
+    ####################################################################
+    # tag:            E e A C  n     N                       (data only)
+    # action request:         (g/f)  a b c d e f g    m/M   (user input)
+    # action:         = # A C  E     a b c d e f
+    def set_action(self, chunk_index, action_request):
+        (
+            tag,
+            i1,
+            i2,
+            j1,
+            j2,
+            k1,
+            k2,
+            action_old,
+            merge_buffer,
+        ) = self.chunk_list[
+            chunk_index
+        ]  # chunk_list item tuple (9 param)
+        if self.diff_mode == 2:
+            # for 2 file merge/pick
+            #   incoming tag is E or N or F
+            if tag == "E":
+                action = "="
+            # N F
+            elif action_request == "a":
+                action = "a"
+            elif action_request == "b":
+                action = "b"
+            elif action_request == "f" and i2 - i1 == 1 and j2 - j1 == 1:
+                action = "f"
+            elif action_request == "f":
+                action = "d"
+            elif action_request == "d":
+                action = "d"
+            elif action_request == "e" and len(merge_buffer) != 0:
+                action = "e"
+            elif action_request == "e" and len(merge_buffer) == 0:
+                logger.warning(
+                    "chunk[{}]: diff_mode={} action_request='{}' len(merge_buffer)={} --> keep action_old='{}'".format(
+                        chunk_index,
+                        self.diff_mode,
+                        action_request,
+                        len(merge_buffer),
+                        action_old,
+                    ),
+                )
+                action = action_old
             else:
-                error_preexit("Bad mode='e' with missing edited buffer text\n")
-                sys.exit(2)
-        elif mode == "f":
-            if self.diff_mode == 2:
-                content = self.merge_wdiff2(i)
-            else:  # self.diff_mode == 3
-                (_, content) = self.merge_wdiff3(i)
-        elif mode == "g":
-            if self.diff_mode == 2:
-                content = self.merge_diff(i)
-            else:  # self.diff_mode == 3
-                (_, content) = self.merge_wdiff3(i)
-        else:
-            error_preexit("Bad mode='{}'\n".format(mode))
-            sys.exit(2)
-        # content is at least [] (at least empty list)
-        if content is None:
-            error_preexit("content can't be None")
-            sys.exit(2)
-        return content
-
-    def set_mode(self, i, new_mode):
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, bf) = self.opcodes[i]
-        if new_mode in "abd":
-            mode = new_mode
-        elif self.diff_mode == 2:  # mode is always in "abdef"
-            if new_mode == "c":
-                mode = "d"  # hidden alias
-            elif new_mode == "f":
-                mode = "f"
-            else:  # for new_mode in "eg"
-                if bf is not None:
-                    mode = "e"
-                else:  #  for mode in "abdef"
-                    pass
+                logger.warning(
+                    "chunk[{}]: diff_mode={} action_request='{}' len(merge_buffer)={} action_old='{}' (very odd) --> force action='d'".format(
+                        chunk_index,
+                        self.diff_mode,
+                        action_request,
+                        len(merge_buffer),
+                        action_old,
+                    ),
+                )
+                action = "d"
         else:  # self.diff_mode == 3
-            if new_mode == "c":
-                mode = "c"
-            elif new_mode == "f":
-                (clean_merge, _) = self.merge_wdiff3(i)
+            # for 3 file merge
+            #   incoming tag is E or A or C or N or e
+            if tag == "E":
+                action = "="
+            elif tag == "e":
+                action = "#"
+            elif tag == "n":
+                action = "G"
+            elif tag == "A":
+                action = "A"
+            elif tag == "C":
+                action = "C"
+            elif action_request == "a":
+                action = "a"
+            elif action_request == "b":
+                action = "b"
+            elif action_request == "c":
+                action = "c"
+            elif (
+                action_request == "f" and i2 - i1 == 1 and j2 - j1 == 1 and k2 - k1 == 1
+            ):
+                # all 1 line diff -> try wdiff
+                (clean_merge, content) = self.get_merge_wdiff3(chunk_index)
                 if clean_merge:
-                    mode = "g"
+                    action = "G"  # clean merge
+                    tag = "n"  # update
+                    merge_buffer = content
                 else:
-                    mode = "f"
-            elif new_mode == "e":
-                if bf is not None:
-                    mode = "e"
-                else:  # for mode in "abcdefg"
-                    pass
-            else:  # new_mode == "g":
-                if bf is not None:
-                    mode = "e"
-                elif tag == "A":
-                    mode = "a"
-                elif tag == "C":
-                    mode = "c"
-                elif mode in "abceg":
-                    pass
-                else:  # for mode in "df" and tag == "N"
-                    (clean_merge, _) = self.merge_wdiff3(i)
-                    if clean_merge:
-                        mode = "g"
-                    else:
-                        pass  # mode to "d" or "f"
-        self.opcodes[i] = (tag, i1, i2, j1, j2, k1, k2, mode, row, bf)
-        self.update_textpad = True
+                    action = "f"  # non-clean merge
+            elif action_request == "f":
+                action = "d"  # non-clean merge
+            elif (
+                action_request == "g" and i2 - i1 == 1 and j2 - j1 == 1 and k2 - k1 == 1
+            ):
+                # all 1 line diff -> try wdiff
+                (clean_merge, content) = self.get_merge_wdiff3(chunk_index)
+                if clean_merge:
+                    action = "G"  # clean merge
+                    tag = "n"  # update
+                    merge_buffer = content
+                else:
+                    action = "d"  # non-clean merge
+            elif action_request == "g":
+                action = "d"  # non-clean merge
+            elif action_request == "d":
+                action = "d"
+            elif action_request == "e" and len(merge_buffer) != 0:
+                action = "e"
+            elif action_request == "e" and len(merge_buffer) == 0:
+                logger.warning(
+                    "chunk[{}]: diff_mode={} action_request='{}' len(merge_buffer)={} --> keep action_old='{}'".format(
+                        chunk_index,
+                        self.diff_mode,
+                        action_request,
+                        len(merge_buffer),
+                        action_old,
+                    ),
+                )
+                action = action_old
+            else:  # N
+                logger.warning(
+                    "chunk[{}]: diff_mode={} action_request='{}' len(merge_buffer)={} action_old='{}' (very odd) --> force action='d'".format(
+                        chunk_index,
+                        self.diff_mode,
+                        action_request,
+                        len(merge_buffer),
+                        action_old,
+                    ),
+                )
+                action = "d"
+        self.chunk_list[chunk_index] = (
+            tag,
+            i1,
+            i2,
+            j1,
+            j2,
+            k1,
+            k2,
+            action,
+            merge_buffer,
+        )  # chunk_list item tuple (9 param)
         return
 
-    def set_all_mode(self, new_mode):
-        for i in range(len(self.opcodes)):
-            logger.debug("set_all_mode: i={} {}".format(i, new_mode))
-            self.set_mode(i, new_mode)
+    def set_action_all(self, action_request):
+        for usr_chunk_index in range(len(self.usr_chunk_list)):
+            chunk_index = self.usr_chunk_list[usr_chunk_index]
+            logger.debug(
+                "usr_chunk_index={} >> chunk_index={} >> action_request={}".format(
+                    usr_chunk_index, chunk_index, action_request
+                ),
+            )
+            self.set_action(chunk_index, action_request)
         return
 
-    def set_row(self, i, new_row):  # used by TUI
-        (tag, i1, i2, j1, j2, k1, k2, mode, _, bf) = self.opcodes[i]
-        # row is passed by value but chunk is passed by reference !
-        self.opcodes[i] = (tag, i1, i2, j1, j2, k1, k2, mode, new_row, bf)
+    def set_merge_buffer(self, chunk_index, merge_buffer):
+        (
+            tag,
+            i1,
+            i2,
+            j1,
+            j2,
+            k1,
+            k2,
+            action,
+            _,
+        ) = self.chunk_list[
+            chunk_index
+        ]  # chunk_list item tuple (9 param)
+        self.chunk_list[chunk_index] = (
+            tag,
+            i1,
+            i2,
+            j1,
+            j2,
+            k1,
+            k2,
+            action,
+            merge_buffer,
+        )  # chunk_list item tuple (9 param)
         return
 
-    def set_bf(self, i, new_bf):
-        (tag, i1, i2, j1, j2, k1, k2, mode, row, _) = self.opcodes[i]
-        self.opcodes[i] = (tag, i1, i2, j1, j2, k1, k2, mode, row, new_bf)
-        return
-
-    def editor(self, i):
-        content = self.get_content(i)
-        linebuf = self.ext_editor(content)
-        self.set_bf(i, linebuf)
-        self.set_mode(i, "e")
-        return
-
-    def del_editor(self, i):
-        self.set_bf(i, None)
-        self.set_mode(i, "d")
-        return
-
-    def ext_editor(self, content):
+    def set_updated_merge_buffer(self, chunk_index):
+        content = self.get_content_for_chunk(chunk_index)
         with tempfile.NamedTemporaryFile(
             mode="w",
             buffering=io.DEFAULT_BUFFER_SIZE,
@@ -364,220 +889,150 @@ class TextData:  # Non-TUI data
             dir=".",
             delete=False,
         ) as fp:
-            tmpfname = fp.name
+            temp_file_name = fp.name
             if len(content):
                 for line in content:
                     fp.write(line)
         time.sleep(0.1)  # make the change visible
-        editor_ret = os.system("%s %s" % (self.edit_cmd, tmpfname))
+        editor_ret = os.system("%s %s" % (self.edit_cmd, temp_file_name))
         time.sleep(0.1)  # make the change visible
         # time.sleep(5.0) # debug
         if editor_ret == 0:
-            linebuf = read_lines(tmpfname)
+            merge_buffer = read_lines(temp_file_name)
         else:
-            linebuf = [""]  # Ignore editor errors
-        os.unlink(tmpfname)
-        return linebuf
-
-    def get_output(self):
-        """Return output of all content"""
-        output = ""
-        for i in range(len(self.opcodes)):
-            content = self.get_content(i)
-            output += "".join(content)
-        return output
-
-    def active_next(self):
-        """Jump to the next active chunk"""
-        if self.active is not None:
-            self.active_old = self.active
-            if self.active is not None:
-                self.active = min(self.active + 1, len(self.actives) - 1)
-            if self.active_old != self.active:
-                self.update_active = True
+            merge_buffer = []  # Ignore editor errors
+        os.unlink(temp_file_name)
+        self.set_merge_buffer(chunk_index, merge_buffer)
+        self.set_action(chunk_index, "e")
         return
 
-    def active_prev(self):
-        """Jump to the previous active chunk"""
-        if self.active is not None:
-            self.active_old = self.active
-            if self.active is not None:
-                self.active = max(self.active - 1, 0)
-            if self.active_old != self.active:
-                self.update_active = True
+    def set_deleted_merge_buffer(self, chunk_index):
+        self.set_merge_buffer(chunk_index, [])
+        self.set_action(chunk_index, "d")
         return
 
-    def active_home(self):
-        """Jump to the first active chunk"""
-        if self.active is not None:
-            self.active_old = self.active
-            if self.active is not None:
-                self.active = 0
-            if self.active_old != self.active:
-                self.update_active = True
-        return
-
-    def active_end(self):
-        """Jump to the last active chunk"""
-        if self.active is not None:
-            self.active_old = self.active
-            if self.active is not None:
-                self.active = len(self.actives) - 1
-            if self.active_old != self.active:
-                self.update_active = True
-        return
-
-    def get_unresolved_count(self):
-        """Count 'd' or 'f' mode in active chunk"""
-        count = 0
-        for _, i in enumerate(self.actives):
-            if self.get_mode(i) in "df":
-                count += 1
-        return count
-
-    def diff_next(self):
-        """Jump to the next diff chunk"""
-        if self.active is not None:
-            self.active_old = self.active
-            active = None
-            for j in range(self.active + 1, len(self.actives)):
-                i = self.actives[j]
-                if self.get_mode(i) in "df":
-                    active = j
-                    break
-            if active is not None:
-                self.active = active
-            if self.active_old != self.active:
-                self.update_active = True
-        return
-
-    def diff_prev(self):
-        """Jump to the previous diff chunk"""
-        if self.active is not None:
-            self.active_old = self.active
-            active = None
-            for j in range(self.active - 1, -1, -1):
-                i = self.actives[j]
-                if self.get_mode(i) in "df":
-                    active = j
-                    break
-            if active is not None:
-                self.active = active
-            if self.active_old != self.active:
-                self.update_active = True
-        return
-
-    def diff_home(self):
-        """Jump to the first diff chunk"""
-        if self.active is not None:
-            self.active_old = self.active
-            active = None
-            for j in range(0, self.active):
-                i = self.actives[j]
-                if self.get_mode(i) in "df":
-                    active = j
-                    break
-            if active is not None:
-                self.active = active
-            if self.active_old != self.active:
-                self.update_active = True
-        return
-
-    def diff_end(self):
-        """Jump to the last diff chunk"""
-        if self.active is not None:
-            self.active_old = self.active
-            active = None
-            for j in range(len(self.actives) - 1, self.active, -1):
-                i = self.actives[j]
-                if self.get_mode(i) in "df":
-                    active = j
-                    break
-            if active is not None:
-                self.active = active
-            if self.active_old != self.active:
-                self.update_active = True
-        return
-
-    def c_translated(self, c):
-        """translate keys in (' '...'~') according to ~/.imediff"""
-        if c >= ord("A") and c <= ord("Z"):
-            # special handling of upper case letters
-            if c + 32 in list(self.kc.keys()):
-                c = self.kc[c + 32] - 32
-            logger.debug("c_translated chr = '{}'".format(chr(c)))
-        elif c >= ord(" ") and c <= ord("~"):
-            if c in list(self.kc.keys()):
-                c = self.kc[c]
-            logger.debug("c_translated chr = '{}'".format(chr(c)))
+    ####################################################################
+    # Internally used utility methods (active/cursor position)
+    ####################################################################
+    def move_focus_to_any_resolvable_chunk_next(self):
+        """Jump to the next user accessible chunk"""
+        if self.focused_usr_chunk_index is not None:
+            usr_chunk_index_old = self.focused_usr_chunk_index
+            self.focused_usr_chunk_index = min(
+                self.focused_usr_chunk_index + 1,
+                len(self.usr_chunk_list) - 1,
+            )
+            if usr_chunk_index_old == self.focused_usr_chunk_index:
+                self.report("No next user accessible chunk (@end)")
         else:
-            logger.debug("c_translated num = '{}'".format(c))
-        return c
+            self.report("No user accessible chunk")
+        return
 
-    def getch_translated(self):  # overridden for TUI by subclassing
-        """Macro parsing instead of curses getch"""
-        if len(self.macro):
-            c = ord(self.macro[:1])
-            c = self.c_translated(c)
-            self.macro = self.macro[1:]
+    def move_focus_to_any_resolvable_chunk_prev(self):
+        """Jump to the previous available unresolvable chunk"""
+        if self.focused_usr_chunk_index is not None:
+            usr_chunk_index_old = self.focused_usr_chunk_index
+            self.focused_usr_chunk_index = max(self.focused_usr_chunk_index - 1, 0)
+            if usr_chunk_index_old == self.focused_usr_chunk_index:
+                self.report("No previous user accessible chunk (@home)")
         else:
-            c = 0  # End of MACRO
-        return c
+            self.report("No user accessible chunk")
+        return
 
-    def command_loop(self):  # overridden for TUI by subclassing
-        """Non-interactive driven by MACRO"""
-        logger.debug("command-loop start - macro")
-        while True:
-            # reset flags
-            self.update_textpad = False  # TUI
-            self.update_active = False
-            c = self.getch_translated()
-            if c > ord(" ") and c < 127:
-                ch = chr(c)
+    def move_focus_to_any_resolvable_chunk_home(self):
+        """Jump to the first available unresolvable chunk"""
+        if self.focused_usr_chunk_index is not None:
+            usr_chunk_index_old = self.focused_usr_chunk_index
+            self.focused_usr_chunk_index = 0
+            if usr_chunk_index_old == self.focused_usr_chunk_index:
+                self.report("No previous user accessible chunk (@home)")
+        else:
+            self.report("No user accessible chunk")
+        return
+
+    def move_focus_to_any_resolvable_chunk_end(self):
+        """Jump to the last available unresolvable chunk"""
+        if self.focused_usr_chunk_index is not None:
+            usr_chunk_index_old = self.focused_usr_chunk_index
+            self.focused_usr_chunk_index = len(self.usr_chunk_list) - 1
+            if usr_chunk_index_old != self.focused_usr_chunk_index:
+                self.report("No next user accessible chunk (@end)")
+        else:
+            self.report("No user accessible chunk")
+        return
+
+    def move_focus_to_usr_chunk_next(self):
+        """Jump to the next unresolved chunk"""
+        if self.focused_usr_chunk_index is not None:
+            usr_chunk_index = None
+            for usr_chunk_index in range(
+                self.focused_usr_chunk_index + 1, len(self.usr_chunk_list)
+            ):
+                chunk_index = self.usr_chunk_list[usr_chunk_index]
+                if self.get_action(chunk_index) in "df":
+                    break
+            if usr_chunk_index is not None:
+                self.focused_usr_chunk_index = usr_chunk_index
             else:
-                ch = " "
-
-            if c == 0 or ch == "w" or ch == "x":
-                output = self.get_output()
-                write_file(self.file_o, output)
-                break
-            elif ch == "q":
-                # No prompt for CLI
-                break
-            if self.active is not None:
-                # get active chunk
-                # Explicitly select chunk mode
-                if ch in "abcdefg":
-                    self.set_mode(self.actives[self.active], ch)
-                elif ch in "1234567":
-                    self.set_mode(
-                        self.actives[self.active], chr(ord(ch) - ord("1") + ord("a"))
-                    )
-                elif ch in "ABCDEFG":
-                    self.set_all_mode(ch.lower())
-                elif ch == "m":
-                    self.editor(self.actives[self.active])
-                elif ch == "M":
-                    self.del_editor(self.actives[self.active])
-                elif ch == "n":
-                    self.active_next()
-                elif ch == "p":
-                    self.active_prev()
-                elif ch == "t":
-                    self.active_home()
-                elif ch == "z":
-                    self.active_end()
-                elif ch == "N":
-                    self.diff_next()
-                elif ch == "P":
-                    self.diff_prev()
-                elif ch == "T":
-                    self.diff_home()
-                elif ch == "Z":
-                    self.diff_end()
-                else:
-                    pass
-            else:
-                pass
-        logger.debug("command-loop")
+                self.report("No next unselected unresolved chunk (@end)")
+        else:
+            self.report("No user accessible chunk")
         return
+
+    def move_focus_to_usr_chunk_prev(self):
+        """Jump to the previous unresolved chunk"""
+        if self.focused_usr_chunk_index is not None:
+            usr_chunk_index = None
+            for usr_chunk_index in range(self.focused_usr_chunk_index - 1, -1, -1):
+                chunk_index = self.usr_chunk_list[usr_chunk_index]
+                if self.get_action(chunk_index) in "df":
+                    break
+            if usr_chunk_index is not None:
+                self.focused_usr_chunk_index = usr_chunk_index
+            else:
+                self.report("No previous unselected unresolved chunk (@home)")
+        else:
+            self.report("No user accessible chunk")
+        return
+
+    def move_focus_to_usr_chunk_home(self):
+        """Jump to the first unresolved chunk"""
+        if self.focused_usr_chunk_index is not None:
+            usr_chunk_index = None
+            for usr_chunk_index in range(0, self.focused_usr_chunk_index):
+                chunk_index = self.usr_chunk_list[usr_chunk_index]
+                if self.get_action(chunk_index) in "df":
+                    break
+            if usr_chunk_index is not None:
+                self.focused_usr_chunk_index = usr_chunk_index
+            else:
+                self.report("No previous unselected unresolved chunk (@home)")
+        else:
+            self.report("No user accessible chunk")
+        return
+
+    def move_focus_to_usr_chunk_end(self):
+        """Jump to the last unselected unresolved chunk"""
+        if self.focused_usr_chunk_index is not None:
+            usr_chunk_index = None
+            for usr_chunk_index in range(
+                len(self.usr_chunk_list) - 1,
+                self.focused_usr_chunk_index,
+                -1,
+            ):
+                chunk_index = self.usr_chunk_list[usr_chunk_index]
+                if self.get_action(chunk_index) in "df":
+                    break
+            if usr_chunk_index is not None:
+                self.focused_usr_chunk_index = usr_chunk_index
+            else:
+                self.report("No next unselected unresolved chunk (@end)")
+        else:
+            self.report("No user accessible chunk")
+        return
+
+    ####################################################################
+    # Internally used utility methods (user feedback)
+    ####################################################################
+    def report(self, message):  # override for TUI
+        print(message, file=sys.stderr)

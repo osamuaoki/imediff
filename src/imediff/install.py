@@ -25,6 +25,7 @@ Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.
 """
 
+from imediff import __version__
 import os
 import sys
 import subprocess
@@ -54,8 +55,18 @@ def install():
     python_dir = os.path.dirname(os.path.dirname(src_dir))
     lib_dir = os.path.dirname(python_dir)
     dest_dir = os.path.dirname(lib_dir)
+    fp = open(dest_dir + "/bin/git-ime", "w")
     subprocess.run(["mkdir", "-p", dest_dir + "/bin"])
-    subprocess.run(["cp", "-f", src_dir + "/data/git-ime", dest_dir + "/bin"])
+    subprocess.run(
+        [
+            "sed",
+            "-e",
+            "s/@@version@@/" + __version__ + "/",
+            src_dir + "/data/git-ime.in",
+        ],
+        stdout=fp,
+    )
+    subprocess.run(["rm", "-f", src_dir + "/data/git-ime.in"])
     subprocess.run(["chmod", "755", dest_dir + "/bin/git-ime"])
     print("I: successfully installed: " + dest_dir + "/bin/git-ime")
     print("I: manual page for imediff can be found at: " + src_dir + "/imediff.1")
@@ -70,6 +81,7 @@ def install():
     # subprocess.run(['cp', '-f', src_dir + "/git-ime.1", usr_dir + "/share/man/man1/"])
 
     sys.exit(0)
+
 
 if __name__ == "__main__":
     install()

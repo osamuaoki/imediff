@@ -25,84 +25,119 @@ Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.
 """
 
-import sys
 from difflib import SequenceMatcher
 from imediff.lines2lib import LineMatcher
-from imediff.utils import logger
+
+import sys
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class SequenceMatcher3:
 
     """
-    SequenceMatcher3 is a matching class for comparing three of sequences of
-    any type, so long as the sequence elements are hashable for matcher=0.
+    With matcher=0, SequenceMatcher3 is an **exact** matching class for
+    comparing two or three of sequences of any type, so long as the sequence
+    elements are hashable using difflib imported from the system library
+    SequenceMatcher.
 
-    SequenceMatcher3 is a matching class for comparing three of lists of
-    lines for matcher=1.
+    * For three strings, SequenceMatcher3 with matcher=0 matches these three
+      strings by looking for the exact match of character pairs.
+      (wdiff2/wdiff3)
+
+    * For three lines, SequenceMatcher3 with matcher=0 matches these three
+      lines by looking for the exact match of line pairs.  The resulting
+      match tends to become large multi-line portion (diff2/diff3).
+
+    With matcher=1, SequenceMatcher3 is a **fuzzy** matching class for
+    comparing two or three lines using partial match pairs of filtered lines
+    ignoring indentation using LineMatcher class in lines2lib.py.
+
+    * For three lines, SequenceMatcher3 with matcher=1 matches these three
+      lines by looking for the fuzzy match of line pairs. (diff2/diff3)  The
+      resulting match tends to become a single-line portion suitable for
+      further processing such as fuzzy mutches by SequenceMatcher3 with
+      matcher=0 to obtain wdiff2/wdiff3 for that single-line.
 
     Let's call these three sequences as A (yours), B (base), and C (theirs).
+
     Let's assume A and C are derivatives from B and try to merge C into A.
-    The basic rule for the merging of three of sequences is as follows:
-        * Check B-A matching and B-C matching situation.
-        * Walk through B to see which sides made change. (12 cases)
-        * Check if the high end of range is available (Either "E" or deletion)
-        * Pick one making change as the merged content.
-            * Merged as equal: 3 cases
-                BA      EEEENN..    EEEEEE..    EEEENN..
-                BC      EEEENN..    EEEENN..    EEEEEE..
-                        ^^^^        ^^^^        ^^^^
-                Range   AC          AC          AC
-                Tag     E           E           E
-            * Merged to pick A: 2 cases, undecided to pick conflict 1 case
-                BA      NNNNNN..    NNNNEE..                NNNNEE..
-                BC      EEEENN..    EEEENN..                EEEEEE..
-                        ^^^^        ^^^^                    ^^^^
-                Range   A           AC                      AC
-                Tag     N*          A                       A
-            * Merged to pick C: 2 cases, undecided to pick conflict 1 case
-                BA      EEEENN..                EEEENN..    EEEEEE..
-                BC      NNNNNN..                NNNNEE..    NNNNEE..
-                        ^^^^                    ^^^^        ^^^^
-                Range   C                       AC          AC
-                Tag     N*                      C           C
-            * Merged as conflict: 1 case, undecided to pick conflict 2 cases
-                BA                  NNNNEE..    NNNNNN..    NNNNEE..
-                BC                  NNNNNN..    NNNNEE..    NNNNEE..
-                                    ^^^^        ^^^^        ^^^^
-                Range               C           A           AC
-                Tag                 N*          N*          N
-            Please note the high end of range is unavailable if the continuing
-            side is "N" and not complete deletion. (marked "N*")
-            All "N" and "N*" containing ranges are conflict but are checked for
-            A==C check (case "e")
 
-                tag for opcode of SequenceMatcher3
-                'E'    a[j1:j2] == b[i1:i2] == c[k1:k2] == a[j1:j2]
-                'A'    a[j1:j2] != b[i1:i2] == c[k1:k2] != a[j1:j2]
-                'C'    a[j1:j2] == b[i1:i2] != c[k1:k2] != a[j1:j2]
-                'e'    a[j1:j2] != b[i1:i2] != c[k1:k2] == a[j1:j2]
-                'N'    a[j1:j2] != b[i1:i2] != c[k1:k2] != a[j1:j2]
+    The basic rule for the merging of three sequences is as follows:
 
-    For matcher=0, this uses bare SequenceMatcher class from difflib.
+    * Check B-A matching and B-C pair matching opcode situation.
+    * Walk through B to see which sides made the change. (12 cases)
+    * Check if the high end of range is available (Either "E" or deletion)
+    * Pick one making change as the merged content.
 
-                tag for opcode of equenceMatcher
-                'equal a[j1:j2] == b[i1:i2]
+    * Merged as equal: 3 cases
+        BA-pair opcode        | EEEENN..    EEEEEE..    EEEENN..
+        BC-pair opcode        | EEEENN..    EEEENN..    EEEEEE..
+        combined opcode range | ^^^^        ^^^^        ^^^^
+        combined range rule   | same        BC=short    BA=short
+        merge result          | A or C      A or C      A or C
+        resulting tag         | E           E           E
 
-                'delete' 'insert' 'replace'
+    * Merged to pick A: 2 cases, undecided to pick conflict 1 case
+        BA-pair opcode        | NNNNNN..    NNNNEE..                NNNNEE..
+        BC-pair opcode        | EEEENN..    EEEENN..                EEEEEE..
+        combined opcode range | ^^^^        ^^^^                    ^^^^
+        combined range rule   | BC=short    same                    BA=short
+        merge result          | A           A or C                  A or C
+        resulting tag         | N*          A                       A
 
-    For matcher=1, this uses bare LineMatcher class from diff2lib.py
+    * Merged to pick C: 2 cases, undecided to pick conflict 1 case
+        BA-pair opcode        | EEEENN..                EEEENN..    EEEEEE..
+        BC-pair opcode        | NNNNNN..                NNNNEE..    NNNNEE..
+        combined opcode range | ^^^^                    ^^^^        ^^^^
+        combined range rule   | BA=short                same        BC=short
+        merge result          | C                       A or C      A or C
+        resulting tag         | N*                      C           C
 
-                tag for opcode of LineMatcher
-                'E'    a[j1:j2] == b[i1:i2]
-                'N'    a[j1:j2] != b[i1:i2]
-                'F'    a[j1:j2] != b[i1:i2] -- but similar
+    * Merged as conflict: 1 case, undecided to pick conflict 2 cases
+        BA-pair opcode        |            NNNNEE..    NNNNNN..    NNNNEE..
+        BC-pair opcode        |            NNNNNN..    NNNNEE..    NNNNEE..
+        combined opcode range |            ^^^^        ^^^^        ^^^^
+        combined range rule   |            BA=short    BC=short    same
+        merge result          |            C           A           A or C
+        resulting tag         |            N*          N*          N
 
-    Example1: comparing two strings, and considering None to be "junk"
+    Please note the high end of range is unavailable if the continuing side is
+    "N" and not complete deletion. (marked "N*")
+
+    All "N" and "N*" containing ranges are conflict but are checked for A==C
+    check (case "e")
+
+    Summary of tag for returned opcode tag of SequenceMatcher3
+
+       tag    situation for 3-file-merge
+     * 'E'    a[j1:j2] == b[i1:i2] == c[k1:k2] == a[j1:j2]
+     * 'A'    a[j1:j2] != b[i1:i2] == c[k1:k2] != a[j1:j2]
+     * 'C'    a[j1:j2] == b[i1:i2] != c[k1:k2] != a[j1:j2]
+     * 'e'    a[j1:j2] != b[i1:i2] != c[k1:k2] == a[j1:j2]
+     * 'N'    a[j1:j2] != b[i1:i2] != c[k1:k2] != a[j1:j2]
+
+    For matcher=0, this uses bare SequenceMatcher class from difflib as the
+    backend tool.  This uses returned tag of SequenceMatcher which are:
+
+    * 'equal'  ------------------ for a[j1:j2] == b[i1:i2]
+    * 'delete' 'insert' 'replace' for other cases
+
+    For matcher=1, this uses LineMatcher class from diff2lib.py instead as the
+    backend tool. This uses returned tag of LineMatcher which are:
+
+    * 'E' ----------------------- for a[j1:j2] == b[i1:i2]
+    * 'N' ----------------------- for a[j1:j2] != b[i1:i2]
+    * 'F' ----------------------- for a[j1:j2] != b[i1:i2] -- but similar
+
+    Example1: comparing three strings, and considering None to be "junk" and
+    matcher=0.
 
     >>> a = "private Thread currentThread foo bar;"
     >>> b = "private volatile Thread currentThread;"
     >>> c = "private volatile currentThread foo;tail"
-    >>> s = SequenceMatcher3(a, b, c)
+    >>> s = SequenceMatcher3(a, b, c, 0)
     >>>
 
     If you want to know how to change the first sequence into the second,
@@ -121,7 +156,8 @@ class SequenceMatcher3:
     E a[36:37],b[37:38],c[34:35] => ';', ';', ';'
     C a[37:37],b[38:38],c[35:39] => '', '', 'tail'
 
-    Example 2: comparing two strings, and considering blanks to be "junk"
+    Example 2: comparing three strings, and considering blanks to be "junk" and
+    matcher=0.
 
     >>> a = "private Thread currentThread foo bar;"
     >>> b = "private volatile Thread currentThread;"
@@ -147,9 +183,65 @@ class SequenceMatcher3:
 
     This example 2 produces more intuitive result due to setting for "junk".
 
+    Example 3: comparing three lists with matcher=0.
+
+    >>> a = [ "line2", "line3", "line4", "line5X", "line6X", "line7", "line8X", "line9", "line10", "line11", "line12", "xxxxxx", "aaaline14", "line15", "line16"]
+    >>> b = [ "line1", "line2", "line3", "line4X", "line5", "line6X", "line7", "line8X", "line9", "line10", "line11", "line12", "yyyyyy", "line14", "line15"]
+    >>> c = [ "line1", "line2", "line3X", "line4", "line5X", "line6", "line7X", "line8", "line9", "line10", "line11", "line12", "zzzzzz", "line14bbb", "line15"]
+    >>> s = SequenceMatcher3(a, b, c, 0)
+    >>>
+
+    If you want to know how to change the first sequence into the second,
+    use .get_opcodes():
+
+    >>> for tag, i1, i2, j1, j2, k1, k2 in s.get_opcodes():
+    ...     print("%s a[%d:%d],b[%d:%d],c[%d:%d] => '%s', '%s', '%s'" % (
+    ...     tag, i1, i2, j1, j2, k1, k2, a[i1:i2], b[j1:j2], c[k1:k2]))
+    ...
+    A a[0:0],b[0:1],c[0:1] => '[]', '['line1']', '['line1']'
+    E a[0:1],b[1:2],c[1:2] => '['line2']', '['line2']', '['line2']'
+    N a[1:7],b[2:8],c[2:8] => '['line3', 'line4', 'line5X', 'line6X', 'line7', 'line8X']', '['line3', 'line4X', 'line5', 'line6X', 'line7', 'line8X']', '['line3X', 'line4', 'line5X', 'line6', 'line7X', 'line8']'
+    E a[7:11],b[8:12],c[8:12] => '['line9', 'line10', 'line11', 'line12']', '['line9', 'line10', 'line11', 'line12']', '['line9', 'line10', 'line11', 'line12']'
+    N a[11:13],b[12:14],c[12:14] => '['xxxxxx', 'aaaline14']', '['yyyyyy', 'line14']', '['zzzzzz', 'line14bbb']'
+    E a[13:14],b[14:15],c[14:15] => '['line15']', '['line15']', '['line15']'
+    A a[14:15],b[15:15],c[15:15] => '['line16']', '[]', '[]'
+
+    Example 4: comparing three lists (same as example 3) with matcher=1.
+
+    >>> a = [ "line2", "line3", "line4", "line5X", "line6X", "line7", "line8X", "line9", "line10", "line11", "line12", "xxxxxx", "aaaline14", "line15", "line16"]
+    >>> b = [ "line1", "line2", "line3", "line4X", "line5", "line6X", "line7", "line8X", "line9", "line10", "line11", "line12", "yyyyyy", "line14", "line15"]
+    >>> c = [ "line1", "line2", "line3X", "line4", "line5X", "line6", "line7X", "line8", "line9", "line10", "line11", "line12", "zzzzzz", "line14bbb", "line15"]
+    >>> s = SequenceMatcher3(a, b, c, 1)
+    >>>
+
+    If you want to know how to change the first sequence into the second,
+    use .get_opcodes():
+
+    >>> for tag, i1, i2, j1, j2, k1, k2 in s.get_opcodes():
+    ...     print("%s a[%d:%d],b[%d:%d],c[%d:%d] => '%s', '%s', '%s'" % (
+    ...     tag, i1, i2, j1, j2, k1, k2, a[i1:i2], b[j1:j2], c[k1:k2]))
+    ...
+    A a[0:0],b[0:1],c[0:1] => '[]', '['line1']', '['line1']'
+    E a[0:1],b[1:2],c[1:2] => '['line2']', '['line2']', '['line2']'
+    C a[1:2],b[2:3],c[2:3] => '['line3']', '['line3']', '['line3X']'
+    e a[2:3],b[3:4],c[3:4] => '['line4']', '['line4X']', '['line4']'
+    e a[3:4],b[4:5],c[4:5] => '['line5X']', '['line5']', '['line5X']'
+    C a[4:5],b[5:6],c[5:6] => '['line6X']', '['line6X']', '['line6']'
+    C a[5:6],b[6:7],c[6:7] => '['line7']', '['line7']', '['line7X']'
+    C a[6:7],b[7:8],c[7:8] => '['line8X']', '['line8X']', '['line8']'
+    E a[7:8],b[8:9],c[8:9] => '['line9']', '['line9']', '['line9']'
+    E a[8:9],b[9:10],c[9:10] => '['line10']', '['line10']', '['line10']'
+    E a[9:10],b[10:11],c[10:11] => '['line11']', '['line11']', '['line11']'
+    E a[10:11],b[11:12],c[11:12] => '['line12']', '['line12']', '['line12']'
+    N a[11:12],b[12:13],c[12:13] => '['xxxxxx']', '['yyyyyy']', '['zzzzzz']'
+    N a[12:13],b[13:14],c[13:14] => '['aaaline14']', '['line14']', '['line14bbb']'
+    E a[13:14],b[14:15],c[14:15] => '['line15']', '['line15']', '['line15']'
+    A a[14:15],b[15:15],c[15:15] => '['line16']', '[]', '[]'
+
+
     Methods:
 
-    __init__(a='', b='', c='', matcher=0, isjunk=None, autojunk=True, linerule=2)
+    __init__(a='', b='', c='', matcher=0, isjunk=None, autojunk=True, line_rule=2)
         Construct a SequenceMatcher3.
 
     set_seqs(a, b)
@@ -170,7 +262,18 @@ class SequenceMatcher3:
     """
 
     def __init__(
-        self, a="", b="", c="", matcher=0, isjunk=None, autojunk=True, linerule=2
+        self,
+        a="",
+        b="",
+        c="",
+        matcher=0,
+        isjunk=None,
+        autojunk=True,
+        line_rule=2,
+        line_max=128,  # initial length to compare (upper limit)
+        line_min=1,  # final   length to compare (lower limit)
+        line_factor=8,  # length shortening factor
+        # 8 for 80% of length_before every 2 steps
     ):
         """Construct a SequenceMatcher3.
 
@@ -230,7 +333,10 @@ class SequenceMatcher3:
         self.matcher = matcher
         self.isjunk = isjunk
         self.autojunk = autojunk
-        self.linerule = linerule
+        self.line_rule = line_rule
+        self.line_max = line_max
+        self.line_min = line_min
+        self.line_factor = line_factor
         self.opcodes = None
 
     def set_seq1(self, a):
@@ -306,67 +412,105 @@ class SequenceMatcher3:
             opcodes_ba = SequenceMatcher(self.isjunk, b, a).get_opcodes()
             opcodes_bc = SequenceMatcher(self.isjunk, b, c).get_opcodes()
             tag_equal = "equal"
+            matcher_logic = "SequenceMatcher"
         else:  # matcher == 1
-            opcodes_ba = LineMatcher(b, a, self.linerule).get_opcodes()
-            opcodes_bc = LineMatcher(b, c, self.linerule).get_opcodes()
+            opcodes_ba = LineMatcher(
+                b, a, self.line_rule, self.line_max, self.line_min, self.line_factor
+            ).get_opcodes()
+            opcodes_bc = LineMatcher(
+                b, c, self.line_rule, self.line_max, self.line_min, self.line_factor
+            ).get_opcodes()
             tag_equal = "E"
+            matcher_logic = "LineMatcher"
+        # index for 3-file merge
+        il = jl = kl = 0  # range lower end for b, a, c (next in next round)
+        ih = jh = kh = 0  # range high end for b, a, c (next in next round)
+        # 2-file diff index
         n_ba = 0  # walking index for opcodes_ba
         n_bc = 0  # walking index for opcodes_bc
         len_ba = len(opcodes_ba)
         len_bc = len(opcodes_bc)
         logger.debug(
-            "diff3lib: matcher={} tag={} len_ba={} len_bc={}".format(
-                matcher, tag_equal, len_ba, len_bc
-            )
+            "  matcher_logic={} tag_equal={} len_ba={} len_bc={}".format(
+                matcher_logic, tag_equal, len_ba, len_bc
+            ),
         )
-        il = jl = kl = 0  # range lower end for b, a, c (next in next round)
-        ih = jh = kh = 0  # range high end for b, a, c (next in next round)
         answer = list()
         tag = ""
+        # loop start
         while n_ba < len_ba or n_bc < len_bc:
-            # get a chunk data
+            logger.debug(
+                "  loop tag_equal='{}' / j=[{}:{}] / i=[{}:{}] / k=[{}:{}] / n_ba={}, n_bc={}".format(
+                    tag_equal, jl, jh, il, ih, kl, kh, n_ba, n_bc
+                ),
+            )
+            ############################################################
+            # n_ba = walking index for opcodes_ba
+            ############################################################
+            # (il_ba for opcodes_ba[n_ba]) == (ih_ba of previous opcodes_ba[n_ba -1]¶)
             if n_ba < len_ba:
-                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = opcodes_ba[n_ba]
+                (tag_ba, _, ih_ba, jl_ba, jh_ba) = opcodes_ba[n_ba]
                 logger.debug(
-                    "diff3lib: NORMAL n_bc={} < len_bc={}".format(n_bc, len_bc)
+                    "      NORMAL   (n_ba={}) <  (len_ba={})".format(n_ba, len_ba)
                 )
-            elif len_ba == 0:
-                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = (tag_equal, 0, 0, 0, 0)
+            elif len_ba == 0:  # ... underflow
+                # treat as equal of zero range list at start
+                (tag_ba, _, ih_ba, jl_ba, jh_ba) = (tag_equal, 0, 0, 0, 0)
+                # tag_ba = tag_equal
+                # ih_ba and ih_ba are the same and == 0
+                # jh_ba and jh_ba are the same and == 0
                 logger.debug(
-                    "diff3lib: UNDERRUN n_ba={} len_ba={}".format(n_ba, len_ba)
+                    "      UNDERRUN (n_ba={}) == (len_ba={}) == 0".format(n_ba, len_ba)
                 )
-            else:
-                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = opcodes_ba[len_ba - 1]
-                (tag_ba, il_ba, ih_ba, jl_ba, jh_ba) = (
+            else:  # n_ba == len_ba ... overflow
+                # treat as equal of zero range list at the end
+                # check the last match
+                (tag_ba, _, ih_ba, jl_ba, jh_ba) = opcodes_ba[len_ba - 1]
+                # tag_ba = tag_equal
+                # ih_ba and ih_ba are the same and == (ih_ba of the last match)
+                # jh_ba and jh_ba are the same and == (jh_ba of the last match)
+                (tag_ba, _, ih_ba, jl_ba, jh_ba) = (
                     tag_equal,
                     ih_ba,
                     ih_ba,
                     jh_ba,
                     jh_ba,
                 )
-                logger.debug("diff3lib: OVERRUN n_ba={} len_ba={}".format(n_ba, len_ba))
-            if n_bc < len_bc:
-                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = opcodes_bc[n_bc]
                 logger.debug(
-                    "diff3lib: NORMAL n_bc={} < len_bc={}".format(n_bc, len_bc)
+                    "      OVERRUN  (n_ba={}) == (len_ba={}) > 0".format(n_ba, len_ba)
+                )
+            ############################################################
+            # n_bc = walking index for opcodes_bc
+            ############################################################
+            # (il_bc for opcodes_bc[n_bc]) == (ih_bc of previous opcodes_ba[n_bc -1]¶)
+            if n_bc < len_bc:
+                (tag_bc, _, ih_bc, kl_bc, kh_bc) = opcodes_bc[n_bc]
+                logger.debug(
+                    "      NORMAL   (n_bc={}) <  (len_bc={})".format(n_bc, len_bc)
                 )
             elif len_bc == 0:
-                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = (tag_equal, 0, 0, 0, 0)
+                (tag_bc, _, ih_bc, kl_bc, kh_bc) = (tag_equal, 0, 0, 0, 0)
                 logger.debug(
-                    "diff3lib: UNDERRUN n_bc={} len_bc={}".format(n_bc, len_bc)
+                    "      UNDERRUN (n_bc={}) == (len_bc={}) == 0".format(n_bc, len_bc)
                 )
             else:
-                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = opcodes_bc[len_bc - 1]
-                (tag_bc, il_bc, ih_bc, kl_bc, kh_bc) = (
+                (tag_bc, _, ih_bc, kl_bc, kh_bc) = opcodes_bc[len_bc - 1]
+                (tag_bc, _, ih_bc, kl_bc, kh_bc) = (
                     tag_equal,
                     ih_bc,
                     ih_bc,
                     kh_bc,
                     kh_bc,
                 )
-                logger.debug("diff3lib: OVERRUN n_bc={} len_bc={}".format(n_bc, len_bc))
+                logger.debug(
+                    "      OVERRUN  (n_bc={}) == (len_bc={}) > 0".format(n_bc, len_bc)
+                )
+            ############################################################
             # get tag for this set of opcodes if high range value is available
+            ############################################################
             if tag == "N":
+                # the initial value of tag is "", so only 2nd round on comes
+                # here
                 pass  # All undecided comes in as tag == "N", otherwise tag == ""
             elif tag_ba == tag_equal and tag_bc == tag_equal:
                 tag = "E"
@@ -376,13 +520,17 @@ class SequenceMatcher3:
                 tag = "C"
             elif tag_ba != tag_equal and tag_bc != tag_equal:
                 tag = "N"
+            ############################################################
+            # walking 3-file ih to 2-file ih_*
             if ih_ba == ih_bc:
+                # synched increase
                 n_ba += 1
                 n_bc += 1
                 ih = ih_ba  # == ih_bc
                 jh = jh_ba
                 kh = kh_bc
             elif ih_ba > ih_bc:
+                # mini-side rules 3-file ih walk
                 n_bc += 1
                 ih = ih_bc
                 kh = kh_bc
@@ -392,42 +540,39 @@ class SequenceMatcher3:
                     jh = jh_ba
                 else:
                     jh = None  # undecided
-                    tag = "N"
-            if ih_ba == ih_bc:
-                kh = kh_bc
             elif ih_ba < ih_bc:
+                # mini-side rules 3-file ih walk
                 n_ba += 1
                 ih = ih_ba
                 jh = jh_ba
                 if tag_bc == tag_equal:
+                    # set kh to match increment step if equal
                     kh = kh_bc - (ih_bc - ih_ba)
                 elif kh_bc == kl_bc:
+                    # kh must be between kh_bc and kl_bc
                     kh = kh_bc
                 else:
                     kh = None  # undecided
-                    tag = "N"
-            if jh is None:
+            if (jh is None) or (kh is None):
                 logger.debug(
-                    "diff3lib: UNDECIDED_ba tag={}, jl={}, jh=None, il={}, ih={}, kl={}, kh={}".format(
-                        tag, jl, il, ih, kl, kh
-                    )
+                    "    UNDECIDED tag={}, jl={}, jh={}, il={}, ih={}, kl={}, kh={}".format(
+                        tag, jl, jh, il, ih, kl, kh
+                    ),
                 )
-            elif kh is None:
-                logger.debug(
-                    "diff3lib: UNDECIDED_bc tag={}, jl={}, jh={}, il={}, ih={}, kl={}, kh=None".format(
-                        tag, jl, jh, il, ih, kl
-                    )
-                )
+                # pass to next iteration
+                tag = "N"
             else:
+                # all determined ranges with tag
                 if tag == "N":
-                    if a[jl:jh] == c[kl:kh]:
+                    if a[jl:jh] == c[kl:kh]:  # exact match need to be changed
                         tag = "e"
                 answer.append((tag, jl, jh, il, ih, kl, kh))
                 logger.debug(
-                    "diff3lib: APPEND tag={}, jl={}, jh={}, il={}, ih={}, kl={}, kh={}".format(
+                    "    APPEND    tag={}, jl={}, jh={}, il={}, ih={}, kl={}, kh={}".format(
                         tag, jl, jh, il, ih, kl, kh
-                    )
+                    ),
                 )
+                # refresh 3-file merge section
                 il = ih
                 jl = jh
                 kl = kh

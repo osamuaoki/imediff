@@ -7,25 +7,48 @@ Module lines2lib -- matching 2 lines library
 Copyright (C) 2018--2024 Osamu Aoki <osamu@debian.org>
 
 """
+from difflib import SequenceMatcher
 
 import re
 import sys
-from difflib import SequenceMatcher
+import logging
 
-# utility functions
-from imediff.utils import logger, error_preexit
+logger = logging.getLogger(__name__)
 
 
 class LineMatcher:
     """
     Linematcher
 
-    A public class to help manage 2 lists of similar lines by finding
-    matching lines while dropping all whitespaces and quotes (default)
+    A public class to help manage 2 lists of similar lines by finding fuzzy
+    matching of filtered lines. This fuzzy matching of filtered lines is
+    controlled by the line_rule value.
 
-    E: exact match
-    F: fuzzy match (ignore whitespaces and quotes)
-    N: no match
+    line_rule   pattern    -- filtering behavior
+         0      r""        -- drop none between text, but strip
+         1      r"\s+"     -- drop all whitespaces
+         2      r"[\s\"']" -- drop all whitespaces and quotes (default)
+         3      r"\W+"     -- drop all non-alphanumerics
+
+         10     r""        -- drop none between text, but strip and lowercase
+         11     r"\s+"     -- drop all whitespaces and lowercase
+         12     r"[\s\"']" -- drop all whitespaces and quotes and lowercase
+         13     r"\W+"     -- drop all non-alphanumerics and lowercase
+
+    The fuzzy matching is performed on partial match of head and tail portion
+    of lines provided by _LineMatcher class.  This partial match is controlled
+    by 3 parametrs:
+
+    parameters
+    * line_max     -- initial length to compare (upper limit, defalt=128)
+    * line_min     -- final   length to compare (lower limit, default=1)
+    * line_factor  -- length shortening factor (default=8 for x0.8)
+
+    The resulting tag from Linematcher class object are:
+
+    * 'E' ----------------------- for a[j1:j2] == b[i1:i2] -- exact match
+    * 'N' ----------------------- for a[j1:j2] != b[i1:i2] -- no match
+    * 'F' ----------------------- for a[j1:j2] != b[i1:i2] -- fuzzy match
 
     Example:
     >>> a = [   "line 1 abcde\\n",
@@ -108,20 +131,27 @@ class LineMatcher:
         self,
         a=[],
         b=[],
-        linerule=2,
+        line_rule=2,
+        line_max=128,  # initial length to compare (upper limit)
+        line_min=1,  # final   length to compare (lower limit)
+        line_factor=8,  # length shortening factor
+        # 8 for 80% of length_before every 2 steps
     ):
         """
         Construct a LineMatcher object using whitespace filtered object and _LineMatcher internal object
-        class
+        class which find matches including partial matches
+
         """
 
         # initialize
         self.a = a
         self.b = b
-        if not (linerule >= 0 and linerule < 20):
-            error_preexit("E: linerule should be between 0 and 19 but {}".format(linerule))
+        if not (line_rule >= 0 and line_rule < 20):
+            logger.error(
+                "E: line_rule should be between 0 and 19 but {}".format(line_rule)
+            )
             sys.exit(2)
-        # linerule:
+        # line_rule:
         # 0      r""        -- drop none between text, but strip
         # 1      r"\s+"     -- drop all whitespaces
         # 2      r"[\s\"']" -- drop all whitespaces and quotes (default)
@@ -130,32 +160,40 @@ class LineMatcher:
         # 11     r"\s+"     -- drop all whitespaces and lowercase
         # 12     r"[\s\"']" -- drop all whitespaces and quotes and lowercase
         # 13     r"\W+"     -- drop all non-alphanumerics and lowercase
-        if (linerule % 10) == 0:
+        if (line_rule % 10) == 0:
             re_preform = re.compile(r"")
-        elif (linerule % 10) == 1:
+        elif (line_rule % 10) == 1:
             re_preform = re.compile(r"\s+")
-        elif (linerule % 10) == 2:
+        elif (line_rule % 10) == 2:
             re_preform = re.compile(r"[\s\"']+")
-        elif (linerule % 10) == 3:
+        elif (line_rule % 10) == 3:
             re_preform = re.compile(r"\W+")
         else:
             re_preform = re.compile(r"")
         self.a_int = []
         for ax in a:
-            if linerule < 10:
+            if line_rule < 10:
                 filtered_ax = re_preform.sub("", ax).strip()
             else:
                 filtered_ax = re_preform.sub("", ax).strip().lower()
             self.a_int.append(filtered_ax)
         self.b_int = []
         for bx in b:
-            if linerule < 10:
+            if line_rule < 10:
                 filtered_bx = re_preform.sub("", bx).strip()
             else:
                 filtered_bx = re_preform.sub("", bx).strip().lower()
             self.b_int.append(filtered_bx)
         self.int = _LineMatcher(
-            self.a_int, self.b_int, 0, len(self.a_int), 0, len(self.b_int)
+            self.a_int,
+            self.b_int,
+            0,
+            len(self.a_int),
+            0,
+            len(self.b_int),
+            line_max=line_max,
+            line_min=line_min,
+            line_factor=line_factor,
         )
 
     def get_opcodes(self):
@@ -278,10 +316,11 @@ class _LineMatcher:
         is2=0,
         js1=0,
         js2=0,
-        depth=0,
-        length=128,
-        lenmin=1,
-        factor=8,
+        depth=0,  # used to track recursive call to _LineMatcher-class
+        line_max=128,  # initial length to compare (upper limit)
+        line_min=1,  # final   length to compare (lower limit)
+        line_factor=8,  # length shortening factor
+        # 8 for 80% of length_before every 2 steps
     ):
         """
         Construct a _LineMatcher
@@ -296,8 +335,8 @@ class _LineMatcher:
         self.js1 = js1
         self.js2 = js2
         self.depth = depth
-        self.lenmin = lenmin
-        self.factor = factor
+        self.line_min = line_min
+        self.line_factor = line_factor
         maxlen = 0
         for i in range(is1, is2):
             len_a = len(a[i])
@@ -307,156 +346,223 @@ class _LineMatcher:
             len_b = len(b[j])
             if len_b > maxlen:
                 maxlen = len_b
-        if length >= (maxlen // 2):
-            length = maxlen // 2
-        self.length = length
+        self.line_max = min(line_max, maxlen // 2)
 
     def get_opcodes(self):
         if self.depth == 0:  # depth = 0
             side = 0
             logger.debug(
-                "===  a[{}:{}]/b[{}:{}]  ===  d={:02d}  ===  line[:]  ===".format(
-                    self.is1, self.is2, self.js1, self.js2, self.depth
-                )
+                "{}_LineMatcher ===  a[{}:{}]/b[{}:{}]  ===  line_full[:]  ===".format(
+                    "    " * self.depth, self.is1, self.is2, self.js1, self.js2
+                ),
             )
         elif self.depth > 0:  # depth > 0
             if self.depth % 2 == 1:  # depth = 1, 3, 5, ...
                 side = +1
                 logger.debug(
-                    "===  a[{}:{}]/b[{}:{}]  ===  d={:02d}  ===  line[:{:02d}] ===".format(
-                        self.is1, self.is2, self.js1, self.js2, self.depth, self.length
-                    )
+                    "{}_LineMatcher ===  a[{}:{}]/b[{}:{}]  ===  line_head[:{:02d}] ===".format(
+                        "    " * self.depth,
+                        self.is1,
+                        self.is2,
+                        self.js1,
+                        self.js2,
+                        self.line_max,
+                    ),
                 )
             else:  # self.depth % 2 == 0:  # depth = 2, 4, 6, ...
                 side = -1
                 logger.debug(
-                    "===  a[{}:{}]/b[{}:{}]  ===  d={:02d}  ===  line[-{:02d}:] ===".format(
-                        self.is1, self.is2, self.js1, self.js2, self.depth, self.length
-                    )
+                    "{}_LineMatcher ===  a[{}:{}]/b[{}:{}]  ===  line_tail[-{:02d}:] ===".format(
+                        "    " * self.depth,
+                        self.is1,
+                        self.is2,
+                        self.js1,
+                        self.js2,
+                        self.line_max,
+                    ),
                 )
         else:
-            error_preexit(
-                "===  a[{}:{}]/b[{}:{}]  ===  d={:02d} should be non-negative".format(
-                    self.is1, self.is2, self.js1, self.js2, self.depth
+            logger.error(
+                "{}_LineMatcher ===  a[{}:{}]/b[{}:{}]  ===  depth should not be negative".format(
+                    "!!!!" * self.depth, self.is1, self.is2, self.js1, self.js2
                 )
             )
             sys.exit(2)
         if side == 0:
             # self.is1, self.is2, self.js1, self.js2 are known to cover all
+            side_id = "full"
             am = self.a
             bm = self.b
-        elif side == 1:  # left side match
+        elif side == 1:  # left side match (odd-depth)
+            side_id = "head"
             am = []
             bm = []
             for i in range(self.is1, self.is2):
-                am.append(self.a[i][: self.length])
+                am.append(self.a[i][: self.line_max])
             for j in range(self.js1, self.js2):
-                bm.append(self.b[j][: self.length])
-        else:  # side == -1, right side match
+                bm.append(self.b[j][: self.line_max])
+        else:  # side == -1, right side match (even-depth)
+            side_id = "tail"
             am = []
             bm = []
             for i in range(self.is1, self.is2):
-                am.append(self.a[i][-self.length :])
+                am.append(self.a[i][-self.line_max :])
             for j in range(self.js1, self.js2):
-                bm.append(self.b[j][-self.length :])
+                bm.append(self.b[j][-self.line_max :])
         for i in range(self.is1, self.is2):
             logger.debug(
-                "filter a[{}] -> am[{}]='{}'".format(i, i - self.is1, am[i - self.is1])
+                "{}_LineMatcher_filter a[{}] -> {}:am[{}]='{}'".format(
+                    "    " * self.depth, i, side_id, i - self.is1, am[i - self.is1]
+                ),
             )
         for j in range(self.js1, self.js2):
             logger.debug(
-                "filter b[{}] -> bm[{}]='{}'".format(j, j - self.js1, bm[j - self.js1])
+                "{}_LineMatcher_filter b[{}] -> {}:bm[{}]='{}'".format(
+                    "    " * self.depth, j, side_id, j - self.js1, bm[j - self.js1]
+                ),
             )
         seq = SequenceMatcher(None, am, bm)
         match = []
         for tag, i1, i2, j1, j2 in seq.get_opcodes():
             logger.debug(
-                ">>> tag={}  ===  a[{}:{}]/b[{}:{}]".format(
-                    tag, i1 + self.is1, i2 + self.is1, j1 + self.js1, j2 + self.js1
-                )
+                "{}<< SequenceMatcher_tag={}  ===  a[{}:{}]/b[{}:{}]".format(
+                    "    " * self.depth,
+                    tag,
+                    i1 + self.is1,
+                    i2 + self.is1,
+                    j1 + self.js1,
+                    j2 + self.js1,
+                ),
             )
+            ip1 = self.is1 + i1
+            ip2 = self.is1 + i2
+            jp1 = self.js1 + j1
+            jp2 = self.js1 + j2
             if tag == "equal":
                 # multi line section and equal for filtered lines
                 for i in range(i1, i2):
                     ip = self.is1 + i
-                    jp = self.js1 + j1 + i - i1
+                    jp = self.js1 + (i - i1) + j1
                     if side == 0:
                         # full match on filtered line
                         match.append(("E", ip, ip + 1, jp, jp + 1))
+                        logger.debug(
+                            "{}>> _LineMatcher_tag=E  ===  a[{}:{}]/b[{}:{}]  === full match".format(
+                                "    " * self.depth, ip, ip + 1, jp, jp + 1
+                            ),
+                        )
                     else:
                         # partial match only (F for fuzzy)
                         match.append(("F", ip, ip + 1, jp, jp + 1))
+                        logger.debug(
+                            "{}>> _LineMatcher_tag=F  ===  a[{}:{}]/b[{}:{}]  === fuzzy match".format(
+                                "    " * self.depth, ip, ip + 1, jp, jp + 1
+                            ),
+                        )
             elif i1 == i2 or j1 == j2:
                 # delete "a" or delete "b" for filtered lines
-                match.append(
-                    ("N", i1 + self.is1, i2 + self.is1, j1 + self.js1, j2 + self.js1)
+                match.append(("N", ip1, ip2, jp1, jp2))
+                logger.debug(
+                    "{}>> _LineMatcher_tag=N  ===  a[{}:{}]/b[{}:{}]  === delete one side".format(
+                        "    " * self.depth, ip1, ip2, jp1, jp2
+                    ),
                 )
             elif (i1 + 1) == i2 and (j1 + 1) == j2:
                 # single line match -> assume fuzzy match without checking
-                # since this is not equal
-                match.append(
-                    ("F", i1 + self.is1, i2 + self.is1, j1 + self.js1, j2 + self.js1)
+                # even though this is not equal
+                match.append(("F", ip1, ip2, jp1, jp2))
+                logger.debug(
+                    "{}>> _LineMatcher_tag=N  ===  a[{}:{}]/b[{}:{}]  === fuzzy non-match (single line)".format(
+                        "    " * self.depth, ip1, ip2, jp1, jp2
+                    ),
                 )
-            else:
+            else:  # fuzzy match was not resolved
                 # dig deeper for multi-line changes to find fuzzy matches
-                if side == 0:
+                if side == 0:  # full
                     # full -> left side
+                    logger.debug(
+                        "{}>> _LineMatcher_tag=?  ===  a[{}:{}]/b[{}:{}]  === dig deeper depth={} from full".format(
+                            "    " * self.depth, ip1, ip2, jp1, jp2, self.depth + 1
+                        ),
+                    )
                     match.extend(
                         _LineMatcher(
                             a=self.a,
                             b=self.b,
-                            is1=i1 + self.is1,
-                            is2=i2 + self.is1,
-                            js1=j1 + self.js1,
-                            js2=j2 + self.js1,
-                            length=self.length,
+                            is1=ip1,
+                            is2=ip2,
+                            js1=jp1,
+                            js2=jp2,
+                            line_max=self.line_max,
                             depth=self.depth + 1,
                         ).get_opcodes()
                     )
-                elif side == +1:
+                elif side == +1:  # head side
                     # left side -> right side
+                    logger.debug(
+                        "{}>> _LineMatcher_tag=?  ===  a[{}:{}]/b[{}:{}]  === dig deeper depth={} from full/tail".format(
+                            "    " * self.depth, ip1, ip2, jp1, jp2, self.depth + 1
+                        ),
+                    )
                     match.extend(
                         _LineMatcher(
                             a=self.a,
                             b=self.b,
-                            is1=i1 + self.is1,
-                            is2=i2 + self.is1,
-                            js1=j1 + self.js1,
-                            js2=j2 + self.js1,
-                            length=self.length,
+                            is1=ip1,
+                            is2=ip2,
+                            js1=jp1,
+                            js2=jp2,
+                            line_max=self.line_max,
                             depth=self.depth + 1,
                         ).get_opcodes()
                     )
-                elif self.length > self.lenmin:  # side == -1
+                elif self.line_max > self.line_min:  # tail side: side == -1
                     # right side -> left side (shorter)
+                    logger.debug(
+                        "{}>> _LineMatcher_tag=?  ===  a[{}:{}]/b[{}:{}]  === dig deeper depth={} from tail with shorter line_max ={}".format(
+                            "    " * self.depth,
+                            ip1,
+                            ip2,
+                            jp1,
+                            jp2,
+                            self.depth + 1,
+                            self.line_max * self.line_factor // 10,
+                        ),
+                    )
                     match.extend(
                         _LineMatcher(
                             a=self.a,
                             b=self.b,
-                            is1=i1 + self.is1,
-                            is2=i2 + self.is1,
-                            js1=j1 + self.js1,
-                            js2=j2 + self.js1,
-                            length=self.length * self.factor // 10,
+                            is1=ip1,
+                            is2=ip2,
+                            js1=jp1,
+                            js2=jp2,
+                            line_max=self.line_max * self.line_factor // 10,
                             depth=self.depth + 1,
                         ).get_opcodes()
                     )
                 else:
                     # no more shorter, give up as multi-line block change
+                    logger.debug(
+                        "{}>> _LineMatcher_tag=N  ===  a[{}:{}]/b[{}:{}]  === no more depth with line_max {} <= line_min {}".format(
+                            "    " * self.depth,
+                            ip1,
+                            ip2,
+                            jp1,
+                            jp2,
+                            self.line_max,
+                            self.line_min,
+                        ),
+                    )
                     match.append(
                         (
                             "N",
-                            i1 + self.is1,
-                            i2 + self.is1,
-                            j1 + self.js1,
-                            j2 + self.js1,
+                            ip1,
+                            ip2,
+                            jp1,
+                            jp2,
                         )
                     )
-            logger.debug(
-                "<<< tag={}  ===  a[{}:{}]/b[{}:{}]".format(
-                    tag, i1 + self.is1, i2 + self.is1, j1 + self.js1, j2 + self.js1
-                )
-            )
         return match
 
     def _dump_opcodes(self):

@@ -24,8 +24,7 @@ License along with this program; if not, write to the Free
 Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.
 """
-__version__ = "2.11"
+__version__ = "3.0"
 __package__ = "imediff"
 
 __all__ = ["__version__", "__package__"]
-

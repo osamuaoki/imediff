@@ -25,8 +25,12 @@ Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.
 """
 import argparse
+import logging
 
-def initialize_args(logfile="imediff.log"):
+logger = logging.getLogger(__name__)
+
+
+def initialize_args(logfile):
     """
     Parse command line options and arguments
 
@@ -56,28 +60,47 @@ def initialize_args(logfile="imediff.log"):
         "-d", action="store_true", help="Start with all chunks to use diff"
     )
     group.add_argument(
-        "-u", action="store_true", help=argparse.SUPPRESS
-    )  # Start with unresolved diff
-    group.add_argument(
         "-f", action="store_true", help="Start with all chunks to use wdiff"
     )
     group.add_argument(
         "-g", action="store_true", help="Start with good merge mode (only for diff3)"
     )
-    group.add_argument(
+    pa.add_argument(
         "--isjunk",
         action="store_true",
         help="Force isjunk to None instead of the default list",
     )
     pa.add_argument(
-        "--linerule",
-        "-l",
+        "--line-rule",
+        "-r",
         action="store",
         default=2,
-        help="Line alignment matching rule (0,1,2,3,10,11,12,13)",
+        help="Fuzzy match line filtering rule (0,1,2,3,10,11,12,13)",
     )
-    pa.add_argument("--mode", "-m", action="store_true", help="Display mode column")
-    pa.add_argument("--mono", action="store_true", help="Force monochrome display")
+    pa.add_argument(
+        "--line-min",
+        "-l",
+        action="store",
+        default=3,
+        help="Fuzzy match minimum partial line length",
+    )
+    pa.add_argument(
+        "--line-max",
+        "-L",
+        action="store",
+        default=80,
+        help="Fuzzy match maximum partial line length",
+    )
+    pa.add_argument(
+        "--line-factor",
+        "-F",
+        action="store",
+        default=8,
+        help="Fuzzy match (partial line length shortening factor/2-depth) x 10, default 8",
+    )
+    pa.add_argument(
+        "--mono", "-m", action="store_true", help="Force monochrome display"
+    )
     pa.add_argument(
         "--sloppy", action="store_true", help="Allow one to save unresolved contents"
     )
@@ -95,13 +118,13 @@ Write output to the given file.  If this is missing, use STDERR",
         "-C",
         default="~/.imediff",
         help='\
-Specify configuration file to use.  (default="~/.imediff")',
+Specify configuration file to use.  (default="~/.imediff", set this to "none" to use internal configuration only)',
     )
     # hidden option for debug: non-interactive diff/merge operation
     pa.add_argument(
         "--non-interactive", "-n", action="store_true", help="execution without curses"
     )
-    pa.add_argument("--macro", "-M", default=":", help="set MACRO string")
+    pa.add_argument("--macro", "-M", default="", help="set MACRO string.  E.g.: Abw")
     pa.add_argument(
         "--template",
         "-t",
@@ -114,36 +137,48 @@ Specify configuration file to use.  (default="~/.imediff")',
         action="store_true",
         help='Generate debug log in "' + logfile + '"',
     )
-    pa.add_argument("file_a", nargs="?", help="file for OLDER(diff2), YOURS(diff3)")
-    pa.add_argument("file_b", nargs="?", help="file for NEWER(diff2), BASE(diff3)")
+    pa.add_argument("file_a", nargs="?", help="file for OLDER(diff2), MYFILE(diff3)")
+    pa.add_argument(
+        "file_b", nargs="?", help="file for NEWER(diff2), OLDFILE=BASE(diff3)"
+    )
     pa.add_argument(
         "file_c",
         nargs="?",
-        help="file for ------------, THEIRS(diff3) (only for diff3)",
+        help="file for ------------, YOURFILE(diff3) (only for diff3)",
     )
+    # pa.add_argument("--poke", "-p", nargs="?", default=None, help=argparse.SUPPRESS)
     args = pa.parse_args()
     args.macro_buffer = args.macro
     if args.file_c is not None:
         args.diff_mode = 3
     elif args.file_b is not None:
         args.diff_mode = 2
+    elif args.file_a is not None:
+        # undocumented help for diff3
+        args.diff_mode = 1  # help for imediff for 3 files
     else:
-        args.diff_mode = 0
+        # undocumented help for diff2
+        args.diff_mode = 0  # help for imediff for 2 files
+    #
+    # help for imediff for 3 files
     if args.a:
-        args.default_mode = "a"
+        args.default_action = "a"
     elif args.b:
-        args.default_mode = "b"
-    elif args.c and args.diff_mode == 2:
-        args.default_mode = "d"  # backward compatibility -c
+        args.default_action = "b"
     elif args.c and args.diff_mode == 3:
-        args.default_mode = "c"
-    elif args.d or args.u:
-        args.default_mode = "d"  # hidden backward compatibility -u
+        args.default_action = "c"
+    elif args.d:
+        args.default_action = "d"
     elif args.f:
-        args.default_mode = "f"
-    else:  # default=None or "g"
-        if args.diff_mode == 2:
-            args.default_mode = "d"  # default diff2
-        else:
-            args.default_mode = "g"  # default diff3
+        args.default_action = "f"
+    elif args.g and args.diff_mode == 3:
+        args.default_action = "g"
+    elif args.diff_mode == 3:
+        args.default_action = "g"
+    else:  # diff2
+        args.default_action = "d"
+
+    # if args.poke is not None:
+    #     print("I: +++ hidden -p/--poke option is used with '{}' +++".format(args.poke))
+
     return args

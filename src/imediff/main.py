@@ -24,25 +24,27 @@ License along with this program; if not, write to the Free
 Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.
 """
-import logging
-import locale
-import os
-import sys
-import shutil
-
 # utility imediff functions
 from imediff import __version__, __package__
-from imediff.utils import error_preexit, logger, read_lines
+from imediff.utils import read_lines
 from imediff.config import create_template
 from imediff.cli import TextData
 from imediff.tui import TextPad
 from imediff.initialize_confs import initialize_confs
 from imediff.initialize_args import initialize_args
 
+import locale
+import os
+import sys
+import shutil
+import logging
+
+logger = logging.getLogger(__name__)
+
 PACKAGE = __package__
 version = __version__
 
-_version = "".join(
+version_string = "".join(
     filter(
         None,
         (
@@ -84,6 +86,7 @@ License: GPL 2.0+
     p=PACKAGE, v=version
 )
 
+
 ##############################################################################
 def main():
     """
@@ -97,7 +100,7 @@ def main():
 
     # preparation and arguments
     locale.setlocale(locale.LC_ALL, "")
-    if os.path.isdir(".git"):
+    if os.path.isdir(".git"):  # for use under "git-ime"
         logfile = ".git/imediff.log"
     else:
         logfile = "imediff.log"
@@ -105,31 +108,28 @@ def main():
     if args.template:
         create_template(args.conf)
         sys.exit(0)
-
     # logging
-    logger.setLevel(logging.DEBUG)
     if args.debug:
-        # create file handler which logs even debug messages
-        fh = logging.FileHandler(logfile)
+        loglevel = logging.DEBUG
     else:
-        # create file handler which doesn't log
-        fh = logging.NullHandler()
-    fh.setLevel(logging.DEBUG)
-    # create console handler with a higher log level
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.ERROR)
-    # create formatter and add it to the handlers
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        loglevel = logging.WARNING
+    logging.basicConfig(
+        format="%(levelname)s: %(filename)s: %(funcName)s: %(message)s",
+        filename=logfile,
+        level=loglevel,
     )
-    fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
-    # add the handlers to the logger
-    logger.addHandler(fh)
-    logger.addHandler(ch)
+    logger.debug(
+        "============================== start of main =============================="
+    )
 
     # configuration
     confs = initialize_confs(args.conf)
+    if args.debug:
+        for section in confs.sections():
+            for key, value in confs[section].items():
+                logger.debug(
+                    "confs['{}'] >>> key='{}' value='{}'".format(section, key, value)
+                )
     editor = "editor"
     if "EDITOR" in os.environ:
         editor = os.environ["EDITOR"]
@@ -142,12 +142,22 @@ def main():
 
     # normalize and process non-standard situation
     if args.version:
-        print(__version__)
+        print(version_string)
         sys.exit(0)
-    logger.debug("diff_mode: {}".format(args.diff_mode))
-    if args.diff_mode == 0 and args.non_interactive:
-        tutorial = True
-    if args.diff_mode == 0:
+
+    if args.diff_mode == 0:  # argument contains only zero file
+        args.tutorail = True
+        args.diff_mode = 2  # Fake input
+        list_a = (_opening + '\n    Type "q" to quit this tutorial.').splitlines(
+            keepends=True
+        )
+        list_b = [""]
+        list_c = []
+        confs["config"]["confirm_quit"] = "False"
+        confs["config"]["confirm_exit"] = "False"
+        logger.debug("=== diff0 === Tutorial for diff2 ===")
+    elif args.diff_mode == 1:  # argument contains only 1 file
+        args.tutorail = True
         args.diff_mode = 3  # Fake input
         list_a = (_opening + '\n    Type "q" to quit this tutorial.').splitlines(
             keepends=True
@@ -156,35 +166,40 @@ def main():
         list_c = list_a
         confs["config"]["confirm_quit"] = "False"
         confs["config"]["confirm_exit"] = "False"
-        tutorial = True
+        logger.debug("=== diff1 === Tutorial for diff3 ===")
     elif args.diff_mode == 2:
+        args.tutorail = False
         # diff2
-        logger.debug("diff_mode == 2")
         list_a = read_lines(args.file_a)
         list_b = read_lines(args.file_b)
         list_c = None
-        tutorial = False
+        logger.debug(
+            "=== diff2 === default_action='{}' non_interactive={} ===".format(
+                args.default_action, args.non_interactive
+            ),
+        )
     elif args.diff_mode == 3:
+        args.tutorail = False
         list_a = read_lines(args.file_a)
         list_b = read_lines(args.file_b)
         list_c = read_lines(args.file_c)
-        tutorial = False
+        logger.debug(
+            "=== diff3 === default_action='{}' non_interactive={} ===".format(
+                args.default_action, args.non_interactive
+            ),
+        )
     else:
-        error_preexit("imediff normally takes 2 or 3 files")
+        logger.error("imediff normally takes 2 or 3 files")
         sys.exit(2)
 
-    logger.debug("tutorial: {}".format(tutorial))
-    logger.debug("non_interactive: {}".format(args.non_interactive))
-    # call main routine
     if not args.non_interactive:
         display_instance = TextPad(list_a, list_b, list_c, args, confs)
-        display_instance.command_loop(tutorial=tutorial)
+        # set textpad size
+        display_instance.main()
         del display_instance
-    elif tutorial:
-        print(_opening)
-    else:
+    else:  # non-interactive
         text_instance = TextData(list_a, list_b, list_c, args, confs)
-        text_instance.command_loop()
+        text_instance.main()
         del text_instance
+    logger.debug("end of main")
     sys.exit(0)
-

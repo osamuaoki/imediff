@@ -28,9 +28,9 @@ Boston, MA 02110-1301, USA.
 import os
 import sys
 import io
-import curses
+import logging
 
-from imediff.utils import error_preexit, logger
+logger = logging.getLogger(__name__)
 
 # Update version below only when configuration API changes
 
@@ -42,48 +42,151 @@ config_template = """\
 # Key side is case insensitive.
 
 [config]
-version = 2.3       # DON'T EDIT THIS.  This is for future upgrade tracking.
+version = 3.0       # DON'T EDIT THIS.  This is for future upgrade tracking.
 confirm_exit = True # Set as "False" to save and exit without pause
 confirm_quit = True # Set as "False" to quit without pause
 #editor = vim       # Set this to override /usr/bin/editor and $EDITOR
 
-[key]               # key assignment for the single key command
+# key remapping is used only for TUI user input.  MACRO need to use the
+# original bindings.
+[key]               # action invoked by the selected key
 select_a = a        # set mode a to select 'a' buffer
 select_b = b        # set mode b to select 'b' buffer
 select_c = c        # set mode c to select 'c' buffer (diff3)
-select_d = d        # set mode d to select diff content
-select_e = e        # set mode e to select editor buffer
-select_f = f        # set mode f to select wdiff content
-select_g = g        # set _g_ood default mode (diff3)
-select_h = h        # show _h_elp screen
-select_j = j        # move down display scope
-select_k = k        # move up display scope
-select_m = m        # start editor to _m_odify content
+select_d = d        # set mode d to select diff content if possible
+select_e = e        # set mode e to select editor buffer if possible
+select_f = f        # set mode f to select wdiff content if possible
+select_g = g        # set good merge (diff3/wdiff3) if possible
+select_h = h        # move left for the display scope
+select_i = i
+select_j = j        # move down for the display scope
+select_k = k        # move up for the display scope
+select_l = l        # move right for the display scope
+select_m = m        # start editor to modify content / M reset
 select_n = n        # move active selection to _n_ext
+select_o = o
 select_p = p        # move active selection to _p_revious
 select_q = q        # _q_uit imediff without saving the result
-select_s = s        # merge _s_tatus
-select_t = t        # move active selection to home=_t_op
+select_r = r
+select_s = s
+select_t = t        # display tutorial
+select_u = u
+select_v = v
 select_w = w        # _w_rite result and e_x_it program
 select_x = x        # _w_rite result and e_x_it program
 select_y = y        # key for "_Y_es" answer
-select_z = z        # move active selection to end=_z_
+select_z = z
+select_SPACE = SPACE
+select_! = !
+select_" = "
+select_HASH = HASH
+select_$ = $
+select_PERCENT = PERCENT
+select_& = &
+select_' = '
+select_( = (
+select_) = )
+select_* = *
+select_+ = +
+select_, = ,
+select_- = -
+select_. = .
+select_/ = /
+select_0 = 0
+select_1 = 1
+select_2 = 2
+select_3 = 3
+select_4 = 4
+select_5 = 5
+select_6 = 6
+select_7 = 7
+select_8 = 8
+select_9 = 9
+select_COLON = COLON
+select_; = ;
+select_< = >
+select_EQUAL = EQUAL
+select_> = >
+select_? = ?
+select_@ = @
+select_LBRACKET = LBRACKET        # MACRO block start
+select_BACKSLASH = BACKSLASH
+select_RBRACKET = RBRACKET        # MACRO block end
+select_^ = ^
+select__ = _
+select_` = `
+select_{ = {
+select_| = |
+select_} = }
+select_~ = ~
+select_DEL = DEL
+select_TAB = TAB
+select_BTAB = BTAB
+select_ENTER = ENTER
+select_UP = UP
+select_DOWN = DOWN
+select_LEFT = LEFT
+select_RIGHT = RIGHT
+select_INSERT = INSERT
+select_DELETE = DELETE
+select_HOME = HOME
+select_END = END
+select_PAGEUP = PAGEUP
+select_PAGEDOWN = PAGEDOWN
+select_BACKSPACE = BACKSPACE
+select_F1 = F1
+select_F2 = F2
+select_F3 = F3
+select_F4 = F4
+select_F5 = F5
+select_F6 = F6
+select_F7 = F7
+select_F8 = F8
+select_F9 = F9
+select_F10 = F10
+select_F11 = F11
+select_F12 = F11
+#          = ^--------- customized key setting
+# ^--------- reference key setting
+# Upper case ASCII-keys are mapped following lower case keys
 
-[color_diff2]       # color assignment for imediff with 2 files
-color_a = BLUE      # color for mode a  (OLDER)
-color_b = RED       # color for mode b  (NEWER)
-color_c = MAGENTA   #                   (not used with diff2)
-color_d = GREEN     # color for mode d  (DIFF)
-color_e = YELLOW    # color for mode e  (EDITOR)
-color_f = CYAN      # color for mode f  (WDIFF)
+[attrib]
+color_merge_ab           = WHITE,NORMAL         # diff2  =
+color_merge_abc          = WHITE,NORMAL         # diff3  =
+color_merge_ac           = WHITE,NORMAL         # diff 3 #
+color_merge_a            = GREEN,NORMAL         # diff 3 A
+color_merge_c            = YELLOW,NORMAL        # diff 3 C
+color_merge_wdiff        = WHITE,NORMAL         # diff 3 G wdiff
+color_a                  = GREEN,BOLD           # diff23 a
+color_a_focus            = GREEN,BOLD,REVERSE
+color_b2                 = YELLOW,BOLD          # diff2  b (wdiff2)
+color_b2_focus           = YELLOW,BOLD,REVERSE
+color_b3                 = MAGENTA,BOLD         # diff 3 b (wdiff3)
+color_b3_focus           = MAGENTA,BOLD,REVERSE
+color_c                  = YELLOW,BOLD          # diff 3 c
+color_c_focus            = YELLOW,BOLD,REVERSE
+color_editor             = CYAN,BOLD            # editor-buffer-line
+color_editor_focus       = CYAN,BOLD,REVERSE
+color_diff_marker        = BLUE,NORMAL          # marker-diff-line
+color_diff_marker_focus  = BLUE,NORMAL,REVERSE
+color_wdiff_abc          = WHITE,NORMAL         # wdiff3
+color_wdiff_abc_focus    = WHITE,BOLD,REVERSE
+color_wdiff_ac           = WHITE,DIM            # wdiff3
+color_wdiff_ac_focus     = WHITE,BOLD,REVERSE
+color_wdiff_ab           = WHITE,NORMAL         # wdiff2
+color_wdiff_ab_focus     = WHITE,BOLD,REVERSE
+color_wdiff_marker       = BLUE,NORMAL
+color_wdiff_marker_focus = BLUE,NORMAL,REVERSE
 
-[color_diff3]       # color assignment for imediff with 3 files
-color_a = BLUE      # color for mode a  (YOURS)
-color_b = MAGENTA   # color for mode b  (OLD COMMON)
-color_c = RED       # color for mode c  (THEIRS)
-color_d = GREEN     # color for mode d  (DIFF)
-color_e = YELLOW    # color for mode e  (EDITOR)
-color_f = CYAN      # color for mode f  (WDIFF)
+color_status             = WHITE,NORMAL
+color_status_focus       = WHITE,BOLD,REVERSE
+color_white_bold         = WHITE,BOLD
+color_white              = WHITE,NORMAL
+color_white_reverse      = WHITE,BOLD,REVERSE
+color_warn               = RED,BOLD
+color_eof                = BLUE,DIM,REVERSE
+color_mono               = WHITE,NORMAL
+
 
 [line_separator]    # diff output formatting strings
                     # diff2 uses       ls0,      ls2, ls3
@@ -113,16 +216,6 @@ ws3 = }
 #ws3 = »
 """
 
-cc = dict()
-cc["BLUE"] = curses.COLOR_BLUE
-cc["RED"] = curses.COLOR_RED
-cc["YELLOW"] = curses.COLOR_YELLOW
-cc["GREEN"] = curses.COLOR_GREEN
-cc["CYAN"] = curses.COLOR_CYAN
-cc["MAGENTA"] = curses.COLOR_MAGENTA
-cc["WHITE"] = curses.COLOR_WHITE
-cc["BLACK"] = curses.COLOR_BLACK
-
 
 def create_template(conf):
     config_file = os.path.expanduser(conf)
@@ -132,10 +225,10 @@ def create_template(conf):
             with open(config_file, mode="w", buffering=io.DEFAULT_BUFFER_SIZE) as ofp:
                 ofp.write(config_template)
         except IOError:
-            error_preexit("Error in creating configuration file: {}".format(conf))
+            logger.error("Error in creating configuration file: {}".format(conf))
             sys.exit(2)
     else:
-        error_preexit("Erase {} before 'imediff -t'".format(conf))
+        logger.error("Erase {} before 'imediff -t'".format(conf))
         sys.exit(2)
     return
 
