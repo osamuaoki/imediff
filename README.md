@@ -37,28 +37,28 @@ See below "[Tutorial (wheel)](#tutorial-wheel)" for the non-system program insta
 ## What is `imediff`
 
 The `imediff` command helps you to merge 2 slightly different files with an
-optional base file interactively or non-interactively.
+optional base file interactively or non-interactively with MACRO. (-Mw)
 
 For non-interactive 2-way diff operation, this can express diffs with ordinary
-diff-format
+diff-format.
 
 ```console
- $ imediff -n older.txt newer.txt -o diff.txt
+ $ imediff -Mw -n older.txt newer.txt -o diff.txt
 ```
 
 For non-interactive 2-way diff operation, this can also express diffs with
 wdiff format
 
 ```console
- $ imediff -n -f older.txt newer.txt -o wdiff.txt
+ $ imediff -Mw -n -f older.txt newer.txt -o wdiff.txt
 ```
 
 For non-interactive 3-way merge operation, this can not only express conflicts
 with ordinary diff3-format but also 3-way wdiff format
 
 ```console
- $ imediff -n yours.txt base.txt theirs.txt -o merged.txt
- $ imediff -n -f yours.txt base.txt theirs.txt -o wdiff-merged.txt
+ $ imediff -Mw -n    myfile.txt oldfile.txt yourfile.txt -o merged.txt
+ $ imediff -Mw -n -f myfile.txt oldfile.txt yourfile.txt -o wdiff-merged.txt
 ```
 Here, this 3-way-merge logic is smarter than "diff3 -m".
 
@@ -285,7 +285,7 @@ Osamu also wanted to add some features:
 * Add `git-mergetool` integration.
 * Add `git ime` to help making partial patch series commits to git.
 * Good CJK wide character support with East_Asian_Width on console.
-* The use of GNU gettext for `imediff` is disabled for the sake of portability via wheel.
+* The use of GNU gettext for `imediff` is removed for the sake of portability via wheel.
 
 This was accomplished by practically a whole rewrite of the source code
 originally released as `imediff2` by Jarno Elonen after consulting with him
@@ -294,6 +294,7 @@ since it supports diff for not only 2 files but also 3 files.  The version
 number is bumped to 2.0.  In version 2.5, line matching rules of `imediff` are
 updated to produce better diff presentation. In version 2.10-2.11, `git ime`
 was rewitten to cope with commits involving rename and delete of files.
+In version 3.0, TUI was rewritten to cope with curses library limitations.
 
 
 ### Note on Debian package links
