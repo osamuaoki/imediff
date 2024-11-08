@@ -30,6 +30,7 @@ import os
 import sys
 import subprocess
 
+
 def install():
     """
     Entry point for imediff_install command

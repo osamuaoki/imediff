@@ -40,17 +40,17 @@ logger = logging.getLogger(__name__)
 # Keep this under 74 char/line for better looks
 # I need this hack to avoid translation of tutorial for now. XXX FIXME XXX
 nonclean = """\
-This requirement of the clean merge for 'save and exit' can be disabled by
-specifying the "--sloppy" option to the imediff command.  Alternatively,
-you can effectively evade this requirement by pressing "m" on all
-non-clean merges to make them as the manually edited text data."""
+You can evade this requirement by pressing "m" on all non-clean
+merges and making them as manually edited merged data.
 
+This requirement can be disabled by starting this program as
+"imediff --sloppy ...", too."""
 
 # Keep this under 76 char/line to fit this in the 80 char terminal
 tutorial = """\
 Quick start:
   * Use cursor keys and h/j/k/l/n/p/0 to read this tutorial screen.
-  * Type SPACE to exit this tutorial screen to the main screen.
+  * Type "q" to exit this tutorial screen to the main screen.
   * Type "t" to get back to this tutorial screen.
   * Type "/" in the main screen to see the key bindings.
 
@@ -233,11 +233,12 @@ Note
 
 The version 3.0 is a major rewrite to address file size limitation caused by
 the underlying curses library and to limit wdiff to operate only within a
-single line."""
+single line.
 
-# The "diff3 -m" has an odd feature for the merge when "file_a" and "file_c"
-# undergo identical changes from "file_b".  This imediff program results in a
-# more intuitive merge result.
+The "diff3 -m file_a file_b file_c" has an odd feature of showing diff2
+between "file_b" and "file_c" for the portion of changes in which both
+"file_a" and "file_c" underwent identical changes from "file_b". This
+imediff program results is a more intuitive one with the clean merge."""
 
 
 class TextPad(TextData):  # TUI data
@@ -274,15 +275,7 @@ class TextPad(TextData):  # TUI data
 
     def init_args_confs_tui(self, args, confs):
         # Init from commandline/configuration parameters
-        self.default_action = args.default_action  # display with action prefix
-        self.tutorial = False
         self.mono = args.mono  # display in monochrome
-        if self.diff_mode == 0:
-            self.diff_mode = 2
-            self.tutorial = True
-        elif self.diff_mode == 1:
-            self.diff_mode = 3
-            self.tutorial = True
         self.attrib = confs["attrib"]
         # self.poke = args.poke  # display in monochrome
 
@@ -373,11 +366,7 @@ class TextPad(TextData):  # TUI data
                         )
             flag_update_corner = False
             self.display_data(corner_virt_row, corner_virt_col)
-            if self.tutorial:
-                keyname = "t"
-                self.tutorial = False
-            else:
-                keyname = self.get_macro_command()
+            keyname = self.get_macro_command()
             if keyname in ["IGNORE"]:
                 logger.warning("W: ignore key/macro input")
                 pass
@@ -385,43 +374,97 @@ class TextPad(TextData):  # TUI data
                 if self.sloppy or (
                     not self.sloppy and self.get_unresolved_count() == 0
                 ):
-                    if not self.confirm_exit or self.display_popup_win(
-                        "Do you 'save and exit'? (Press '{y:}' to exit)".format(
-                            y=self.rkc["y"]
-                        ),
+                    if not self.confirm_exit or self.display_content_win(
+                        [
+                            (
+                                "Do you want to 'save and exit'?",
+                                self.get_attr("color_warn", False),
+                            ),
+                            ("", self.get_attr("color_white", False)),
+                            (
+                                "* Press '{y:}' to save and exit.".format(
+                                    y=self.rkc["y"]
+                                ),
+                                self.get_attr("color_white_bold", False),
+                            ),
+                            (
+                                "* Press '{SPACE:}' to continue.".format(
+                                    SPACE=self.rkc["SPACE"]
+                                ),
+                                self.get_attr("color_white_bold", False),
+                            ),
+                        ],
                         ["y", "Y", "N", "n", "SPACE", "ESCAPE"],
                     ) in ["y", "Y"]:
                         write_file(self.file_o, self.get_string_from_content_for_file())
                         break
                 else:
-                    self.display_popup_win(
-                        (
-                            "Can't 'save and exit' due to the non-clean merge. (Press {SPACE:} or {y:} to continue)"
-                            + "\n\n"
-                            + nonclean
-                        ).format(SPACE=self.rkc["SPACE"], y=self.rkc["y"]),
-                        ["y", "Y", "SPACE"],
+                    self.display_content_win(
+                        [
+                            (
+                                "You can't 'save and exit' due to the non-clean merge.",
+                                self.get_attr("color_warn", False),
+                            ),
+                            ("", self.get_attr("color_white", False)),
+                            (
+                                "* Press '{SPACE:}' to continue.".format(
+                                    SPACE=self.rkc["SPACE"]
+                                ),
+                                self.get_attr("color_white_bold", False),
+                            ),
+                            ("", self.get_attr("color_white", False)),
+                            (
+                                "You can evade this requirement by pressing 'm' on all non-clean",
+                                self.get_attr("color_white", False),
+                            ),
+                            (
+                                "merges and making them as manually edited merged data.",
+                                self.get_attr("color_white", False),
+                            ),
+                            ("", self.get_attr("color_white", False)),
+                            (
+                                "This requirement can be disabled by starting this program as",
+                                self.get_attr("color_white", False),
+                            ),
+                            (
+                                "'imediff --sloppy ...', too.",
+                                self.get_attr("color_white", False),
+                            ),
+                        ],
+                        ["SPACE", "y", "Y", "w", "W", "e", "E"],
                     )
             elif keyname in ["QUIT", "q"]:
-                if not self.confirm_exit or self.display_popup_win(
-                    "Do you 'quit without saving'? (Press '{y:}' to quit)".format(
-                        y=self.rkc["y"]
-                    ),
-                    ["y", "Y", "N", "n", "SPACE", "ESCAPE"],
+                if not self.confirm_exit or self.display_content_win(
+                    [
+                        (
+                            "Do you want to 'quit without saving'?",
+                            self.get_attr("color_warn", False),
+                        ),
+                        ("", self.get_attr("color_white", False)),
+                        (
+                            "* Press '{y:}' to quit without saving.".format(
+                                y=self.rkc["y"]
+                            ),
+                            self.get_attr("color_white_bold", False),
+                        ),
+                        (
+                            "* Press '{SPACE:}' to continue.".format(
+                                SPACE=self.rkc["SPACE"]
+                            ),
+                            self.get_attr("color_white_bold", False),
+                        ),
+                    ],
+                    ["y", "Y", "N", "n", "q", "Q", "SPACE", "ESCAPE"],
                 ) in ["y", "Y"]:
                     self.chunk_list = []
                     logger.error("Quit without saving by the user request")
                     sys.exit(2)
             elif keyname in ["?", "/", "F1"]:
                 # Show help screen
-                self.display_content_win(
-                    self.get_helptext(), ["SPACE", "ESCAPE", "q", "Q"]
-                )
+                self.display_content_win(self.get_helptext(), ["ESCAPE", "q", "Q"])
             elif keyname == "t":
                 # Show tutorial screen
-                self.display_popup_win(
-                    tutorial, ["SPACE", "ESCAPE", "q", "Q"], "color_white"
-                )
+                self.display_popup_win(tutorial, ["ESCAPE", "q", "Q"], "color_white")
             # Moves in document
             elif keyname in ["j", "DOWN"]:
                 corner_virt_row += 1
@@ -491,10 +534,10 @@ class TextPad(TextData):  # TUI data
                 elif keyname in ["p", "BACKSPACE"]:
                     self.move_focus_to_any_resolvable_chunk_prev()
                     flag_update_corner = True
-                elif keyname in ["HOME"]:
+                elif keyname in ["0", "HOME"]:
                     self.move_focus_to_any_resolvable_chunk_home()
                     flag_update_corner = True
-                elif keyname in ["END"]:
+                elif keyname in ["9", "END"]:
                     self.move_focus_to_any_resolvable_chunk_end()
                     flag_update_corner = True
                 elif keyname in ["N", "TAB"]:
@@ -503,10 +546,10 @@ class TextPad(TextData):  # TUI data
                 elif keyname in ["P", "BTAB"]:
                     self.move_focus_to_usr_chunk_prev()
                     flag_update_corner = True
-                elif keyname in ["0"]:
+                elif keyname in [")"]:
                     self.move_focus_to_usr_chunk_home()
                     flag_update_corner = True
-                elif keyname in ["9"]:
+                elif keyname in ["(q"]:
                     self.move_focus_to_usr_chunk_end()
                     flag_update_corner = True
                 else:
@@ -565,17 +608,7 @@ class TextPad(TextData):  # TUI data
                     # no content consumes 1 line for "???"
                     virt_range = 1
                     self.virt_to_chunk.append((chunk_index, 0, action))
-            elif action == "b":
-                virt_range = j2 - j1
-                if virt_range > 0:
-                    for virt_row_index in range(virt_row, virt_row + virt_range):
-                        chunk_subindex = virt_row_index - virt_row
-                        self.virt_to_chunk.append((chunk_index, chunk_subindex, action))
-                else:
-                    # no content consumes 1 line for "???"
-                    virt_range = 1
-                    self.virt_to_chunk.append((chunk_index, 0, action))
-            elif action == "B":
+            elif action == "b" or action == "B":
                 virt_range = j2 - j1
                 if virt_range > 0:
                     for virt_row_index in range(virt_row, virt_row + virt_range):
@@ -628,20 +661,13 @@ class TextPad(TextData):  # TUI data
                 self.virt_to_chunk.append((chunk_index, 0, "d33"))
                 # diff2 consumes 3 extra lines as separators
                 virt_range = virt_range_a + virt_range_b + virt_range_c + 4
-            elif action == "e" and len(merge_buffer) > 0:
-                virt_range = len(merge_buffer)
-                for chunk_subindex in range(virt_range):
-                    self.virt_to_chunk.append((chunk_index, chunk_subindex, action))
-            elif action == "G" and len(merge_buffer) > 0:
+            elif (action == "e" or action == "G") and len(merge_buffer) > 0:
                 virt_range = len(merge_buffer)
                 for chunk_subindex in range(virt_range):
                     self.virt_to_chunk.append((chunk_index, chunk_subindex, action))
             elif (
                 action == "f" and i2 - i1 == 1 and j2 - j1 == 1 and self.diff_mode == 2
-            ):
-                virt_range = 1
-                self.virt_to_chunk.append((chunk_index, 0, action))
-            elif (
+            ) or (
                 action == "f"
                 and i2 - i1 == 1
                 and j2 - j1 == 1
@@ -845,10 +871,10 @@ enter                 toggle action of a chunk
 {m}                     modify a chunk with editor: {edit_cmd}
 {M}                     remove a editor result buffer
 arrows/pgdn,{j}/pgup,{k}  move scope of the display
-space,{n} /backspace,{p}  select the next/previous available chunk
-tab,{N}   /shift-tab,{P}  select the next/previous unresolved chunk
-{home}    /{end}          select the first/last available chunk
-{zero}       /{nine}            select the first/last unresolved chunk
+space,{n} /backspace,{p}  select the next/previous usr_chunk
+tab,{N}   /shift-tab,{P}  select the next/previous unresolved usr_chunk
+{zero}    /{nine}          select the first/last usr_chunk
+{rparen},home  /{lparen},end        select the first/last unresolved usr_chunk
 {question},{slash}                   show this help
 {t}                     show tutorial""".format(
                 w=self.rkc["w"],
@@ -875,8 +901,8 @@ tab,{N}   /shift-tab,{P}  select the next/previous unresolved chunk
                 P=self.rkc["P"],
                 zero=self.rkc["0"],
                 nine=self.rkc["9"],
-                home=self.rkc["HOME"],
-                end=self.rkc["END"],
+                lparen=self.rkc["("],
+                rparen=self.rkc[")"],
                 t=self.rkc["t"],
                 question=self.rkc["?"],
                 slash=self.rkc["/"],
@@ -942,10 +968,10 @@ enter                 toggle action of a chunk
 {m}                     modify a chunk with editor: {edit_cmd}
 {M}                     remove a editor result buffer
 arrows/pgdn,{j}/pgup,{k}  move scope of the display
-space,{n} /backspace,{p}  select the next/previous available chunk
-tab,{N}   /shift-tab,{P}  select the next/previous unresolved chunk
-{home}    /{end}          select the first/last available chunk
-{zero}       /{nine}            select the first/last unresolved chunk
+space,{n} /backspace,{p}  select the next/previous usr_chunk
+tab,{N}   /shift-tab,{P}  select the next/previous unresolved usr_chunk
+{zero}    /{nine}          select the first/last usr_chunk
+{rparen},home  /{lparen},end        select the first/last unresolved usr_chunk
 {question},{slash}                   show this help
 {t}                     show tutorial""".format(
                 w=self.rkc["w"],
@@ -976,8 +1002,8 @@ tab,{N}   /shift-tab,{P}  select the next/previous unresolved chunk
                 P=self.rkc["P"],
                 zero=self.rkc["0"],
                 nine=self.rkc["9"],
-                home=self.rkc["HOME"],
-                end=self.rkc["END"],
+                lparen=self.rkc["("],
+                rparen=self.rkc[")"],
                 t=self.rkc["t"],
                 question=self.rkc["?"],
                 slash=self.rkc["/"],
@@ -2035,7 +2061,7 @@ tab,{N}   /shift-tab,{P}  select the next/previous unresolved chunk
     def display_popup_win(
         self,
         msg,
-        keyname_list=["SPACE"],
+        keyname_list=["q"],
         color="color_warn",
         msg_row_max=0,
         msg_col_max=0,
@@ -2054,7 +2080,7 @@ tab,{N}   /shift-tab,{P}  select the next/previous unresolved chunk
     def display_content_win(
         self,
         msg_content,
-        keyname_list=["SPACE"],
+        keyname_list=["q"],
         msg_row_max=0,
         msg_col_max=0,
         margin_row=1,
@@ -2159,7 +2185,7 @@ tab,{N}   /shift-tab,{P}  select the next/previous unresolved chunk
                 corner_popup_col += 8
             elif keyname in ["h", "LEFT"]:
                 corner_popup_col -= 8
-            elif keyname in ["n", "PAGEDOWN", "ENTER"]:
+            elif keyname in ["n", "PAGEDOWN", "SPACE", "ENTER"]:
                 corner_popup_row += 20
             elif keyname in ["p", "PAGEUP", "BACKSPACE"]:
                 corner_popup_row -= 20

@@ -6,7 +6,7 @@ import argparse
 # This allows different reporting style for TUI/CLI
 pa = argparse.ArgumentParser(
     description="SIMPLE example",
-    epilog='See README.md for more',
+    epilog="See README.md for more",
 )
 group = pa.add_mutually_exclusive_group()
 group.add_argument(

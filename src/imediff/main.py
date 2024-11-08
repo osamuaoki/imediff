@@ -58,7 +58,7 @@ version_string = "".join(
     )
 )
 
-_opening = """\
+opening = """\
 ===============================================================================
                                {p}                         (version {v})
 
@@ -73,15 +73,17 @@ From the console command line prompt, type:
  * "imediff" to read the tutorial,
  * "imediff -h" to get all the command line options,
  * "imediff -o output older newer" to merge 2 files, and
- * "imediff -o output yours base theirs" to merge 3 files.
+ * "imediff -o output myfile oldfile yourfile" to merge 3 files.
 
-For usage instructions, type "h" and "H" in the interactive screen.
+For usage instructions, type "?" and "t" in the interactive screen.
 
  * Copyright (C) 2003, 2004 Jarno Elonen <elonen@iki.fi>
  * Copyright (C) 2018, 2024 Osamu Aoki <osamu@debian.org>
 
 License: GPL 2.0+
 ===============================================================================
+
+Type "q" to quit this program.
 """.format(
     p=PACKAGE, v=version
 )
@@ -146,29 +148,29 @@ def main():
         sys.exit(0)
 
     if args.diff_mode == 0:  # argument contains only zero file
-        args.tutorail = True
-        args.diff_mode = 2  # Fake input
-        list_a = (_opening + '\n    Type "q" to quit this tutorial.').splitlines(
-            keepends=True
-        )
-        list_b = [""]
+        list_a = (opening).splitlines(keepends=True)
+        list_b = list_a
         list_c = []
+        args.file_a = ""
+        args.file_b = ""
+        args.diff_mode = 2
+        args.macro = "t"
         confs["config"]["confirm_quit"] = "False"
         confs["config"]["confirm_exit"] = "False"
         logger.debug("=== diff0 === Tutorial for diff2 ===")
     elif args.diff_mode == 1:  # argument contains only 1 file
-        args.tutorail = True
-        args.diff_mode = 3  # Fake input
-        list_a = (_opening + '\n    Type "q" to quit this tutorial.').splitlines(
-            keepends=True
-        )
-        list_b = [""]
+        list_a = (opening).splitlines(keepends=True)
+        list_b = list_a
         list_c = list_a
+        args.file_a = ""
+        args.file_b = ""
+        args.file_c = ""
+        args.diff_mode = 3
+        args.macro = "t"
         confs["config"]["confirm_quit"] = "False"
         confs["config"]["confirm_exit"] = "False"
         logger.debug("=== diff1 === Tutorial for diff3 ===")
     elif args.diff_mode == 2:
-        args.tutorail = False
         # diff2
         list_a = read_lines(args.file_a)
         list_b = read_lines(args.file_b)
@@ -179,7 +181,6 @@ def main():
             ),
         )
     elif args.diff_mode == 3:
-        args.tutorail = False
         list_a = read_lines(args.file_a)
         list_b = read_lines(args.file_b)
         list_c = read_lines(args.file_c)

@@ -357,17 +357,17 @@ class TextData:  # Non-TUI data
                     self.move_focus_to_any_resolvable_chunk_next()
                 elif ch == "p":
                     self.move_focus_to_any_resolvable_chunk_prev()
-                elif ch == "t":
+                elif ch == "0":
                     self.move_focus_to_any_resolvable_chunk_home()
-                elif ch == "z":
+                elif ch == "9":
                     self.move_focus_to_any_resolvable_chunk_end()
                 elif ch == "N":
                     self.move_focus_to_usr_chunk_next()
                 elif ch == "P":
                     self.move_focus_to_usr_chunk_prev()
-                elif ch == "T":
+                elif ch == ")":
                     self.move_focus_to_usr_chunk_home()
-                elif ch == "Z":
+                elif ch == "(":
                     self.move_focus_to_usr_chunk_end()
                 else:
                     pass
