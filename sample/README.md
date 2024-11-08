@@ -2,6 +2,10 @@
 
 Here is memo for this directory.
 
+## diff3 vs. imediff
+
+See 00_local_imediff_diff3.sh and its results
+
 ## Tailing NL
 
 See `test_readlines.py`
