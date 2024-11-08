@@ -9,5 +9,5 @@ PYTHONPATH=$(realpath $PYTHONPATH)
 echo "I: Setting PYTHONPATH=$PYTHONPATH"
 export PYTHONPATH
 
-# ignore ~/.imediff
-python3 _imediff.py -C none "$@"
+# ignore ~/.imediff and output log
+python3 _imediff.py -C none -D "$@"
