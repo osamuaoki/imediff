@@ -94,12 +94,6 @@ always yields the clean merge.
 You can also use the `imediff` command non-interactively from CLI with --macro
 option.
 
-**NOTE**: There seems to be some limitation (16K?) of acceptable input lines for
-the `imediff` program running under full screen.  This causes the `imediff`
-program to crash.  The root cause seems to be the underlining `ncurses` binding
-which the `imediff` program uses. Now, the `imediff` automatically enables the
-`--auto` option to avoid this.
-
 ## What is `git-ime`
 
 The `git ime` command helps you to unsquash 2 consecutive commits from `HEAD^`
