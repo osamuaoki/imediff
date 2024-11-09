@@ -1,3 +1,16 @@
+imediff (3.1-1) unstable; urgency=medium
+
+  * Fixed imediff minor bugs
+  * Add pypi-support scripts
+  * Add test/00_local_imediff.sh dev-helper scripts
+  * Add sample/00_local_imediff_diff3.sh and results
+  * Drop outdated reminder on file size limitation
+  * Add /WHITE support feature
+  * Reasonable -a, -b, -c, -d starting behavior for diff3
+  * Refine Tutorial text.
+
+ -- Osamu Aoki <osamu@debian.org>  Sat, 09 Nov 2024 21:39:48 +0900
+
 imediff (3.0-1) unstable; urgency=medium
 
   * Embed version in git-ime.
