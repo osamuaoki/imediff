@@ -40,8 +40,8 @@ $COMMAND --macro=w -C none -n -g file_a file_b file_c -o z_imediff3_g.new
 python3 _diff23.py >z_diff23.new
 # check configuration initializer default values
 # ignore ~/.imediff
-python3 _imediff.py -C none -D -n --macro=q
-mv -f imediff.log z_imediff-confs.new
+#python3 _imediff.py -C none -D -n --macro=q
+#mv -f imediff.log z_imediff-confs.new
 # ignore ~/.imediff
 python3 _imediff.py -C z_imediff.conf.new -t
 
