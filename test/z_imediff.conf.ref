@@ -5,7 +5,7 @@
 # Key side is case insensitive.
 
 [config]
-version = 3.0       # DON'T EDIT THIS.  This is for future upgrade tracking.
+version = 3.1       # DON'T EDIT THIS.  This is for future upgrade tracking.
 confirm_exit = True # Set as "False" to save and exit without pause
 confirm_quit = True # Set as "False" to quit without pause
 #editor = vim       # Set this to override /usr/bin/editor and $EDITOR
@@ -26,18 +26,18 @@ select_j = j        # move down for the display scope
 select_k = k        # move up for the display scope
 select_l = l        # move right for the display scope
 select_m = m        # start editor to modify content / M reset
-select_n = n        # move active selection to _n_ext
+select_n = n        # move active selection to next usr_chunk
 select_o = o
-select_p = p        # move active selection to _p_revious
-select_q = q        # _q_uit imediff without saving the result
+select_p = p        # move active selection to previous usr_chunk
+select_q = q        # quit imediff without saving the result
 select_r = r
 select_s = s
 select_t = t        # display tutorial
 select_u = u
 select_v = v
-select_w = w        # _w_rite result and e_x_it program
-select_x = x        # _w_rite result and e_x_it program
-select_y = y        # key for "_Y_es" answer
+select_w = w        # write result and e_x_it program
+select_x = x        # write result and e_x_it program
+select_y = y        # key for "Yes" answer
 select_z = z
 select_SPACE = SPACE
 select_! = !
@@ -55,16 +55,16 @@ select_, = ,
 select_- = -
 select_. = .
 select_/ = /
-select_0 = 0
-select_1 = 1
-select_2 = 2
-select_3 = 3
-select_4 = 4
-select_5 = 5
-select_6 = 6
-select_7 = 7
+select_0 = 0        # move active selection to the first usr_chunk
+select_1 = 1        # alias for a
+select_2 = 2        # alias for b
+select_3 = 3        # alias for c
+select_4 = 4        # alias for d
+select_5 = 5        # alias for e
+select_6 = 6        # alias for f
+select_7 = 7        # alias for g
 select_8 = 8
-select_9 = 9
+select_9 = 9        # move active selection to the last usr_chunk
 select_COLON = COLON
 select_; = ;
 select_< = >
@@ -113,6 +113,7 @@ select_F12 = F11
 # ^--------- reference key setting
 # Upper case ASCII-keys are mapped following lower case keys
 
+# Color with /WHITE uses white background
 [attrib]
 color_merge_ab           = WHITE,NORMAL         # diff2  =
 color_merge_abc          = WHITE,NORMAL         # diff3  =
@@ -122,14 +123,19 @@ color_merge_c            = YELLOW,NORMAL        # diff 3 C
 color_merge_wdiff        = WHITE,NORMAL         # diff 3 G wdiff
 color_a                  = GREEN,BOLD           # diff23 a
 color_a_focus            = GREEN,BOLD,REVERSE
+#color_a_focus            = GREEN/WHITE
 color_b2                 = YELLOW,BOLD          # diff2  b (wdiff2)
 color_b2_focus           = YELLOW,BOLD,REVERSE
+#color_b2_focus           = YELLOW/WHITE
 color_b3                 = MAGENTA,BOLD         # diff 3 b (wdiff3)
 color_b3_focus           = MAGENTA,BOLD,REVERSE
+# color_b3_focus           = MAGENTA/WHITE
 color_c                  = YELLOW,BOLD          # diff 3 c
 color_c_focus            = YELLOW,BOLD,REVERSE
+# color_c_focus            = YELLOW/WHITE
 color_editor             = CYAN,BOLD            # editor-buffer-line
-color_editor_focus       = CYAN,BOLD,REVERSE
+color_editor_focus       = CYAN,BOLD
+#color_editor_focus       = CYAN/WHITE
 color_diff_marker        = BLUE,NORMAL          # marker-diff-line
 color_diff_marker_focus  = BLUE,NORMAL,REVERSE
 color_wdiff_abc          = WHITE,NORMAL         # wdiff3

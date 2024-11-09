@@ -751,7 +751,12 @@ class TextPad(TextData):  # TUI data
         curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
         curses.init_pair(5, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
         curses.init_pair(6, curses.COLOR_CYAN, curses.COLOR_BLACK)
-        curses.init_pair(7, curses.COLOR_WHITE, curses.COLOR_BLACK)
+        curses.init_pair(7, curses.COLOR_RED, curses.COLOR_WHITE)
+        curses.init_pair(8, curses.COLOR_GREEN, curses.COLOR_WHITE)
+        curses.init_pair(9, curses.COLOR_YELLOW, curses.COLOR_WHITE)
+        curses.init_pair(10, curses.COLOR_BLUE, curses.COLOR_WHITE)
+        curses.init_pair(11, curses.COLOR_MAGENTA, curses.COLOR_WHITE)
+        curses.init_pair(12, curses.COLOR_CYAN, curses.COLOR_WHITE)
 
         self.curses_value = dict()
         self.curses_value["WHITE"] = curses.color_pair(0)
@@ -761,7 +766,12 @@ class TextPad(TextData):  # TUI data
         self.curses_value["BLUE"] = curses.color_pair(4)
         self.curses_value["MAGENTA"] = curses.color_pair(5)
         self.curses_value["CYAN"] = curses.color_pair(6)
-        # self.curses_value["WHITE"] = curses.color_pair(7)
+        self.curses_value["RED/WHITE"] = curses.color_pair(7)
+        self.curses_value["GREEN/WHITE"] = curses.color_pair(8)
+        self.curses_value["YELLOW/WHITE"] = curses.color_pair(9)
+        self.curses_value["BLUE/WHITE"] = curses.color_pair(10)
+        self.curses_value["MAGENTA/WHITE"] = curses.color_pair(11)
+        self.curses_value["CYAN/WHITE"] = curses.color_pair(12)
         self.curses_value["DIM"] = curses.A_DIM
         self.curses_value["NORMAL"] = curses.A_NORMAL
         self.curses_value["BOLD"] = curses.A_BOLD
@@ -776,6 +786,12 @@ class TextPad(TextData):  # TUI data
             self.curses_value["BLUE"] = curses.color_pair(0)
             self.curses_value["MAGENTA"] = curses.color_pair(0)
             self.curses_value["CYAN"] = curses.color_pair(0)
+            self.curses_value["RED/WHITE"] = curses.color_pair(0)
+            self.curses_value["GREEN/WHITE"] = curses.color_pair(0)
+            self.curses_value["YELLOW/WHITE"] = curses.color_pair(0)
+            self.curses_value["BLUE/WHITE"] = curses.color_pair(0)
+            self.curses_value["MAGENTA/WHITE"] = curses.color_pair(0)
+            self.curses_value["CYAN/WHITE"] = curses.color_pair(0)
 
     ####################################################################
     # Color
