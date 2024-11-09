@@ -49,10 +49,11 @@ This requirement can be disabled by starting this program as
 # Keep this under 76 char/line to fit this in the 80 char terminal
 tutorial = """\
 Quick start:
-  * Use cursor keys and h/j/k/l/n/p/0 to read this tutorial screen.
-  * Type "q" to exit this tutorial screen to the main screen.
+  * Use cursor keys and h/j/k/l/n/p/0/9/SPACE to read this tutorial screen.
+  * Type "q" to exit this tutorial screen to the main TUI screen.
   * Type "t" to get back to this tutorial screen.
-  * Type "/" in the main screen to see the key bindings.
+  * Type "/" in the main TUI screen to see the key bindings.
+  * Type "SPACE" to exit POPUP without specific input key prompt.
 
 ---------------------------------------------------------------------------
     Tutorial for imediff (Interactive Merge Editor)
@@ -86,8 +87,8 @@ sight for the user.  Other great tools such as vimdiff, xxdiff, meld and
 kdiff3 require you to look at different points of display to find the exact
 position of changes.  This makes imediff the most stress-free tool.
 
-Merge with 2 files
-==================
+Merge with 2 files (diff2)
+==========================
 
 Let's try to merge 2 almost identical files, "file_a" (OLDER) and "file_b"
 (NEWER), into an output file, "file_o".  You can do this with the following.
@@ -147,8 +148,8 @@ commit into a nice hitory of multiple meaningful git commits by using
 "imediff" as its split engine and optionally using "git rebase -i ...", and
 "gitk" to organize them.
 
-Merge with 3 files
-==================
+Merge with 3 files (diff3)
+==========================
 
 Let's try to merge 2 almost identical files, "file_a" (MYFILE) and "file_c"
 (YOURFILE), both of which are based on the file, "file_b" (OLDFILE=BASE),
@@ -191,7 +192,11 @@ supports both monochrome and color terminals.  For comfortable user
 experience, terminal width of 80 characters/line or more and terminal height
 of 24 lines or more are desirable.
 
-The first column is used to indicate the source of the data displayed.
+TUI explained
+==============
+
+The first column of TUI (Terminal User Interface) display is used to
+indicate the source of the data displayed.
 
  * "=" means the displayed chunk underwent no changes for all sources and
    the merge is resolved:
@@ -213,20 +218,74 @@ Focus jumping has 2 modes:
  * Jump to chunks available for changes: n, p, SPACE, BACKSPACE
  * Jump to only unresolved chunks: N, P, TAB, BTAB
 
+Merge actions and command options
+=================================
+
+The imediff program may be stared with a command option which specifies the
+default starting action and subsequence merge action behavior..
+
+With 2 files (diff2), one of 4 optins can be specified:
+ * "-a": select file_a, if different
+ * "-b": select file_b, if different
+ * "-d": select diff2(file_a, file_b), if different
+ * "-f": select wdiff2(file_a, file_b) if different and single line
+         select diff2(file_a, file_b) if different and not single line
+If no option is specified, imediff uses "-d" for diff2.
+
+With 3 files (diff3), one of 6 optins can be specified:
+ * "-a": select file_a, if different (*)
+ * "-b": select file_b, if different (*)
+ * "-c": select file_c, if different (*)
+ * "-d": select diff2(file_a, file_b) if different (*)
+ * "-f": select wdiff2(file_a, file_b) if not merged and single line
+         select diff2(file_a, file_b) if not merged and not single line
+ * "-g": select good merges (w)diff2(file_a, file_b) if not merged
+If no option is specified, imediff uses "-g" for diff3.
+
+For diff3 cases with (*), the interactive action request can change chunks
+normally considered merged (=auto-resolved to "A", "C", "G") when imediff is
+started under "-f" or "-g".
+
+The default behavior without using any one of command options should serve
+in many use cases of merging good working files.  Besides, you can change
+merge/pick selection interactively.
+
+For dissecting a big change into a sequence of many small changes, you
+should put changed files in a git repository and use associated git-ime
+command which use imediff(diff2) indirectly.
+
+For merging 2 functioning changed files, imediff(diff3) with "-g" or "-f"
+should be good for the task.
+
+For searching a buggy change in 2 failing changed files, any one of "-a",
+"-b", or "-c" under imediff(diff3) may be useful.  (TBH, I don't know how
+useful these are.  To me, dissecting with git-ime/imediff(diff2) seems
+simpler and easier.)
+
 Customization
 =============
 
 The imediff program can customize its key binding and its color setting with
 the "~/.imediff" file in the ini file format.  You can create its template
-file by the "imediff -t" command.
+file by the "imediff -t" command.  If this file is missing, default settings
+are used.
 
-You can disable an existing "~/.imediff" file without renaming it by
-specifying "none" as "imediff -C none ...". Only the internal default values
-of the imediff program are used.
+You can disable the existing "~/.imediff" file without renaming it by
+specifying "none" as "imediff -C none ...". Then, only the internal default
+values of the imediff program are used.
 
 Custom starting and automatic processing with imediff can be enabled using
-key macro featurs.  For example, git-ime uses "Abw" to dicect a single file
-change commit to fine grained minimal commits.
+key macro featurs.  For example, git-ime repeatedly uses "imediff -n -MAbw"
+to dissect a single file change commit to fine grained minimal commits.
+
+Log file
+========
+
+Normally, imediff creates log file "imediff.log" at the current directory.
+
+When there is ".git/" directory at the current directory, imediff creates
+log file ".git/imediff.log" to avoid contaminating checked out data.  This
+is mainly for the clean git-ime operatiion.
 
 Note
 ====
