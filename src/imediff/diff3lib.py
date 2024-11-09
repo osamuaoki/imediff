@@ -273,6 +273,7 @@ class SequenceMatcher3:
         line_max=128,  # initial length to compare (upper limit)
         line_min=1,  # final   length to compare (lower limit)
         line_factor=8,  # length shortening factor
+        check_same_ac=True,  # check a vs. c for tag == 'e'
         # 8 for 80% of length_before every 2 steps
     ):
         """Construct a SequenceMatcher3.
@@ -337,6 +338,7 @@ class SequenceMatcher3:
         self.line_max = line_max
         self.line_min = line_min
         self.line_factor = line_factor
+        self.check_same_ac = check_same_ac
         self.opcodes = None
 
     def set_seq1(self, a):
@@ -563,7 +565,7 @@ class SequenceMatcher3:
                 tag = "N"
             else:
                 # all determined ranges with tag
-                if tag == "N":
+                if tag == "N" and self.check_same_ac:
                     if a[jl:jh] == c[kl:kh]:  # exact match need to be changed
                         tag = "e"
                 answer.append((tag, jl, jh, il, ih, kl, kh))
