@@ -53,6 +53,9 @@ class TextData:  # Non-TUI data
         * tag = 'E' or 'A' or 'C' or 'e' or 'N'
         * tag = 'n' -- special TextData tag for clean wdiff3 merge
 
+        But when -a, -b, -c (default_action == a/b/c) is specified.
+        * tag = 'E' or 'N' ('N' includes A' or 'C' or 'e' or 'N')
+
     Here:
         * tag is static after initialization of TextData
         * action is dynamic for tag=N/F due to the user interaction
@@ -216,9 +219,23 @@ class TextData:  # Non-TUI data
                     )
                 )
         else:  # self.diff_mode == 3
+            if self.default_action in ["a", "b", "c"]:
+                check_same_ac = False
+            else:  # "d", "f", "g"]
+                check_same_ac = True
             use_LineMatcher = 1
             matcher_internal = SequenceMatcher3(
-                self.list_a, self.list_b, self.list_c, use_LineMatcher
+                self.list_a,
+                self.list_b,
+                self.list_c,
+                use_LineMatcher,  # matcher
+                None,  #  isjunk
+                True,  # autojunk
+                2,  # line_rule
+                128,  # initial length to compare (upper limit)
+                1,  # final   length to compare (lower limit)
+                8,  # length shortening factor
+                check_same_ac,  # check a vs c for tag == 'e'
             )
             chunk_list_internal = matcher_internal.get_opcodes()
             # Set initial action to "a" or "d"
@@ -281,6 +298,10 @@ class TextData:  # Non-TUI data
                 if tag != "E"
             ]
         else:  # diff_mode == 3
+            if self.default_action in ["a", "b", "c"]:
+                tag_resolved = ["E"]
+            else:
+                tag_resolved = ["E", "e", "n", "A", "C"]
             self.usr_chunk_list = [
                 chunk_index
                 for chunk_index, (
@@ -294,7 +315,7 @@ class TextData:  # Non-TUI data
                     _,
                     _,
                 ) in enumerate(self.chunk_list)
-                if tag not in "EenAC"
+                if tag not in tag_resolved
             ]
         # debug
         for usr_chunk_index, chunk_index in enumerate(self.usr_chunk_list):
@@ -668,7 +689,17 @@ class TextData:  # Non-TUI data
         # wdiff uses SequenceMatcher
         use_SequenceMatcher = 0
         matcher_internal = SequenceMatcher3(
-            line_a, line_b, line_c, use_SequenceMatcher, isjunk, True
+            line_a,
+            line_b,
+            line_c,
+            use_SequenceMatcher,  # matcher
+            isjunk,  #  isjunk
+            True,  # autojunk
+            2,  # line_rule (NOT USED)
+            128,  # initial length to compare (upper limit) (NOT USED)
+            1,  # final   length to compare (lower limit) (NOT USED)
+            8,  # length shortening factor (NOT USED)
+            True,  # check a vs. c foe tag == 'e' (NOT USED)
         )
         chunk_list_internal = matcher_internal.get_opcodes()
         # logger.debug("wdiff3: \nwchunk_list_internal >>>>> {}".format(wchunk_list_internal))
@@ -762,48 +793,16 @@ class TextData:  # Non-TUI data
             #   incoming tag is E or A or C or N or e
             if tag == "E":
                 action = "="
-            elif tag == "e":
+            elif tag == "e" and self.default_action not in ["a", "b", "c"]:
                 action = "#"
-            elif tag == "n":
+            elif tag == "n" and self.default_action not in ["a", "b", "c"]:
                 action = "G"
-            elif tag == "A":
+            elif tag == "A" and self.default_action not in ["a", "b", "c"]:
                 action = "A"
-            elif tag == "C":
+            elif tag == "C" and self.default_action not in ["a", "b", "c"]:
                 action = "C"
-            elif action_request == "a":
-                action = "a"
-            elif action_request == "b":
-                action = "b"
-            elif action_request == "c":
-                action = "c"
-            elif (
-                action_request == "f" and i2 - i1 == 1 and j2 - j1 == 1 and k2 - k1 == 1
-            ):
-                # all 1 line diff -> try wdiff
-                (clean_merge, content) = self.get_merge_wdiff3(chunk_index)
-                if clean_merge:
-                    action = "G"  # clean merge
-                    tag = "n"  # update
-                    merge_buffer = content
-                else:
-                    action = "f"  # non-clean merge
-            elif action_request == "f":
-                action = "d"  # non-clean merge
-            elif (
-                action_request == "g" and i2 - i1 == 1 and j2 - j1 == 1 and k2 - k1 == 1
-            ):
-                # all 1 line diff -> try wdiff
-                (clean_merge, content) = self.get_merge_wdiff3(chunk_index)
-                if clean_merge:
-                    action = "G"  # clean merge
-                    tag = "n"  # update
-                    merge_buffer = content
-                else:
-                    action = "d"  # non-clean merge
-            elif action_request == "g":
-                action = "d"  # non-clean merge
-            elif action_request == "d":
-                action = "d"
+            elif action_request in ["a", "b", "c", "d"]:
+                action = action_request
             elif action_request == "e" and len(merge_buffer) != 0:
                 action = "e"
             elif action_request == "e" and len(merge_buffer) == 0:
@@ -817,6 +816,110 @@ class TextData:  # Non-TUI data
                     ),
                 )
                 action = action_old
+            elif self.default_action in ["a", "b", "c"]:
+                action = self.default_action
+            elif (
+                action_request == "f" and i2 - i1 == 1 and j2 - j1 == 1 and k2 - k1 == 1
+            ):
+                # all 1 line diff -> try wdiff
+                (clean_merge, content) = self.get_merge_wdiff3(chunk_index)
+                if clean_merge:
+                    action = "G"  # clean merge
+                    tag = "n"  # update
+                    merge_buffer = content
+                    if self.default_action == "d":
+                        self.usr_chunk_list = [
+                            chunk_index
+                            for chunk_index, (
+                                tag,
+                                _,
+                                _,
+                                _,
+                                _,
+                                _,
+                                _,
+                                _,
+                                _,
+                            ) in enumerate(self.chunk_list)
+                            if tag not in ["E", "e", "n", "A", "C"]
+                        ]
+                        # debug
+                        if len(self.usr_chunk_list) == 0:
+                            self.focused_usr_chunk_index = None
+                            logger.debug(
+                                "reindex(f) at chunk[{}] usr_chunk[*]".format(
+                                    chunk_index
+                                )
+                            )
+                        elif self.focused_usr_chunk_index == len(self.usr_chunk_list):
+                            self.focused_usr_chunk_index = len(self.usr_chunk_list) - 1
+                            logger.debug(
+                                "reindex(f) at chunk[{}] usr_chunk[{} (avoid overflow)]".format(
+                                    chunk_index, self.focused_usr_chunk_index
+                                )
+                            )
+                        else:
+                            logger.debug(
+                                "reindex(f) at chunk[{}] usr_chunk[{}]".format(
+                                    chunk_index, self.focused_usr_chunk_index
+                                )
+                            )
+                else:
+                    action = "f"  # non-clean merge
+            elif action_request == "f":
+                action = "d"  # non-clean merge
+            elif (
+                action_request == "g" and i2 - i1 == 1 and j2 - j1 == 1 and k2 - k1 == 1
+            ):
+                # all 1 line diff -> try wdiff
+                (clean_merge, content) = self.get_merge_wdiff3(chunk_index)
+                if clean_merge:
+                    action = "G"  # clean merge
+                    tag = "n"  # update
+                    merge_buffer = content
+                    if self.default_action == "d":
+                        self.usr_chunk_list = [
+                            chunk_index
+                            for chunk_index, (
+                                tag,
+                                _,
+                                _,
+                                _,
+                                _,
+                                _,
+                                _,
+                                _,
+                                _,
+                            ) in enumerate(self.chunk_list)
+                            if tag not in ["E", "e", "n", "A", "C"]
+                        ]
+                        # debug
+                        if len(self.usr_chunk_list) == 0:
+                            self.focused_usr_chunk_index = None
+                            logger.debug(
+                                "reindex(g) at chunk[{}] usr_chunk[*]".format(
+                                    chunk_index
+                                )
+                            )
+                        elif self.focused_usr_chunk_index == len(self.usr_chunk_list):
+                            self.focused_usr_chunk_index = len(self.usr_chunk_list) - 1
+                            logger.debug(
+                                "reindex(g) at chunk[{}] usr_chunk[{} (avoid overflow)]".format(
+                                    chunk_index, self.focused_usr_chunk_index
+                                )
+                            )
+                        else:
+                            logger.debug(
+                                "reindex(g) at chunk[{}] usr_chunk[{}]".format(
+                                    chunk_index, self.focused_usr_chunk_index
+                                )
+                            )
+                else:
+                    action = "d"  # non-clean merge
+            elif action_request == "g":
+                action = "d"  # non-clean merge
+            elif action_request == "d":
+                action = "d"
             else:  # N
                 logger.warning(
                     "chunk[{}]: diff_mode={} action_request='{}' len(merge_buffer)={} action_old='{}' (very odd) --> force action='d'".format(
