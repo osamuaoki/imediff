@@ -297,7 +297,9 @@ single line.
 The "diff3 -m file_a file_b file_c" has an odd feature of showing diff2
 between "file_b" and "file_c" for the portion of changes in which both
 "file_a" and "file_c" underwent identical changes from "file_b". This
-imediff program results is a more intuitive one with the clean merge."""
+imediff program results is a more intuitive one with the clean merge.  If
+you are after such identical changes, you may use "-b" option with imediff
+(diff3)."""
 
 
 class TextPad(TextData):  # TUI data
@@ -492,7 +494,8 @@ class TextPad(TextData):  # TUI data
                         ],
                         ["SPACE", "y", "Y", "w", "W", "e", "E"],
                     )
-            elif keyname in ["QUIT", "q"]:
+                    # return value is ignored
+            elif keyname in ["QUIT", "q", "Q"]:
                 if not self.confirm_exit or self.display_content_win(
                     [
                         (
@@ -515,14 +518,15 @@ class TextPad(TextData):  # TUI data
                     ],
                     ["y", "Y", "N", "n", "q", "Q", "SPACE", "ESCAPE"],
                 ) in ["y", "Y"]:
+                    # only "y" or "Y" quit.  "q", "Q", ... are ignored
                     self.chunk_list = []
                     logger.error("Quit without saving by the user request")
                     sys.exit(2)
             elif keyname in ["?", "/", "F1"]:
-                # Show help screen
-                self.display_content_win(self.get_helptext(), ["ESCAPE", "q", "Q"])
+                # Show help screen (short so exit with SPACE)
+                self.display_content_win(self.get_helptext(), ["SPACE", "ESCAPE", "q", "Q"])
             elif keyname == "t":
-                # Show tutorial screen
+                # Show tutorial screen (long so no-exit with SPACE)
                 self.display_popup_win(tutorial, ["ESCAPE", "q", "Q"], "color_white")
             # Moves in document
             elif keyname in ["j", "DOWN"]:
@@ -608,7 +612,7 @@ class TextPad(TextData):  # TUI data
                 elif keyname in [")"]:
                     self.move_focus_to_usr_chunk_home()
                     flag_update_corner = True
-                elif keyname in ["(q"]:
+                elif keyname in ["("]:
                     self.move_focus_to_usr_chunk_end()
                     flag_update_corner = True
                 else:
@@ -2271,5 +2275,5 @@ tab,{N}   /shift-tab,{P}  select the next/previous unresolved usr_chunk
     ####################################################################
     # Internally used utility methods (user feedback)
     ####################################################################
-    def report(self, message):  # override for TUI
-        self.display_popup_win(message)
+    def report(self, message):  # override for TUI (simple pop-up)
+        self.display_popup_win(message, ["SPACE", "ESCAPE", "q", "Q"])
