@@ -1,3 +1,9 @@
+imediff (3.3-1) unstable; urgency=medium
+
+  * Program version bump.
+
+ -- Osamu Aoki <osamu@debian.org>  Sun, 10 Nov 2024 17:21:15 +0900
+
 imediff (3.2-1) unstable; urgency=medium
 
   * UI consistency with SPACE (scroll or exit).
