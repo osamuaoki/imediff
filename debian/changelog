@@ -1,3 +1,9 @@
+imediff (3.3.1-1) unstable; urgency=medium
+
+  * Fix python warning for \s etc.  Closes: #1087234
+
+ -- Osamu Aoki <osamu@debian.org>  Sun, 10 Nov 2024 21:24:16 +0900
+
 imediff (3.3-1) unstable; urgency=medium
 
   * Program version bump.
