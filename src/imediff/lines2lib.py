@@ -26,14 +26,16 @@ class LineMatcher:
 
     line_rule   pattern    -- filtering behavior
          0      r""        -- drop none between text, but strip
-         1      r"\s+"     -- drop all whitespaces
-         2      r"[\s\"']" -- drop all whitespaces and quotes (default)
-         3      r"\W+"     -- drop all non-alphanumerics
+         1      r"\\s+"     -- drop all whitespaces
+         2      r"[\\s\\"']" -- drop all whitespaces and quotes (default)
+         3      r"\\W+"     -- drop all non-alphanumerics
 
          10     r""        -- drop none between text, but strip and lowercase
-         11     r"\s+"     -- drop all whitespaces and lowercase
-         12     r"[\s\"']" -- drop all whitespaces and quotes and lowercase
-         13     r"\W+"     -- drop all non-alphanumerics and lowercase
+         11     r"\\s+"     -- drop all whitespaces and lowercase
+         12     r"[\\s\\"']" -- drop all whitespaces and quotes and lowercase
+         13     r"\\W+"     -- drop all non-alphanumerics and lowercase
+
+    Here, actual code should use a single backslash for every 2 of them.
 
     The fuzzy matching is performed on partial match of head and tail portion
     of lines provided by _LineMatcher class.  This partial match is controlled
