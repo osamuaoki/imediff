@@ -2,8 +2,8 @@
 # vim: set sw=2 et sw=2 sts=2:
 # This is invoked from source tree to test python codes
 #
-# This is the same as test_unittest_all.py but easier to modify to identify issues from console
-# This is not for unittest
+# This is redundant so this is not part of standard build check
+# See 10_local_imediff_abcdfg.sh
 #
 rm -f imediff.log
 

@@ -14,14 +14,17 @@ This directory contains files to test imediff and git-ime.
 ## Test codes manually run as you write and update codes
 
 * `./90_local_imediff_tests.sh`
-  * Run a set of test to see its diff logics are valid
+  * Run a set of test to see its diff logic are valid
     * `./_diff23.py`  -- test with files (file_a, file_b file_c)
     * `./_imediff.py` -- test with imediff in this source.
-  * A subset of the test run by unittest via `./test_unittest_all.py`
+  * Run a subset of the test normally run by unittest via
+    `./test_unittest_all.py`  without using unittest.
   * Python path is adjusted as: `export PYTHONPATH=../src`
 * `./90_local_git_ime_tests.sh`
   * Run a set of test to see its git ime are valid
   * Use local shell code `../usr/bin/git-ime.in`
+* `90_local_imediff_unittest.sh`
+  * Run `./test_unittest_all.py` using of the local python module code.
 * `./00_local_imediff.sh`
   * Run the local python module code with user provided arguments
   * Effectively the same test run by unittest via `./test_unittest_all.py`

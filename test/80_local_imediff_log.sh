@@ -1,7 +1,9 @@
 #!/bin/sh -e
 # vim: set sw=2 et sw=2 sts=2:
 # This is invoked from source tree to test python codes
-
+# This is redundant so this is not part of standard build check
+# See 00_local_imediff_cfgs.sh
+#
 rm -f imediff.log
 
 PYTHONPATH=$(pwd)/../src
@@ -11,7 +13,8 @@ export PYTHONPATH
 
 # ignore ~/.imediff
 python3 _imediff.py -C none -D -n --macro=q
-mv -f imediff.log z_imediff-confs.new
+sed -e '/external editor/,$d' imediff.log >z_imediff-log.new
+
 
 for f in *.new; do
 	g="${f%.new}.ref"

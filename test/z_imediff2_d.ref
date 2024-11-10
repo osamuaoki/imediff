@@ -1,0 +1,82 @@
+<<<<<<< file_a
+EXTRA-LINE
+=======
+>>>>>>> file_b
+<<<<<<< file_a
+2-way OLDER_FILE / 3-way MYFILE
+=======
+2-way NEWER_FILE / 3-way OLDFILE
+>>>>>>> file_b
+00 wsx
+01 qaz
+02 adf
+<<<<<<< file_a
+03 zcv aaa [G]
+=======
+03 bbb zcv
+>>>>>>> file_b
+04 adv
+<<<<<<< file_a
+05 tqazwsxyu
+=======
+05 tyu
+>>>>>>> file_b
+<<<<<<< file_a
+06 ghj
+=======
+06 qwerrttt
+>>>>>>> file_b
+07 ujj
+08 qaz
+<<<<<<< file_a
+09 wsx
+=======
+09 *****
+>>>>>>> file_b
+10 tte
+11 iao
+<<<<<<< file_a
+12 njk
+=======
+>>>>>>> file_b
+13 mop
+14 wdd
+<<<<<<< file_a
+=======
+15 dsadsdedv
+>>>>>>> file_b
+16 ijb
+17 wsc
+<<<<<<< file_a
+=======
+12 njk
+>>>>>>> file_b
+18 ugv
+19 ijp
+<<<<<<< file_a
+=======
+20 tte
+>>>>>>> file_b
+21 iao
+22 njk
+<<<<<<< file_a
+=======
+23 mop
+>>>>>>> file_b
+24 wdd
+25 edv
+<<<<<<< file_a
+26 ijssgsgab
+=======
+26 ijb
+>>>>>>> file_b
+27 wsc
+<<<<<<< file_a
+28 ugv 29 ijp LESS LINE
+=======
+28 ugv
+>>>>>>> file_b
+<<<<<<< file_a
+=======
+29 ijp
+>>>>>>> file_b

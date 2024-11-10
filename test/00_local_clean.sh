@@ -9,7 +9,7 @@ THISDIR="${THISFILE%/*}"
 REPO_DIR="${THISDIR}/repo"
 
 set -x
-rm -f *.new
+rm -f *.new *.out
 rm -rf "$REPO_DIR"
 rm -f imediff.log
 echo "===== CLEAN ALL ====="

@@ -169,20 +169,6 @@ class TestImediff(unittest.TestCase):
         self.assertEqual(result, 0)
         return
 
-    def test_imediff2_f(self):
-        result = subprocess.call(
-            "cd "
-            + test_dir
-            + ";python3 _imediff.py -f -C none --macro=w -n file_a file_b -o z_imediff2_f.out",
-            shell=True,
-        )
-        result = subprocess.call(
-            "cd " + test_dir + ";diff z_imediff2_f.out z_imediff2_f.ref >/dev/null",
-            shell=True,
-        )
-        self.assertEqual(result, 0)
-        return
-
     def test_imediff2_a(self):
         result = subprocess.call(
             "cd "
@@ -211,6 +197,34 @@ class TestImediff(unittest.TestCase):
         self.assertEqual(result, 0)
         return
 
+    def test_imediff2_d(self):
+        result = subprocess.call(
+            "cd "
+            + test_dir
+            + ";python3 _imediff.py -d -C none --macro=w -n file_a file_b -o z_imediff2_d.out",
+            shell=True,
+        )
+        result = subprocess.call(
+            "cd " + test_dir + ";diff z_imediff2_d.out z_imediff2_d.ref >/dev/null",
+            shell=True,
+        )
+        self.assertEqual(result, 0)
+        return
+
+    def test_imediff2_f(self):
+        result = subprocess.call(
+            "cd "
+            + test_dir
+            + ";python3 _imediff.py -f -C none --macro=w -n file_a file_b -o z_imediff2_f.out",
+            shell=True,
+        )
+        result = subprocess.call(
+            "cd " + test_dir + ";diff z_imediff2_f.out z_imediff2_f.ref >/dev/null",
+            shell=True,
+        )
+        self.assertEqual(result, 0)
+        return
+
     def test_imediff3(self):
         result = subprocess.call(
             "cd "
@@ -220,20 +234,6 @@ class TestImediff(unittest.TestCase):
         )
         result = subprocess.call(
             "cd " + test_dir + ";diff z_imediff3.out z_imediff3.ref >/dev/null",
-            shell=True,
-        )
-        self.assertEqual(result, 0)
-        return
-
-    def test_imediff3_f(self):
-        result = subprocess.call(
-            "cd "
-            + test_dir
-            + ";python3 _imediff.py -f -C none --macro=w -n file_a file_b file_c -o z_imediff3_f.out",
-            shell=True,
-        )
-        result = subprocess.call(
-            "cd " + test_dir + ";diff z_imediff3_f.out z_imediff3_f.ref >/dev/null",
             shell=True,
         )
         self.assertEqual(result, 0)
@@ -276,6 +276,34 @@ class TestImediff(unittest.TestCase):
         )
         result = subprocess.call(
             "cd " + test_dir + ";diff z_imediff3_c.out z_imediff3_c.ref >/dev/null",
+            shell=True,
+        )
+        self.assertEqual(result, 0)
+        return
+
+    def test_imediff3_d(self):
+        result = subprocess.call(
+            "cd "
+            + test_dir
+            + ";python3 _imediff.py -d -C none --macro=w -n file_a file_b file_c -o z_imediff3_d.out",
+            shell=True,
+        )
+        result = subprocess.call(
+            "cd " + test_dir + ";diff z_imediff3_d.out z_imediff3_d.ref >/dev/null",
+            shell=True,
+        )
+        self.assertEqual(result, 0)
+        return
+
+    def test_imediff3_f(self):
+        result = subprocess.call(
+            "cd "
+            + test_dir
+            + ";python3 _imediff.py -f -C none --macro=w -n file_a file_b file_c -o z_imediff3_f.out",
+            shell=True,
+        )
+        result = subprocess.call(
+            "cd " + test_dir + ";diff z_imediff3_f.out z_imediff3_f.ref >/dev/null",
             shell=True,
         )
         self.assertEqual(result, 0)
