@@ -165,8 +165,8 @@ chunks of "file_a" (MYFILE) and "file_c" (YOURFILE) using line.
 Key actions and functionalities of "Merge with 3 files" are almost the same
 as those for "Merge with 2 files".  One notable "action" is pressing "g".
 This is also the default starting "action" for "Merge with 3 files" and
-takes advantage of the extra BASE file to do auto-merge.  It
-acts in the following order:
+takes advantage of the extra BASE file to do auto-merge.  It acts in the
+following order:
  * If the "merge_buffer" has a previously stored manually generated merge
    result, "action" is set to "e" to activate it.
  * If a chunk is auto-merged cleanly by line-by-line comparison or more fine
@@ -215,8 +215,8 @@ indicate the source of the data displayed.
  * Deleted line is displayed as "??? (*)" on display
 
 Focus jumping has 2 modes:
- * Jump to chunks available for changes: n, p, SPACE, BACKSPACE
- * Jump to only unresolved chunks: N, P, TAB, BTAB
+ * Jump to any usr_chunks: n, p, SPACE, BACKSPACE
+ * Jump to unresolved usr_chunks: N, P, TAB, BTAB
 
 Merge actions and command options
 =================================
@@ -952,7 +952,7 @@ enter                 toggle action of a chunk
 arrows/pgdn,{j}/pgup,{k}  move scope of the display
 space,{n} /backspace,{p}  select the next/previous usr_chunk
 tab,{N}   /shift-tab,{P}  select the next/previous unresolved usr_chunk
-{zero}    /{nine}          select the first/last usr_chunk
+{zero}       /{nine}            select the first/last usr_chunk
 {rparen},home  /{lparen},end        select the first/last unresolved usr_chunk
 {question},{slash}                   show this help
 {t}                     show tutorial""".format(
@@ -1049,7 +1049,7 @@ enter                 toggle action of a chunk
 arrows/pgdn,{j}/pgup,{k}  move scope of the display
 space,{n} /backspace,{p}  select the next/previous usr_chunk
 tab,{N}   /shift-tab,{P}  select the next/previous unresolved usr_chunk
-{zero}    /{nine}          select the first/last usr_chunk
+{zero}       /{nine}            select the first/last usr_chunk
 {rparen},home  /{lparen},end        select the first/last unresolved usr_chunk
 {question},{slash}                   show this help
 {t}                     show tutorial""".format(
