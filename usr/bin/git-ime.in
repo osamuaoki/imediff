@@ -230,14 +230,6 @@ EOF
 	if [ "$status" != "M" ]; then
 		vecho "I: no looping"
 	else
-		# terminal UI of imediff has limitation for lines
-		MAX_LINES_IMEDIFF="16000"
-		if [ "$(wc -l "$FLNM.tmp_a" | cut -d' ' -f1)" -gt "$MAX_LINES_IMEDIFF" ]; then
-			AUTO="Yes"
-		fi
-		if [ "$(wc -l "$FLNM.tmp_b" | cut -d' ' -f1)" -gt "$MAX_LINES_IMEDIFF" ]; then
-			AUTO="Yes"
-		fi
 		REPEAT=0
 		vecho "I: ready to loop running imediff AUTO=$AUTO"
 		while true; do

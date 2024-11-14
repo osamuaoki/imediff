@@ -1,3 +1,9 @@
+imediff (3.3.2-1) unstable; urgency=medium
+
+  * Update git-ime since TUI has no line limitation.
+
+ -- Osamu Aoki <osamu@debian.org>  Thu, 14 Nov 2024 23:53:30 +0900
+
 imediff (3.3.1-1) unstable; urgency=medium
 
   * Fix python warning for \s etc.  Closes: #1087234

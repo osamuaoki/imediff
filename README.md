@@ -107,10 +107,9 @@ If the latest commit involves multiple files, `git ime` splits this big commit
 into multiple smaller commits involving a single file for each commit. Unless
 `-k` option is used with `git ime`, the original commit message is discarded.
 
-If the latest commit involves only a single file, the commit may be split into
-multiple smaller commits involving a set of minimal partial changes.  If the
-target file is small, splitting process may be managed interactively by
-`imediff`.  (You can force the non-interactive splitting by `-a` option.)
+If the latest commit involves only a single file, the splitting process is
+managed interactively by `imediff` with the interactive TUI.  (You can force
+the non-interactive splitting by `-a` option.)
 
 This `git ime` is not only useful at the checked out branch head but also at
 "edit" prompt during the interactive execution of "`git rebase -i <treeish>`".
