@@ -31,16 +31,84 @@
 imediff \- An interactive fullscreen merge tool for 2 or 3 files
 .SH "SYNOPSIS"
 .HP \w'\fBimediff\fR\ 'u
-\fBimediff\fR [\fB\-a\fR] [\fB\-b\fR] [\fB\-d\fR] [\fB\-f\fR] [\fB\-h\fR] [\fB\-n\fR] [\fB\-t\fR] [\fB\-l\ \fR\fB\fIN\fR\fR] [\fB\-o\ \fR\fB\fIfile_out\fR\fR] {\fIfile_older\fR} {\fIfile_newer\fR}
-.HP \w'\fBimediff\fR\ 'u
-\fBimediff\fR [\fB\-a\fR] [\fB\-b\fR] [\fB\-c\fR] [\fB\-d\fR] [\fB\-f\fR] [\fB\-g\fR] [\fB\-h\fR] [\fB\-n\fR] [\fB\-t\fR] [\fB\-l\ \fR\fB\fIN\fR\fR] [\fB\-o\ \fR\fB\fIfile_out\fR\fR] {\fIfile_yours\fR} {\fIfile_base\fR} {\fIfile_theirs\fR}
+\fBimediff\fR [\fB\-h\fR] [\fB\-v\fR] [\fB\-abcdfg\fR] [\fB\-o\ \fR\fB\fIOUTPUT\fR\fR] [\fB\-m\fR] [\fB\-n\fR] [\fB\-s\fR] [\fB\-t\fR] [\fB\-l\fR] [\fB\-\&.\&.\&.\fR] {\fIfile_a\fR} {\fIfile_b\fR} [\fIfile_c\fR]
 .SH "DESCRIPTION"
 .PP
 Merge two (slightly different) files with an optional common base file interactively with a user friendly fullscreen interface in the full screen text terminal mode\&.
 .PP
+For diff2 case, these files are:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fIfile_a\fR
+==
+\fIOLDER\fR
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fIfile_b\fR
+==
+\fINEWER\fR
+.RE
+.PP
+For diff3 case, these files are:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fIfile_a\fR
+==
+\fIMYFILE\fR
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fIfile_b\fR
+==
+\fIOLDFILE\fR
+(base file)
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fIfile_c\fR
+==
+\fIYOURFILE\fR
+.RE
+.PP
 \fBimediff\fR
 shows the differences of given two files (in color if the terminal supports them), lets you scroll the file and toggle changes between older and newer version for each chunk of difference\&. You can also select line diff and character wdiff mode for display\&. If you wish to make manual changes, you can edit each chunk with editor\&. The result of merge operation is saved in
-\fIfile_out\fR\&.
+\fIOUTPUT\fR\&. If this is missing, STDERR is used\&.
 .PP
 Additionally, you can customize your choice of editor via
 \fI$EDITOR\fR
@@ -67,350 +135,81 @@ command without arguments\&.
 The program exits with status 0 if the changes were saved, 1 if the merging was aborted and 2 if the parameters were invalid\&.
 .SH "OPTIONS"
 .PP
-\fB\-o \fR\fB\fIfile_output\fR\fR, \fB\-\-output=\fR\fB\fIfile_output\fR\fR
-.RS 4
-Write output to a given file\&. If missing, STDERR is used\&.
-.RE
-.PP
-\fB\-l \fR\fB\fIN\fR\fR, \fB\-\-linerule=\fR\fB\fIN\fR\fR
-.RS 4
-Line alignment fuzzy matching rule\&. (Partial string matches are tried on the top of this pre\-filtering)
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-N=0: Line alignment after stripping leading and tailing whitespaces
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-N=1: Line alignment after stripping all whitespaces
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-N=2: Line alignment after stripping all whitespaces and quotation marks (default)
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-N=3: Line alignment after stripping all non\-alphanumerics
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-N=10: Line alignment after stripping leading and tailing whitespaces and lowecasing
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-N=11: Line alignment after stripping all whitespaces and lowecasing
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-N=12: Line alignment after stripping all whitespaces and quotation marks and lowecasing
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-N=13: Line alignment after stripping all non\-alphanumerics and lowecasing
-.RE
-.RE
-.PP
-\fB\-\-mono\fR
-.RS 4
-Force monochrome display\&.
-.RE
-.PP
-\fB\-\-sloppy\fR
-.RS 4
-Allow one to save unresolved contents\&.
-.RE
-.PP
-\fB\-n\fR, \fB\-\-non\-interactive\fR
-.RS 4
-Non\-interactive mode\&.
-.RE
-.PP
-\fB\-\-macro=\fR\fB\fIMACRO\fR\fR
-.RS 4
-Pre\-load MACRO to keyboard input\&. In non\-interactive mode,
-q
-is applied after the MACRO\&. So you need to add
-\-Mw
-to the command line to write the result to a file\&. In TUI mode, TUI is started after the MACRO\&.
-.RE
-.PP
-\fB\-a\fR
-.RS 4
-Start with version A (={\fIfile_older\fR}
-or
-{\fIfile_yours\fR})\&.
-.RE
-.PP
-\fB\-b\fR
-.RS 4
-Start with version B (={\fIfile_newer\fR}
-or
-{\fIfile_base\fR})\&.
-.RE
-.PP
-\fB\-c\fR
-.RS 4
-Start with version C (={\fIfile_theirs\fR}) for 3 files\&.
-.RE
-.PP
-\fB\-d\fR
-.RS 4
-Start with diff by line between version A and version B for 2 files\&. (default for 2 files)
-.sp
-Start with diff by line between version A and version C while using version B as base version for 3 files\&.
-.RE
-.PP
-\fB\-f\fR
-.RS 4
-Start with wdiff by character between version A and version B for 2 files\&.
-.sp
-Start with wdiff by character between version A and version C while using version B as base version for 3 files\&.
-.RE
-.PP
-\fB\-g\fR
-.RS 4
-This is the default starting mode for 3 files\&. For the cleanly merged resolved portion, display wdiff by character between version A and version C while using version B as base version\&. For the unresolved portion, display diff by line, instead\&.
-.RE
-.PP
 \fB\-h\fR, \fB\-\-help\fR
 .RS 4
 Show summary of options and exit\&.
 .RE
 .PP
+\fB\-a\fR
+.RS 4
+Start with all chunks to use
+\fIfile_a\fR\&.
+.RE
+.PP
+\fB\-b\fR
+.RS 4
+Start with all chunks to use
+\fIfile_b\fR\&.
+.RE
+.PP
+\fB\-c\fR
+.RS 4
+Start with all chunks to use
+\fIfile_c\fR
+(only for diff3)\&.
+.RE
+.PP
+\fB\-d\fR
+.RS 4
+Start with all chunks to use diff\&.
+.RE
+.PP
+\fB\-f\fR
+.RS 4
+Start with all chunks to use wdiff\&.
+.RE
+.PP
+\fB\-g\fR
+.RS 4
+Start with good merge mode\&. (only for diff3)
+.RE
+.PP
+\fB\-o \fR\fB\fIOUTPUT\fR\fR, \fB\-\-output=\fR\fB\fIfile_output\fR\fR
+.RS 4
+Write output to a given file\&. If this is missing, STDERR is used\&.
+.RE
+.PP
+\fB\-l\fR, \fB\-\-force\-logging\fR
+.RS 4
+Force LOGFILE="imediff\&.log" and LOGLEVEL="INFO"\&.
+.RE
+.PP
+\fB\-n\fR, \fB\-\-non\-interactive\fR
+.RS 4
+Use non\-interactive CLI instead of normal TUI\&.
+.RE
+.PP
+\fB\-s\fR, \fB\-\-sloppy\fR
+.RS 4
+Allow one to save unresolved contents\&.
+.RE
+.PP
 \fB\-t\fR, \fB\-\-template\fR
 .RS 4
-Create (or overwrite)
+Create a template configuration file
 ~/\&.imediff
-with default values\&.
+\&.
 .RE
 .PP
-\fB\-V\fR, \fB\-\-version\fR
+\fB\-v\fR, \fB\-\-version\fR
 .RS 4
-Show version and exit\&.
+Show version and license\&.
 .RE
-.SH "KEYBOARD COMMANDS"
 .PP
-The following keyboard commands are available in the editor as default\&.
-.PP
-w, x
+\fB\-\&.\&.\&.\fR
 .RS 4
-Write and eXit if merge is resolved\&. (default behavior)
-.sp
-Write and eXit unconditionally\&. (when
-\fB\-\-sloppy\fR
-specified)
+For other options, see the tutorial by starting "imediff" without any arguments\&.
 .RE
-.PP
-q, ctrl+c
-.RS 4
-Exit without saving\&.
-.RE
-.PP
-home, t, end, z
-.RS 4
-Jump to start or end of chunks\&.
-.RE
-.PP
-h
-.RS 4
-Show commands\&.
-.RE
-.PP
-shift+h
-.RS 4
-Show tutorial\&.
-.RE
-.PP
-s, ?
-.RS 4
-Show the state of the merge\&.
-.RE
-.PP
-down, j, up, k
-.RS 4
-Move scope of the display for 1 line\&.
-.RE
-.PP
-left, right
-.RS 4
-Move scope of the display for 1 column\&.
-.RE
-.PP
-page up, page down
-.RS 4
-Move scope of the display for screenfull lines\&.
-.RE
-.PP
-enter
-.RS 4
-Toggle mode of display for a selected chunk\&.
-.RE
-.PP
-n, space
-.RS 4
-Jump to next changed chunk\&.
-.RE
-.PP
-N, tab
-.RS 4
-Jump to next unresolved chunk (mode "d" or "f")\&.
-.RE
-.PP
-p, backspace
-.RS 4
-Jump to previous changed chunk\&.
-.RE
-.PP
-P, back\-tab
-.RS 4
-Jump to previous unresolved chunk (mode "d" or "f")\&.
-.RE
-.PP
-a
-.RS 4
-Set mode of the current chunk to "a" to display version A\&.
-.RE
-.PP
-b
-.RS 4
-Set mode of the current chunk to "b" to display version B\&.
-.RE
-.PP
-c
-.RS 4
-Set mode of the current chunk to "c" to display version C for 3 files\&.
-.RE
-.PP
-d
-.RS 4
-Set mode of the current chunk to "d" to display diff by line\&.
-.RE
-.PP
-e
-.RS 4
-Set mode of the current chunk to "e" to display editor buffer if available\&.
-.RE
-.PP
-f
-.RS 4
-Set mode of the current chunk to "f" to display wdiff by character\&. If cleanly merged, mode is set to "g" instead\&.
-.RE
-.PP
-g
-.RS 4
-This causes automatic merge efforts on a chunk for 3 files in the following order\&.
-.sp
-If the editor result buffer has content, mode is set to "e"\&.
-.sp
-If a chunk is resolved cleanly, mode is set to "a", "c", or "g"\&. This overrides previous manual settings such as "a", "b", or "c"\&.
-.sp
-If a chunk isn\*(Aqt resolved cleanly, mode is left as mode "g" or "f"\&.
-.RE
-.PP
-shift+a
-.RS 4
-Apply "a" to all chunks\&.
-.RE
-.PP
-shift+b
-.RS 4
-Apply "b" to all chunks\&.
-.RE
-.PP
-shift+c
-.RS 4
-Apply "c" to all chunks\&.
-.RE
-.PP
-shift+d
-.RS 4
-Apply "d" to all chunks\&.
-.RE
-.PP
-shift+e
-.RS 4
-Apply "e" to all chunks\&.
-.RE
-.PP
-shift+f
-.RS 4
-Apply "f" to all chunks\&.
-.RE
-.PP
-shift+g
-.RS 4
-Apply "g" to all chunks\&.
-.RE
-.PP
-m
-.RS 4
-Launch external editor on the current chunk, save its result to the editor buffer, and set its mode to "e"\&.
-.RE
-.PP
-shift+m
-.RS 4
-Remove the editor buffer of the current chunk when its mode is "e"\&.
-.RE
-.SH "FILE"
-.PP
-The key choices of the above keyboard commands can be configured in
-~/\&.imediff
-which is created at the first execution of this command\&. The left side is the keys described in this manpage\&. The right side is your configuration choices\&. The current settings can be confirmed by the \*(Aqh\*(Aq key dialog\&.
 .SH "SEE ALSO"
 .PP
 sdiff(1), diff(1), merge(1), diff3(1)\&.

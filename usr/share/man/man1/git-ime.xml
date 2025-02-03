@@ -75,7 +75,8 @@ commit message becomes just filename only.</para>
 
 <para>If the latest commit involves only a single file, the commit is split
 into multiple smaller commits involving  a set of meaningful partial changes
-selected by <command>imediff</command> interactively.</para>
+selected by <command>imediff</command> interactively.  The log of
+<command>imediff</command> is stored in the .git/imediff.log file</para>
 
 <para>This <command>git-ime</command> is not only useful at the checked out
 branch head but also at "edit" prompt during the interactive execution of

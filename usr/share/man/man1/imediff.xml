@@ -36,34 +36,19 @@
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>imediff</command>
-      <arg><option>-a</option></arg>
-      <arg><option>-b</option></arg>
-      <arg><option>-d</option></arg>
-      <arg><option>-f</option></arg>
       <arg><option>-h</option></arg>
+      <arg><option>-v</option></arg>
+      <arg><option>-abcdfg</option></arg>
+      <arg><option>-o <replaceable>OUTPUT</replaceable></option></arg>
+      <arg><option>-m</option></arg>
       <arg><option>-n</option></arg>
+      <arg><option>-s</option></arg>
       <arg><option>-t</option></arg>
-      <arg><option>-l <replaceable>N</replaceable></option></arg>
-      <arg><option>-o <replaceable>file_out</replaceable></option></arg>
-      <arg choice="req"><replaceable>file_older</replaceable></arg>
-      <arg choice="req"><replaceable>file_newer</replaceable></arg>
-    </cmdsynopsis>
-    <cmdsynopsis>
-      <command>imediff</command>
-      <arg><option>-a</option></arg>
-      <arg><option>-b</option></arg>
-      <arg><option>-c</option></arg>
-      <arg><option>-d</option></arg>
-      <arg><option>-f</option></arg>
-      <arg><option>-g</option></arg>
-      <arg><option>-h</option></arg>
-      <arg><option>-n</option></arg>
-      <arg><option>-t</option></arg>
-      <arg><option>-l <replaceable>N</replaceable></option></arg>
-      <arg><option>-o <replaceable>file_out</replaceable></option></arg>
-      <arg choice="req"><replaceable>file_yours</replaceable></arg>
-      <arg choice="req"><replaceable>file_base</replaceable></arg>
-      <arg choice="req"><replaceable>file_theirs</replaceable></arg>
+      <arg><option>-l</option></arg>
+      <arg><option>-...</option></arg>
+      <arg choice="req"><replaceable>file_a</replaceable></arg>
+      <arg choice="req"><replaceable>file_b</replaceable></arg>
+      <arg><replaceable>file_c</replaceable></arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
@@ -73,13 +58,26 @@
    interactively with a user friendly fullscreen interface in the full screen
    text terminal mode.</para>
 
+   <para>For diff2 case, these files are:</para>
+    <itemizedlist>
+     <listitem><para><replaceable>file_a</replaceable> == <replaceable>OLDER</replaceable></para></listitem>
+     <listitem><para><replaceable>file_b</replaceable> == <replaceable>NEWER</replaceable></para></listitem>
+    </itemizedlist>
+
+   <para>For diff3 case, these files are:</para>
+    <itemizedlist>
+     <listitem><para><replaceable>file_a</replaceable> == <replaceable>MYFILE</replaceable></para></listitem>
+     <listitem><para><replaceable>file_b</replaceable> == <replaceable>OLDFILE</replaceable> (base file)</para></listitem>
+     <listitem><para><replaceable>file_c</replaceable> == <replaceable>YOURFILE</replaceable></para></listitem>
+    </itemizedlist>
+
    <para><command>imediff</command> shows the differences of given two
    files (in color if the terminal supports them), lets you scroll the file and
    toggle changes between older and newer version for each chunk of difference.
    You can also select line diff and character wdiff mode for display.  If you
    wish to make manual changes, you can edit each chunk with editor.  The
    result of merge operation is saved in
-   <replaceable>file_out</replaceable>.</para>
+   <replaceable>OUTPUT</replaceable>. If this is missing, STDERR is used.</para>
 
    <para>Additionally, you can customize your choice of editor via
    <varname>$EDITOR</varname> or <filename>~/.imediff</filename>.  The default
@@ -107,110 +105,6 @@
     <variablelist>
 
       <varlistentry>
-        <term><option>-o <replaceable>file_output</replaceable></option></term> <term><option>--output=<replaceable>file_output</replaceable></option></term>
-        <listitem>
-          <para>Write output to a given file. If missing, STDERR is used.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><option>-l <replaceable>N</replaceable></option></term> <term><option>--linerule=<replaceable>N</replaceable></option></term>
-        <listitem>
-          <para>Line alignment fuzzy matching rule.  (Partial string matches are tried on the top of this pre-filtering) </para>
-          <itemizedlist>
-          <listitem><para>N=0: Line alignment after stripping leading and tailing whitespaces</para></listitem>
-          <listitem><para>N=1: Line alignment after stripping all whitespaces</para></listitem>
-          <listitem><para>N=2: Line alignment after stripping all whitespaces and quotation marks (default)</para></listitem>
-          <listitem><para>N=3: Line alignment after stripping all non-alphanumerics</para></listitem>
-          <listitem><para>N=10: Line alignment after stripping leading and tailing whitespaces and lowecasing</para></listitem>
-          <listitem><para>N=11: Line alignment after stripping all whitespaces and lowecasing</para></listitem>
-          <listitem><para>N=12: Line alignment after stripping all whitespaces and quotation marks and lowecasing</para></listitem>
-          <listitem><para>N=13: Line alignment after stripping all non-alphanumerics and lowecasing</para></listitem>
-          </itemizedlist>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><option>--mono</option></term>
-        <listitem>
-          <para>Force monochrome display.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><option>--sloppy</option></term>
-        <listitem>
-          <para>Allow one to save unresolved contents.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><option>-n</option></term>
-        <term><option>--non-interactive</option></term>
-        <listitem>
-          <para>Non-interactive mode.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><option>--macro=<replaceable>MACRO</replaceable></option></term>
-        <listitem>
-          <para>
-            Pre-load MACRO to keyboard input. In non-interactive mode,
-          <literal>q</literal> is applied after the MACRO.  So you need to add
-          <literal>-Mw</literal> to the command line to write the result to a
-          file.  In TUI mode, TUI is started after the MACRO.
-          </para>
-        </listitem>
-      </varlistentry>
-
-
-      <varlistentry>
-        <term><option>-a</option></term>
-        <listitem>
-          <para>Start with version A (=<arg choice="req"><replaceable>file_older</replaceable></arg> or <arg choice="req"><replaceable>file_yours</replaceable></arg>).</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><option>-b</option></term>
-        <listitem>
-          <para>Start with version B (=<arg choice="req"><replaceable>file_newer</replaceable></arg> or <arg choice="req"><replaceable>file_base</replaceable></arg>).</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><option>-c</option></term>
-        <listitem>
-          <para>Start with version C (=<arg choice="req"><replaceable>file_theirs</replaceable></arg>) for 3 files.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><option>-d</option></term>
-        <listitem>
-          <para>Start with diff by line between version A and version B for 2 files. (default for 2 files)</para>
-          <para>Start with diff by line between version A and version C while using version B as base version for 3 files.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><option>-f</option></term>
-        <listitem>
-          <para>Start with wdiff by character between version A and version B for 2 files.</para>
-          <para>Start with wdiff by character between version A and version C while using version B as base version for 3 files.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><option>-g</option></term>
-        <listitem>
-          <para>This is the default starting mode for 3 files.  For the cleanly merged resolved portion, display wdiff by character between version A and version C while using version B as base version.
-          For the unresolved portion, display diff by line, instead.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term><option>-h</option>, <option>--help</option></term>
         <listitem>
           <para>Show summary of options and exit.</para>
@@ -218,258 +112,102 @@
       </varlistentry>
 
       <varlistentry>
+        <term><option>-a</option></term>
+        <listitem>
+          <para>Start with all chunks to use <replaceable>file_a</replaceable>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-b</option></term>
+        <listitem>
+          <para>Start with all chunks to use <replaceable>file_b</replaceable>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-c</option></term>
+        <listitem>
+          <para>Start with all chunks to use <replaceable>file_c</replaceable> (only for diff3).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-d</option></term>
+        <listitem>
+          <para>Start with all chunks to use diff.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-f</option></term>
+        <listitem>
+          <para>Start with all chunks to use wdiff.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-g</option></term>
+        <listitem>
+          <para>Start with good merge mode. (only for diff3)</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-o <replaceable>OUTPUT</replaceable></option></term> <term><option>--output=<replaceable>file_output</replaceable></option></term>
+        <listitem>
+          <para>Write output to a given file. If this is missing, STDERR is used.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-l</option></term>
+        <term><option>--force-logging</option></term>
+        <listitem>
+          <para>Force LOGFILE="imediff.log" and LOGLEVEL="INFO".</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-n</option></term>
+        <term><option>--non-interactive</option></term>
+        <listitem>
+          <para>Use non-interactive CLI instead of normal TUI.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-s</option></term>
+        <term><option>--sloppy</option></term>
+        <listitem>
+          <para>Allow one to save unresolved contents.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><option>-t</option>, <option>--template</option></term>
         <listitem>
-          <para>Create (or overwrite) <filename>~/.imediff</filename> with default values.</para>
+          <para>Create a template configuration file <filename>~/.imediff</filename> .</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><option>-V</option>, <option>--version</option></term>
+        <term><option>-v</option>, <option>--version</option></term>
         <listitem>
-          <para>Show version and exit.</para>
+          <para>Show version and license.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-...</option></term>
+        <listitem>
+          <para>For other options, see the tutorial by starting "imediff" without any arguments.</para>
         </listitem>
       </varlistentry>
 
     </variablelist>
   </refsect1>
 
-  <refsect1>
-    <title>KEYBOARD COMMANDS</title>
-
-    <para>The following keyboard commands are available in the editor as default.</para>
-
-
-    <variablelist>
-
-      <varlistentry>
-	      <term><keysym>w</keysym></term> <term><keysym>x</keysym></term>
-        <listitem>
-          <para>Write and eXit if merge is resolved. (default behavior)</para>
-          <para>Write and eXit unconditionally. (when <option>--sloppy</option> specified)</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keysym>q</keysym></term> <term><keycombo action='simul'><keycap>ctrl</keycap><keysym>c</keysym></keycombo></term>
-        <listitem>
-          <para>Exit without saving.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keycap>home</keycap></term> <term><keycap>t</keycap></term> <term><keycap>end</keycap></term> <term><keycap>z</keycap></term>
-        <listitem>
-          <para>Jump to start or end of chunks.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keysym>h</keysym></term>
-        <listitem>
-          <para>Show commands.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keycombo action='simul'><keycap>shift</keycap><keysym>h</keysym></keycombo></term>
-        <listitem>
-          <para>Show tutorial.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keysym>s</keysym></term> <term><keysym>?</keysym></term>
-        <listitem>
-          <para>Show the state of the merge.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keycap>down</keycap></term> <term><keycap>j</keycap></term> <term><keycap>up</keycap></term> <term><keycap>k</keycap></term>
-        <listitem>
-          <para>Move scope of the display for 1 line.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keycap>left</keycap></term> <term><keycap>right</keycap></term>
-        <listitem>
-          <para>Move scope of the display for 1 column.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keycap>page up</keycap></term> <term><keycap>page down</keycap></term>
-        <listitem>
-          <para>Move scope of the display for screenfull lines.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keycap>enter</keycap></term>
-        <listitem>
-          <para>Toggle mode of display for a selected chunk.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keysym>n</keysym></term> <term><keycap>space</keycap></term>
-        <listitem>
-          <para>Jump to next changed chunk.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keysym>N</keysym></term> <term><keycap>tab</keycap></term>
-        <listitem>
-          <para>Jump to next unresolved chunk (mode "d" or "f").</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keysym>p</keysym></term> <term><keycap>backspace</keycap></term>
-        <listitem>
-          <para>Jump to previous changed chunk.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keysym>P</keysym></term> <term><keycap>back-tab</keycap></term>
-        <listitem>
-          <para>Jump to previous unresolved chunk (mode "d" or "f").</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keysym>a</keysym></term>
-        <listitem>
-          <para>Set mode of the current chunk to "a" to display version A.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keysym>b</keysym></term>
-        <listitem>
-          <para>Set mode of the current chunk to "b" to display version B.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keysym>c</keysym></term>
-        <listitem>
-          <para>Set mode of the current chunk to "c" to display version C for 3 files.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keysym>d</keysym></term>
-        <listitem>
-          <para>Set mode of the current chunk to "d" to display diff by line.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keysym>e</keysym></term>
-        <listitem>
-          <para>Set mode of the current chunk to "e" to display editor buffer if available.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keysym>f</keysym></term>
-        <listitem>
-          <para>Set mode of the current chunk to "f" to display wdiff by character.  If cleanly merged, mode is set to "g" instead.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keysym>g</keysym></term>
-        <listitem>
-          <para>This causes automatic merge efforts on a chunk for 3 files in the following order.</para>
-          <para>If the editor result buffer has content, mode is set to "e".</para>
-          <para>If a chunk is resolved cleanly, mode is set to "a", "c", or "g".
-                This overrides previous manual settings such as "a", "b", or "c".</para>
-          <para>If a chunk isn't resolved cleanly, mode is left as mode "g" or "f".</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keycombo action='simul'><keycap>shift</keycap><keysym>a</keysym></keycombo></term>
-        <listitem>
-          <para>Apply "a" to all chunks.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keycombo action='simul'><keycap>shift</keycap><keysym>b</keysym></keycombo></term>
-        <listitem>
-          <para>Apply "b" to all chunks.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keycombo action='simul'><keycap>shift</keycap><keysym>c</keysym></keycombo></term>
-        <listitem>
-          <para>Apply "c" to all chunks.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keycombo action='simul'><keycap>shift</keycap><keysym>d</keysym></keycombo></term>
-        <listitem>
-          <para>Apply "d" to all chunks.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keycombo action='simul'><keycap>shift</keycap><keysym>e</keysym></keycombo></term>
-        <listitem>
-          <para>Apply "e" to all chunks.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keycombo action='simul'><keycap>shift</keycap><keysym>f</keysym></keycombo></term>
-        <listitem>
-          <para>Apply "f" to all chunks.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keycombo action='simul'><keycap>shift</keycap><keysym>g</keysym></keycombo></term>
-        <listitem>
-          <para>Apply "g" to all chunks.</para>
-        </listitem>
-      </varlistentry>
-
-
-      <varlistentry>
-        <term><keysym>m</keysym></term>
-        <listitem>
-          <para>Launch external editor on the current chunk, save its result to the editor buffer, and set its mode to "e".</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><keycombo action='simul'><keycap>shift</keycap><keysym>m</keysym></keycombo></term>
-        <listitem>
-          <para>Remove the editor buffer of the current chunk when its mode is "e".</para>
-        </listitem>
-      </varlistentry>
-
-    </variablelist>
-  </refsect1>
-
-  <refsect1>
-    <title>FILE</title>
-
-    <para>The key choices of the above keyboard commands can be configured in
-       <filename>~/.imediff</filename> which is created at the first execution
-       of this command.  The left side is the keys described in this manpage.
-       The right side is your configuration choices.  The current settings can
-       be confirmed by the 'h' key dialog.</para>
-  </refsect1>
   <refsect1>
     <title>SEE ALSO</title>
 
