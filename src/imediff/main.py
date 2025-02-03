@@ -62,23 +62,21 @@ opening = """\
 ===============================================================================
                                {p}                         (version {v})
 
-The imediff command helps you to merge 2 slightly different files with an
-optional base file interactively using the in-place alternating display of
-the changed content on a single-pane full screen terminal user interface.
+The imediff command interactively merges 2 slightly different files with an
+optional base file using the in-place alternating display of the changed
+content on a single-pane full screen terminal user interface (TUI).
 
-The source of line is clearly identified by the color of the line or the
-identifier character at the first column.
-
-From the console command line prompt, type:
+Start this command from the shell command prompt as:
  * "imediff" to read the tutorial,
  * "imediff -h" to get all the command line options,
- * "imediff -o output older newer" to merge 2 files, and
- * "imediff -o output myfile oldfile yourfile" to merge 3 files.
+ * "imediff -o output OLDER NEWER" to merge 2 files, and
+ * "imediff -o output MYFILE OLDFILE YOURFILE" to merge 3 files.
 
-For usage instructions, type "?" and "t" in the interactive screen.
+In the interactive TUI, you can also type "t" to read the tutorial and type "/"
+to display the list of key commands.
 
- * Copyright (C) 2003, 2004 Jarno Elonen <elonen@iki.fi>
- * Copyright (C) 2018, 2024 Osamu Aoki <osamu@debian.org>
+ * Copyright (C) 2003,2004 Jarno Elonen <elonen@iki.fi>
+ * Copyright (C) 2018-2025 Osamu Aoki <osamu@debian.org>
 
 License: GPL 2.0+
 ===============================================================================
@@ -102,36 +100,26 @@ def main():
 
     # preparation and arguments
     locale.setlocale(locale.LC_ALL, "")
-    if os.path.isdir(".git"):  # for use under "git-ime"
-        logfile = ".git/imediff.log"
-    else:
-        logfile = "imediff.log"
-    args = initialize_args(logfile)
-    if args.template:
-        create_template(args.conf)
-        sys.exit(0)
-    # logging
-    if args.debug:
-        loglevel = logging.DEBUG
-    else:
-        loglevel = logging.WARNING
+    args = initialize_args()
     logging.basicConfig(
         format="%(levelname)s: %(filename)s: %(funcName)s: %(message)s",
-        filename=logfile,
-        level=loglevel,
+        filename=args.logfile,
+        level=getattr(logging, args.loglevel.upper(), logging.WARNING),
     )
     logger.debug(
         "============================== start of main =============================="
     )
+    if args.template:
+        create_template(args.conf)
+        sys.exit(0)
 
     # configuration
     confs = initialize_confs(args.conf)
-    if args.debug:
-        for section in confs.sections():
-            for key, value in confs[section].items():
-                logger.debug(
-                    "confs['{}'] >>> key='{}' value='{}'".format(section, key, value)
-                )
+    for section in confs.sections():
+        for key, value in confs[section].items():
+            logger.debug(
+                "confs['{}'] >>> key='{}' value='{}'".format(section, key, value)
+            )
     editor = "editor"
     if "EDITOR" in os.environ:
         editor = os.environ["EDITOR"]

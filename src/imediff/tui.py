@@ -26,6 +26,7 @@ Boston, MA 02110-1301, USA.
 """
 
 from difflib import SequenceMatcher
+from imediff import __version__
 from imediff.diff3lib import SequenceMatcher3
 from imediff.utils import write_file, s_number
 from imediff.cli import TextData
@@ -50,45 +51,107 @@ This requirement can be disabled by starting this program as
 tutorial = """\
 Quick start:
   * Use cursor keys and h/j/k/l/n/p/0/9/SPACE to read this tutorial screen.
-  * Type "q" to exit this tutorial screen to the main TUI screen.
+  * Type "q" to exit this tutorial screen to the interactive TUI screen.
   * Type "t" to get back to this tutorial screen.
-  * Type "/" in the main TUI screen to see the key bindings.
+  * Type "/" in the interactive TUI screen to see the key commands.
   * Type "SPACE" to exit POPUP without specific input key prompt.
 
 ---------------------------------------------------------------------------
-    Tutorial for imediff (Interactive Merge Editor)
-                        Copyright (C) 2024 Osamu Aoki <osamu@debian.org>
+    Tutorial for imediff (Interactive Merge Editor)   (ver. {})
+                        Copyright (C) 2025 Osamu Aoki <osamu@debian.org>
 ---------------------------------------------------------------------------
 
-The imediff command helps you to merge/pick contents from 2 slightly
-different files with an optional base file interactively using the in-place
+The imediff command interactively merges contents from 2 slightly different
+files with an optional base file into an output file using the in-place
 alternating display of the changed content on a single-pane full screen
-terminal user interface.  (diff2: 2 files, diff3: 3 files)
+terminal user interface (TUI).
 
 (The original program by Jarno Elonen <elonen@iki.fi> was called "imediff2".
-I changed its command name to imediff when I made major updates to handle
-diff2-pick-operation for 2 files but also handle diff3-merge-operation for 3
-files in version 2.0.)
+I changed its command name to "imediff" when I made major updates to handle
+not only operations on 2 files but also handle operations on 3 files in
+version 2.0.)
 
-Each minimal portion of "imediff" data lines for the merge/pick operation is
-called as "chunk" in the "imediff" terminology.  Some chunks (internally
-tracked as "usr_chunk") can accept user action (or MACRO) to change the
-outcome of merge/pick operation.  User's "action_request" is recorded as
-"action" in "chunk" data.
+In this tutorial, diff2 indicates "operation on 2 files" and diff3 indicates
+"operation on 3 files".
 
-The focused chunk for the active merge/pick operation is clearly identified
-with the reversed characters and always located at around the top 1/3
-position whenever possible.  The source of the chunk is identified by the
-color of the characters used or an optional identifier character at the
-first column.
+Each minimal line portion of the imediff merge operation is called as
+"chunk" in the imediff terminology.  Some changed chunks (internally tracked
+as "usr_chunk") can accept user's "action_request" as key commands (or
+MACRO) to change the outcome of the merge operation.  The result of
+"action_request" is recorded as "action" for each "chunk".
+
+The focused chunk for the active merge operation is clearly identified by
+the TUI with the reversed characters and always located at around the top
+1/3 position whenever possible.  The source and state of all the displayed
+chunks are clearly identified.
 
 The advantage of this user interface is the minimal movement of the line of
 sight for the user.  Other great tools such as vimdiff, xxdiff, meld and
 kdiff3 require you to look at different points of display to find the exact
 position of changes.  This makes imediff the most stress-free tool.
 
-Merge with 2 files (diff2)
-==========================
+Terminal
+========
+
+The imediff program is compatible with any terminal window sizes.  It
+supports both monochrome and color terminals.  For comfortable user
+experience, color terminals with their width of 80 characters/line or more
+and their height of 24 lines or more are desirable.
+
+Interactive TUI explained
+=========================
+
+The interactive TUI of the imediff program accepts following key commands
+in the default state.
+
+ key commands          induced actions
+ w,x                   write and exit
+ q                     quit without saving
+ a/b/c/d/e/f/g         set a chunk to a/b/c/d/e/f/g action
+ 1/2/3/4/5/6/7         set a chunk to a/b/c/d/e/f/g action (alternative)
+ A/B/C/D/E/F/G         set all chunks to a/b/c/d/e/f/g action
+ enter                 toggle action of a chunk
+ m                     modify a chunk with editor: /usr/bin/nvim
+ M                     remove a editor result buffer
+ arrows/pgdn,j/pgup,k  move scope of the display
+ space,n /backspace,p  select the next/previous usr_chunk
+ tab,N   /shift-tab,P  select the next/previous unresolved usr_chunk
+ 0       /9            select the first/last usr_chunk
+ ),home  /(,end        select the first/last unresolved usr_chunk
+ ?,/                   show this help
+ t                     show tutorial
+
+The first column of the interactive TUI is used to indicate the source and
+state of the displayed chunk. (version 3.3.0+)
+
+ * "=" means the displayed chunk underwent no changes for all sources and
+   its merge state is resolved:
+   * diff2: file_a == file_b
+   * diff3: file_a == file_b == file_c
+ * "#" means the displayed chunk underwent the same set of changes from the
+   base file and its merge state is resolved:
+   * diff2: N/A
+   * diff3: file_a == file_c
+ * Independent "A", "C", and "G" mean the displayed chunk is auto-merged
+   using the corresponding source and its merge state is resolved. (only for
+   diff3)
+   * A: only file_a changed and selected for output
+   * C: only file_c changed and selected for output
+   * G: both file_a and file_c changed and auto-merged for output
+ * Independent "a", "b", "c" and "e" means the displayed chunk from the
+   corresponding source is manually merged and its merge state is resolved.
+ * Diff-marker identified "a", "b", "c" means the merge state of the
+   displayed chunk is unresolved
+ * Wdiff display line with "f" means the merge state of the displayed chunk
+   is unresolved
+ * Deleted line is displayed as "??? (*)" on display
+
+Focus jumping has 2 modes:
+ * Jump to any "usr_chunks": n, p, SPACE, BACKSPACE
+ * Jump to unreolved "usr_chunks": N, P, TAB, BTAB
+
+Example: Merge with 2 files (diff2)
+===================================
 
 Let's try to merge 2 almost identical files, "file_a" (OLDER) and "file_b"
 (NEWER), into an output file, "file_o".  You can do this with the following.
@@ -96,22 +159,21 @@ Let's try to merge 2 almost identical files, "file_a" (OLDER) and "file_b"
     $ imediff -o file_o file_a file_b
 
 This mode starts with action "d" as the default behavior.  Initially all the
-different lines in "file_a" and "file_b" are grouped them in "usr_chunk"
-list and displayed as action "d" which combines the corresponding "file_a"
-and "file_b" content separated by marker lines.
+different lines in "file_a" and "file_b" are grouped in "usr_chunk" list and
+displayed as action "d" which combines the corresponding "file_a" and
+"file_b" content separated by marker lines.
 
-You can move focus to the next usr_chunk by pressing "Space", or "n" keys.
-You can move focus to the previous usr_chunk by pressing "Back Space", or
+You can move focus to the next "usr_chunk" by pressing "SPACE", or "n" keys.
+You can move focus to the previous "usr_chunk" by pressing "BACKSPACE", or
 "p" keys.
 
-You can change the resulting output file "file_o" for the "usr_chunk" listed
-portion by applying a single key action command.  Pressing "a" displays and
-outputs the "file_a" content.  Pressing "b" displays and outputs the
-"file_b" content.
+You can change the resulting portion of the output file "file_o" by applying
+a single key command.  Pressing "a" displays and outputs the "file_a"
+content.  Pressing "b" displays and outputs the "file_b" content.
 
 By alternating "a" and "b" keys, you can see the difference in place which
-is easy on you with the constant line of sight.  (This is the design feature
-inherited from the original imediff2 program.)
+is easy on you with the constant line of sight.  (This is the key design
+feature inherited from the original imediff2 program.)
 
 You can display both the "file_a" content and the "file_b" content with 2
 key commands.  Pressing "d" displays 2 blocks of lines organized somewhat
@@ -123,37 +185,32 @@ create a manually merged content.  Upon exiting the editor, its result is
 kept in the "merge_buffer".  Even after pressing "a", "b", "d", or "f", the
 content of the "merge_buffer" can be recalled and displayed by pressing "e".
 
-Pressing "M" in action "e" removes the editor result buffer.
+Pressing "M" in action "e" removes the content of the "merge_buffer".
 
 When you press one of the upper case "A", "B", "D", "E", "F", this sets all
 chunks to the corresponding lower case action.
 
-All chunks with changed data must select "a", "b", or "e" (excluding "d" and
-"f") before writing the merge result unless "--sloppy" is specified before
-writing the result.  Type "w" or "x" to write the displayed content to
-"file_o" and exit the imediff program.
+Type "w" or "x" to write the displayed content to "file_o" and exit the
+imediff program. Here, all changed chunks listed in "usr_chunk" must select
+"a", "b", or "e" (excluding "d" and "f") for "action" before writing the
+merge result unless "--sloppy" is specified.
 
 This requirement of the clean merge for 'save and exit' can be disabled by
 specifying the "--sloppy" option to the imediff command.  Alternatively, you
 can effectively evade this requirement by pressing "m" on all non-clean
-merges to make them as the manually merged data.
+merges to make them as the manually merged data with "e" for "action".
 
 Although the imediff program is practically WYSIWYG, there are some
 exceptions. The imediff program displays a place holder marker "???" line
-for the deleted content of the action "a" or "b", and separator marker lines
-for the action "d", and separator characters for the action "f".
+for the deleted chunk for the action "a" or "b", separator marker lines for
+the action "d", and separator characters for the action "f".
 
-The associated "git ime" command can help refactoring a squashed large git
-commit into a nice hitory of multiple meaningful git commits by using
-"imediff" as its split engine and optionally using "git rebase -i ...", and
-"gitk" to organize them.
-
-Merge with 3 files (diff3)
-==========================
+Example: Merge with 3 files (diff3)
+===================================
 
 Let's try to merge 2 almost identical files, "file_a" (MYFILE) and "file_c"
-(YOURFILE), both of which are based on the file, "file_b" (OLDFILE=BASE),
-into an output file, "file_o".  You can do this with the following.
+(YOURFILE), both of which are based on the file, "file_b" (OLDFILE, base
+file), into an output file, "file_o".  You can do this with the following.
 
     $ imediff -o file_o file_a file_b file_c
 
@@ -162,67 +219,36 @@ full screen of the content for the intended output "file_o".  Since this
 uses extra "file_b" (OLDFILE), it can automatically megrge non-identical
 chunks of "file_a" (MYFILE) and "file_c" (YOURFILE) using line.
 
-Key actions and functionalities of "Merge with 3 files" are almost the same
-as those for "Merge with 2 files".  One notable "action" is pressing "g".
-This is also the default starting "action" for "Merge with 3 files" and
-takes advantage of the extra BASE file to do auto-merge.  It acts in the
-following order:
+Key commands of "Merge with 3 files" are almost the same as ones of "Merge
+with 2 files".
+
+One notable exception is the key command "g". This is also the default
+starting mode for "Merge with 3 files".  This takes advantage of the extra
+base file to help auto-merge and acts in the following order:
  * If the "merge_buffer" has a previously stored manually generated merge
-   result, "action" is set to "e" to activate it.
+   result, "action" is set to "e".
  * If a chunk is auto-merged cleanly by line-by-line comparison or more fine
    grained character comparison, "action" is set to "=", "#", "A", "C", or
-   "G". These chunks are already merged properly and excluded from the
-   "usr_chunk" list.
- * The un-merged data is presented as action "d".
+   "G".  The meaning of each "action" is described in the above. Since it is
+   already merged properly, it isn't listed in the "usr_chunk" list.
+ * The unresolved chunk is listed in "usr_chunk" and "action" is set to "d".
 
 Please note that even for the non-overlapping changes on the same line,
 imediff can yield the clean merge with action "G". (This is the great
 feature of the imediff command over tools such as "diff3 -m ..." and "git
 merge ..." which operate only by line-by-line comparison.)
 
-Only really unresolved chunks are displayed in action "d".
+Command line options
+====================
 
-The rests are mostly the same as "Merge with 2 files".
+The complete list of command line options is available by "imediff -h" but
+the explanation on them are terse.  Please read the following for details.
 
-Terminal
-========
-
-The imediff program is compatible with any terminal window sizes.  It
-supports both monochrome and color terminals.  For comfortable user
-experience, terminal width of 80 characters/line or more and terminal height
-of 24 lines or more are desirable.
-
-TUI explained
-==============
-
-The first column of TUI (Terminal User Interface) display is used to
-indicate the source of the data displayed.
-
- * "=" means the displayed chunk underwent no changes for all sources and
-   the merge is resolved:
-   * diff2: a==b (merged)
-   * diff3: a==b==c (merged)
- * "#" means the displayed chunk underwent the same set of changes from the
-   base source to both updated sources and the merge is resolved:
-   * diff2: N/A
-   * diff3: a==c (merged)
- * Independent "A", "C", and "G" means a chunk from the corresponding
-   source is displayed as auto-resolved. (only for diff3)
- * Independent "a", "b", "c" and "e" means a chunk from the corresponding
-   source is displayed as manually resolved.
- * Diff-marker identified "a", "b", "c" means a chunk is un-resolved
- * Wdiff display line with "f" means a chunk is un-resolved
- * Deleted line is displayed as "??? (*)" on display
-
-Focus jumping has 2 modes:
- * Jump to any usr_chunks: n, p, SPACE, BACKSPACE
- * Jump to unresolved usr_chunks: N, P, TAB, BTAB
-
-Merge actions and command options
-=================================
+Starting action
+===============
 
 The imediff program may be stared with a command option which specifies the
-default starting action and subsequence merge action behavior..
+default starting action and subsequent merge action behavior.
 
 With 2 files (diff2), one of 4 optins can be specified:
  * "-a": select file_a, if different
@@ -230,6 +256,7 @@ With 2 files (diff2), one of 4 optins can be specified:
  * "-d": select diff2(file_a, file_b), if different
  * "-f": select wdiff2(file_a, file_b) if different and single line
          select diff2(file_a, file_b) if different and not single line
+
 If no option is specified, imediff uses "-d" for diff2.
 
 With 3 files (diff3), one of 6 optins can be specified:
@@ -240,6 +267,7 @@ With 3 files (diff3), one of 6 optins can be specified:
  * "-f": select wdiff2(file_a, file_b) if not merged and single line
          select diff2(file_a, file_b) if not merged and not single line
  * "-g": select good merges (w)diff2(file_a, file_b) if not merged
+
 If no option is specified, imediff uses "-g" for diff3.
 
 For diff3 cases with (*), the interactive action request can change chunks
@@ -247,45 +275,111 @@ normally considered merged (=auto-resolved to "A", "C", "G") when imediff is
 started under "-f" or "-g".
 
 The default behavior without using any one of command options should serve
-in many use cases of merging good working files.  Besides, you can change
-merge/pick selection interactively.
+in typical use cases.  Besides, you can change merge behavior interactively.
 
-For dissecting a big change into a sequence of many small changes, you
-should put changed files in a git repository and use associated git-ime
-command which use imediff(diff2) indirectly.
+For merging 2 functioning changed files with a common base file,
+imediff(diff3) with "-g" or "-f" should be good for the task.
 
-For merging 2 functioning changed files, imediff(diff3) with "-g" or "-f"
-should be good for the task.
+For cherry-picking changes from 2 failing changed files, any one of "-a",
+"-b", or "-c" under imediff(diff3) may be useful. (TBH, I don't know how
+useful these are.)
 
-For searching a buggy change in 2 failing changed files, any one of "-a",
-"-b", or "-c" under imediff(diff3) may be useful.  (TBH, I don't know how
-useful these are.  To me, dissecting with git-ime/imediff(diff2) seems
-simpler and easier.)
+Customization TUI
+=================
 
-Customization
-=============
+The imediff program can customize its key command binding and its color
+setting using the "~/.imediff" file in the ini file format.  You can create
+its template file by the "imediff -t" command.  If this file is missing,
+default settings are used.
 
-The imediff program can customize its key binding and its color setting with
-the "~/.imediff" file in the ini file format.  You can create its template
-file by the "imediff -t" command.  If this file is missing, default settings
-are used.
+The left side of this configuration file is the keys described in the above.
+The right side is your configuration choices.  The current settings can be
+confirmed by the "/" key dialog on the interactive TUI.
 
 You can disable the existing "~/.imediff" file without renaming it by
 specifying "none" as "imediff -C none ...". Then, only the internal default
 values of the imediff program are used.
 
-Custom starting and automatic processing with imediff can be enabled using
-key macro featurs.  For example, git-ime repeatedly uses "imediff -n -MAbw"
-to dissect a single file change commit to fine grained minimal commits.
+Key MACRO
+=========
+
+Automatic processing with imediff can be enabled using key MACRO featurs
+with the "-M" option.
+
+For TUI mode, TUI is started after processing the MACRO.
+
+For CLI mode, you must add "w" at the end of to the MACRO command to write
+the result to a file.  For example, "imediff -n -MAbw ...".
 
 Log file
 ========
 
-Normally, imediff creates log file "imediff.log" at the current directory.
+After version 3.4.0, imediff doesn't create log file as its default
+behavior.
 
-When there is ".git/" directory at the current directory, imediff creates
-log file ".git/imediff.log" to avoid contaminating checked out data.  This
-is mainly for the clean git-ime operatiion.
+When "--force-logging" option is specified, imediff forces to generate
+"imediff.log" at the current directory as the log file with its log level at
+"INFO".
+
+You may explicitly set the log file and its log level with "--logfile" and
+"--loglevel" options.
+
+The "git-ime" command invokes "imediff --logfile=.git/imediff.log ..." to
+generate the log file in the "./git/" directory and avoid interfarence with
+the git repository.
+
+Internal logic
+==============
+
+Here is a brief overview of the internal logic of imediff.  Normally, you
+don't need to tweak it.
+
+The imediff command internally uses "difflib.SequenceMatch" class provided
+by the Python Standard Library.  The sequence may be a sequence of string
+for line matching or a sequence of character for character matching
+depending on its usage point.  "isjunk" parameter for the SequenceMatch
+instance may be tweaked using "--isjunk" option.
+
+The imediff tries its best to match lines using 2 step approach.
+
+ * Step 1: full line match on lines after removing whitespaces etc.
+ * Step 2: shortened line match for non-identical lines (head or tail).
+
+Step 1 can be tweaked using the "--line-rule=N" option to set the line
+filtering rule.
+
+ * N=0:  strip leading and tailing whitespaces
+ * N=1:  strip all whitespaces
+ * N=2:  strip all whitespaces and quotation marks (default)
+ * N=3:  strip all non-alphanumerics
+ * N=10: strip leading and tailing whitespaces and lowecase all characters
+ * N=11: strip all whitespaces and lowecase all characters
+ * N=12: strip all whitespaces and quotation marks and lowecase all
+         characters
+ * N=13: strip all non-alphanumerics and lowecase all characters
+
+Step 2 can be tweaked using:
+
+ * "--line-min LINE_MIN" option to set the minimum partial line match length
+ * "--line-max LINE_MAX" option to set the maximum partial line match length
+ * "--line-factor LINE_FACTOR" option to set the shortening factor (1-9) for
+   the partial line match length.  default=8 meaning 80% per step
+
+git-ime
+========
+
+The git-ime command is a companion script provided with imediff.  It is a
+wrapper tool for git and imediff to disect a single commit containing many
+changes.
+
+When a commit contains changes to multiple files, it splits the commit into
+many commits of single file changes.
+
+When a commit contains changes to a single file, it splits the commit into
+many minimum commits using "imediff -n -MAbw ..." repeatedly.
+
+Use of git-ime and imediff along with "git rebase -i ..." can clean
+intertwined change history.  This may be useful for debugging.
 
 Note
 ====
@@ -294,12 +388,17 @@ The version 3.0 is a major rewrite to address file size limitation caused by
 the underlying curses library and to limit wdiff to operate only within a
 single line.
 
+The version 3.4.0 changes logging behavior and redesigns short command
+options for imediff.
+
 The "diff3 -m file_a file_b file_c" has an odd feature of showing diff2
 between "file_b" and "file_c" for the portion of changes in which both
 "file_a" and "file_c" underwent identical changes from "file_b". This
 imediff program results is a more intuitive one with the clean merge.  If
 you are after such identical changes, you may use "-b" option with imediff
-(diff3)."""
+(diff3).""".format(
+    __version__
+)
 
 
 class TextPad(TextData):  # TUI data
@@ -335,10 +434,8 @@ class TextPad(TextData):  # TUI data
         return
 
     def init_args_confs_tui(self, args, confs):
-        # Init from commandline/configuration parameters
-        self.mono = args.mono  # display in monochrome
         self.attrib = confs["attrib"]
-        # self.poke = args.poke  # display in monochrome
+        # self.poke = args.poke
 
     ####################################################################
     # Externally used main method and effective main method
@@ -524,7 +621,9 @@ class TextPad(TextData):  # TUI data
                     sys.exit(2)
             elif keyname in ["?", "/", "F1"]:
                 # Show help screen (short so exit with SPACE)
-                self.display_content_win(self.get_helptext(), ["SPACE", "ESCAPE", "q", "Q"])
+                self.display_content_win(
+                    self.get_helptext(), ["SPACE", "ESCAPE", "q", "Q"]
+                )
             elif keyname == "t":
                 # Show tutorial screen (long so no-exit with SPACE)
                 self.display_popup_win(tutorial, ["ESCAPE", "q", "Q"], "color_white")
@@ -841,7 +940,6 @@ class TextPad(TextData):  # TUI data
         self.curses_value["REVERSE"] = curses.A_REVERSE
 
         if not curses.has_colors():
-            self.mono = True  # display in monochrome
             self.curses_value["WHITE"] = curses.color_pair(0)
             self.curses_value["RED"] = curses.color_pair(0)
             self.curses_value["GREEN"] = curses.color_pair(0)

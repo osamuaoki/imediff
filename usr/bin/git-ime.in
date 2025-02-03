@@ -25,7 +25,7 @@
 
 IMEDIFF="/usr/bin/imediff"
 AUTO="No"
-DEBUG=""
+DEBUG="--loglevel=WARNING --logfile=.git/imediff.log"
 KEEP="No"
 NOTAG="No"
 OPTQ=""
@@ -49,7 +49,7 @@ DESCRIPTION: Split changes into multiple git commits
     --auto|-a
         force to auto-split for line-block-split by imediff
     --debug|-D
-        run imediff with -D option with .git/imediff.log
+        run imediff with --loglevel=DEBUG --logfile=.git/imediff.log
     --keep|-k
         keep original commit message text as much
     --notag|-n
@@ -280,7 +280,7 @@ while true; do
 		AUTO="Yes"
 		;;
 	--debug | -D)
-		DEBUG="-D"
+		DEBUG="--loglevel=DEBUG --logfile=.git/imediff.log"
 		;;
 	--keep | -k)
 		KEEP="Yes"
@@ -413,4 +413,4 @@ if [ "$NOTAG" = "No" ] && ! git describe --tags --exact-match HEAD 2>/dev/null; 
 fi
 rm -f ".git/COMMIT_EDITMSG_ORIG"
 
-# vim:se tw=78 ai sts=2 sw=2 et:
+# vim:se tw=78 ai sts=2 sw=2 noet:

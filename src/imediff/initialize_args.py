@@ -25,12 +25,11 @@ Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.
 """
 import argparse
-import logging
 
-logger = logging.getLogger(__name__)
+# NO LOGGING YET
 
 
-def initialize_args(logfile):
+def initialize_args():
     """
     Parse command line options and arguments
 
@@ -66,76 +65,89 @@ def initialize_args(logfile):
         "-g", action="store_true", help="Start with good merge mode (only for diff3)"
     )
     pa.add_argument(
+        "-o",
+        "--output",
+        help="Write output to the given file.  If this is missing, STDERR is used",
+    )
+    pa.add_argument(
+        "-l",
+        "--force-logging",
+        action="store_true",
+        help='Force LOGFILE="imediff.log" and LOGLEVEL="INFO"',
+    )
+    pa.add_argument(
+        "-n",
+        "--non-interactive",
+        action="store_true",
+        help="Use non-interactive CLI instead of normal TUI",
+    )
+    pa.add_argument(
+        "-s",
+        "--sloppy",
+        action="store_true",
+        help="Allow one to save unresolved contents",
+    )
+    pa.add_argument(
+        "-t",
+        "--template",
+        action="store_true",
+        help='Create a template configuration file "~/.imediff"',
+    )
+    pa.add_argument(
+        "-v", "--version", action="store_true", help="Show version and license"
+    )
+    pa.add_argument(
+        "-C",
+        "--conf",
+        default="~/.imediff",
+        help='Specify configuration file to use.  (default="~/.imediff", set this to "none" to use internal configuration only)',
+    )
+    pa.add_argument("-M", "--macro", default="", help="Set MACRO string.  E.g.: Abw")
+    pa.add_argument(
+        "-F",
+        "--logfile",
+        default="/dev/null",
+        help='Enable logging to LOGFILE (default logging disabled as LOGFILE="/dev/null").',
+    )
+    pa.add_argument(
+        "-L",
+        "--loglevel",
+        default="WARNING",
+        help='Set LOGLEVEL to "ERROR", "WARNING" (default), "INFO", or "DEBUG"',
+    )
+    pa.add_argument(
+        "-J",
         "--isjunk",
         action="store_true",
         help="Force isjunk to None instead of the default list",
     )
     pa.add_argument(
+        "-R",
         "--line-rule",
-        "-r",
         action="store",
         default=2,
         help="Fuzzy match line filtering rule (0,1,2,3,10,11,12,13)",
     )
     pa.add_argument(
+        "-I",
         "--line-min",
-        "-l",
         action="store",
         default=3,
         help="Fuzzy match minimum partial line length",
     )
     pa.add_argument(
+        "-A",
         "--line-max",
-        "-L",
         action="store",
         default=80,
         help="Fuzzy match maximum partial line length",
     )
     pa.add_argument(
+        "-X",
         "--line-factor",
-        "-F",
         action="store",
         default=8,
         help="Fuzzy match (partial line length shortening factor/2-depth) x 10, default 8",
-    )
-    pa.add_argument(
-        "--mono", "-m", action="store_true", help="Force monochrome display"
-    )
-    pa.add_argument(
-        "--sloppy", action="store_true", help="Allow one to save unresolved contents"
-    )
-    pa.add_argument(
-        "--version", "-V", action="store_true", help="Show version and license"
-    )
-    pa.add_argument(
-        "--output",
-        "-o",
-        help="\
-Write output to the given file.  If this is missing, use STDERR",
-    )
-    pa.add_argument(
-        "--conf",
-        "-C",
-        default="~/.imediff",
-        help='\
-Specify configuration file to use.  (default="~/.imediff", set this to "none" to use internal configuration only)',
-    )
-    # hidden option for debug: non-interactive diff/merge operation
-    pa.add_argument(
-        "--non-interactive", "-n", action="store_true", help="execution without curses"
-    )
-    pa.add_argument("--macro", "-M", default="", help="set MACRO string.  E.g.: Abw")
-    pa.add_argument(
-        "--template",
-        "-t",
-        action="store_true",
-        help='Create a template configuration file "~/.imediff"',
-    )
-    pa.add_argument(
-        "--debug",
-        "-D",
-        action="store_true",
-        help='Generate debug log in "' + logfile + '"',
     )
     pa.add_argument("file_a", nargs="?", help="file for OLDER(diff2), MYFILE(diff3)")
     pa.add_argument(
@@ -177,6 +189,13 @@ Specify configuration file to use.  (default="~/.imediff", set this to "none" to
         args.default_action = "g"
     else:  # diff2
         args.default_action = "d"
+    #
+    # override for logging
+    if args.force_logging:
+        if args.loglevel == "WARNING":
+            args.loglevel = "INFO"
+        if args.logfile == "/dev/null":
+            args.logfile = "imediff.log"
 
     # if args.poke is not None:
     #     print("I: +++ hidden -p/--poke option is used with '{}' +++".format(args.poke))
