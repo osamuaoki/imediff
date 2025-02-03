@@ -159,7 +159,7 @@ class TestImediff(unittest.TestCase):
         result = subprocess.call(
             "cd "
             + test_dir
-            + ";python3 _imediff.py -C none --macro=w -n file_a file_b -o z_imediff2.out",
+            + ";python3 _imediff.py -l -C none --macro=w -n file_a file_b -o z_imediff2.out",
             shell=True,
         )
         result = subprocess.call(
@@ -173,7 +173,7 @@ class TestImediff(unittest.TestCase):
         result = subprocess.call(
             "cd "
             + test_dir
-            + ";python3 _imediff.py -a -C none --macro=w -n file_a file_b -o z_imediff2_a.out",
+            + ";python3 _imediff.py -l -a -C none --macro=w -n file_a file_b -o z_imediff2_a.out",
             shell=True,
         )
         result = subprocess.call(
@@ -187,7 +187,7 @@ class TestImediff(unittest.TestCase):
         result = subprocess.call(
             "cd "
             + test_dir
-            + ";python3 _imediff.py -b -C none --macro=w -n file_a file_b -o z_imediff2_b.out",
+            + ";python3 _imediff.py -l -b -C none --macro=w -n file_a file_b -o z_imediff2_b.out",
             shell=True,
         )
         result = subprocess.call(
@@ -201,7 +201,7 @@ class TestImediff(unittest.TestCase):
         result = subprocess.call(
             "cd "
             + test_dir
-            + ";python3 _imediff.py -d -C none --macro=w -n file_a file_b -o z_imediff2_d.out",
+            + ";python3 _imediff.py -l -d -C none --macro=w -n file_a file_b -o z_imediff2_d.out",
             shell=True,
         )
         result = subprocess.call(
@@ -215,7 +215,7 @@ class TestImediff(unittest.TestCase):
         result = subprocess.call(
             "cd "
             + test_dir
-            + ";python3 _imediff.py -f -C none --macro=w -n file_a file_b -o z_imediff2_f.out",
+            + ";python3 _imediff.py -l -f -C none --macro=w -n file_a file_b -o z_imediff2_f.out",
             shell=True,
         )
         result = subprocess.call(
@@ -229,7 +229,7 @@ class TestImediff(unittest.TestCase):
         result = subprocess.call(
             "cd "
             + test_dir
-            + ";python3 _imediff.py -C none --macro=w -n file_a file_b file_c -o z_imediff3.out",
+            + ";python3 _imediff.py -l -C none --macro=w -n file_a file_b file_c -o z_imediff3.out",
             shell=True,
         )
         result = subprocess.call(
@@ -243,7 +243,7 @@ class TestImediff(unittest.TestCase):
         result = subprocess.call(
             "cd "
             + test_dir
-            + ";python3 _imediff.py -a -C none --macro=w -n file_a file_b file_c -o z_imediff3_a.out",
+            + ";python3 _imediff.py -l -a -C none --macro=w -n file_a file_b file_c -o z_imediff3_a.out",
             shell=True,
         )
         result = subprocess.call(
@@ -257,7 +257,7 @@ class TestImediff(unittest.TestCase):
         result = subprocess.call(
             "cd "
             + test_dir
-            + ";python3 _imediff.py -b -C none --macro=w -n file_a file_b file_c -o z_imediff3_b.out",
+            + ";python3 _imediff.py -l -b -C none --macro=w -n file_a file_b file_c -o z_imediff3_b.out",
             shell=True,
         )
         result = subprocess.call(
@@ -271,7 +271,7 @@ class TestImediff(unittest.TestCase):
         result = subprocess.call(
             "cd "
             + test_dir
-            + ";python3 _imediff.py -c -C none --macro=w -n file_a file_b file_c -o z_imediff3_c.out",
+            + ";python3 _imediff.py -l -c -C none --macro=w -n file_a file_b file_c -o z_imediff3_c.out",
             shell=True,
         )
         result = subprocess.call(
@@ -285,7 +285,7 @@ class TestImediff(unittest.TestCase):
         result = subprocess.call(
             "cd "
             + test_dir
-            + ";python3 _imediff.py -d -C none --macro=w -n file_a file_b file_c -o z_imediff3_d.out",
+            + ";python3 _imediff.py -l -d -C none --macro=w -n file_a file_b file_c -o z_imediff3_d.out",
             shell=True,
         )
         result = subprocess.call(
@@ -299,7 +299,7 @@ class TestImediff(unittest.TestCase):
         result = subprocess.call(
             "cd "
             + test_dir
-            + ";python3 _imediff.py -f -C none --macro=w -n file_a file_b file_c -o z_imediff3_f.out",
+            + ";python3 _imediff.py -l -f -C none --macro=w -n file_a file_b file_c -o z_imediff3_f.out",
             shell=True,
         )
         result = subprocess.call(
@@ -313,7 +313,7 @@ class TestImediff(unittest.TestCase):
         result = subprocess.call(
             "cd "
             + test_dir
-            + ";python3 _imediff.py -g -C none --macro=w -n file_a file_b file_c -o z_imediff3_g.out",
+            + ";python3 _imediff.py -l -g -C none --macro=w -n file_a file_b file_c -o z_imediff3_g.out",
             shell=True,
         )
         result = subprocess.call(

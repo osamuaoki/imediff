@@ -9,4 +9,4 @@ PYTHONPATH=$(realpath $PYTHONPATH)
 echo "I: Setting PYTHONPATH=$PYTHONPATH"
 export PYTHONPATH
 
- python3 test_unittest_all.py -v
+python3 test_unittest_all.py -v

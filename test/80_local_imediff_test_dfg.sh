@@ -13,7 +13,7 @@ echo "I: Setting PYTHONPATH=$PYTHONPATH"
 export PYTHONPATH
 
 EXITSTATUS=true
-COMMAND="python3 _imediff.py"
+COMMAND="python3 _imediff.py -l"
 #COMMAND="imediff"
 EXITSTATUS=true
 # clean
@@ -43,7 +43,6 @@ for f in *.new; do
 	else
 		echo " -> ! DIFF: $g"
 		EXITSTATUS=false
-		$CONTINUE_TEST
 	fi
 	echo
 done

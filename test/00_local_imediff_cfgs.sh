@@ -10,7 +10,7 @@ echo "I: Setting PYTHONPATH=$PYTHONPATH"
 export PYTHONPATH
 
 # ignore ~/.imediff
-python3 _imediff.py -C z_imediff.conf.new -t
+python3 _imediff.py -l -C z_imediff.conf.new -t
 echo
 for f in *.new; do
 	g="${f%.new}.ref"
@@ -20,7 +20,6 @@ for f in *.new; do
 	else
 		echo " -> ! DIFF: $g"
 		EXITSTATUS=false
-		$CONTINUE_TEST
 	fi
 	echo
 done

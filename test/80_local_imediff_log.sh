@@ -12,7 +12,7 @@ echo "I: Setting PYTHONPATH=$PYTHONPATH"
 export PYTHONPATH
 
 # ignore ~/.imediff
-python3 _imediff.py -C none -D -n --macro=q
+python3 _imediff.py -l -C none -L DEBUG -n --macro=q
 sed -e '/external editor/,$d' imediff.log >z_imediff-log.new
 
 
@@ -24,7 +24,6 @@ for f in *.new; do
 	else
 		echo " -> ! DIFF: $g"
 		EXITSTATUS=false
-		$CONTINUE_TEST
 	fi
 	echo
 done

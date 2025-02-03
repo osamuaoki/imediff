@@ -24,7 +24,6 @@ for f in *.new; do
 	else
 		echo " -> ! DIFF: $g"
 		EXITSTATUS=false
-		$CONTINUE_TEST
 	fi
 	echo
 done

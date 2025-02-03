@@ -10,4 +10,4 @@ echo "I: Setting PYTHONPATH=$PYTHONPATH"
 export PYTHONPATH
 
 # ignore ~/.imediff and output log
-python3 _imediff.py -C none -D "$@"
+python3 _imediff.py -l -C none "$@"

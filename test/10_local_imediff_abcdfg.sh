@@ -12,7 +12,7 @@ PYTHONPATH=$(realpath $PYTHONPATH)
 echo "I: Setting PYTHONPATH=$PYTHONPATH"
 export PYTHONPATH
 
-COMMAND="python3 _imediff.py"
+COMMAND="python3 _imediff.py -l"
 EXITSTATUS=true
 # test 2 file diff
 $COMMAND --macro=w -C none -n file_a file_b -o z_imediff2.new
@@ -48,7 +48,6 @@ for f in *.new; do
 	else
 		echo " -> ! DIFF: $g"
 		EXITSTATUS=false
-		$CONTINUE_TEST
 	fi
 	echo
 done
