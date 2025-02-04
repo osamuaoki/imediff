@@ -2354,6 +2354,9 @@ tab,{N}   /shift-tab,{P}  select the next/previous unresolved usr_chunk
             elif keyname in ["0", "HOME"]:
                 corner_popup_row = 0
                 corner_popup_col = 0
+            elif keyname in ["9", "END"]:
+                corner_popup_row = max(0, virt_row_max - msg_row_max)
+                corner_popup_col = 0
             elif keyname in ["j", "DOWN"]:
                 corner_popup_row += 1
             elif keyname in ["k", "UP"]:

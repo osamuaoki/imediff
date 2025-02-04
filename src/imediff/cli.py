@@ -1058,7 +1058,7 @@ class TextData:  # Non-TUI data
         if self.focused_usr_chunk_index is not None:
             usr_chunk_index_old = self.focused_usr_chunk_index
             self.focused_usr_chunk_index = len(self.usr_chunk_list) - 1
-            if usr_chunk_index_old != self.focused_usr_chunk_index:
+            if usr_chunk_index_old == self.focused_usr_chunk_index:
                 self.report("No next user accessible chunk (@end)")
         else:
             self.report("No user accessible chunk")
