@@ -1,5 +1,8 @@
 #!/bin/sh -e
 # vim: set sw=2 et sw=2 sts=2:
+#
+# script for uploading wheel package to test.pypi.org
+#
 git reset --hard HEAD
 git clean -dfx
 python3 -m build

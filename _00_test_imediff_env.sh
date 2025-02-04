@@ -1,5 +1,8 @@
 #!/bin/bash -e
 # vim: set sw=2 et sw=2 sts=2:
+#
+# test script used before uploading wheel package to pypi.org
+#
 type imediff
 type git-ime
 git reset --hard HEAD
@@ -15,7 +18,7 @@ imediff_install
 type imediff
 type git-ime
 echo "I: imediff installed with helper script"
-imediff -D test/file_a test/file_b test/file_c -o test/file_out
+imediff test/file_a test/file_b test/file_c -o test/file_out
 echo "I: starting subshell to continue.  Type ^D to exit"
 bash -i
 echo "I: exit test environment"

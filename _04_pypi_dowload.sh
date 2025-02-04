@@ -1,5 +1,8 @@
 #!/bin/sh -e
 # vim: set sw=2 et sw=2 sts=2:
+#
+# script for downloading wheel package from official pypi.org
+#
 type imediff
 type git-ime
 git reset --hard HEAD
