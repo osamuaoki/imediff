@@ -1,3 +1,10 @@
+imediff (3.4.1-1) unstable; urgency=medium
+
+  * Add "git ime --delete" feature.
+  * Bump copyright to 2025.
+
+ -- Osamu Aoki <osamu@debian.org>  Fri, 29 Aug 2025 13:17:17 +0900
+
 imediff (3.4.0-1) unstable; urgency=medium
 
   * Redesign logging of imediff as an optional behavior to address

@@ -4,7 +4,7 @@
 """
 Module lines2lib -- matching 2 lines library
 
-Copyright (C) 2018--2024 Osamu Aoki <osamu@debian.org>
+Copyright (C) 2018--2025 Osamu Aoki <osamu@debian.org>
 
 """
 from difflib import SequenceMatcher

@@ -7,7 +7,7 @@ IMEDIFF - Interactive Merge Editor for DIFF2 and DIFF3
           and CLI based non-interactive tool with --macro
 
 Copyright (C) 2003, 2004 Jarno Elonen <elonen@iki.fi>
-Copyright (C) 2018--2024 Osamu Aoki <osamu@debian.org>
+Copyright (C) 2018--2025 Osamu Aoki <osamu@debian.org>
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -24,7 +24,7 @@ License along with this program; if not, write to the Free
 Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.
 """
-__version__ = "3.4.0"
+__version__ = "3.4.1"
 __package__ = "imediff"
 
 __all__ = ["__version__", "__package__"]

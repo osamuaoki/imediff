@@ -1,7 +1,7 @@
 # IMEDIFF - 2-way/3-way merge tool (CLI, Ncurses)
 
 * Copyright (C) 2003,2004 Jarno Elonen <elonen@iki.fi>
-* Copyright (C) 2018-2024 Osamu Aoki <osamu@debian.org>
+* Copyright (C) 2018-2025 Osamu Aoki <osamu@debian.org>
 
 Released under the GNU General Public License, 2.0+.
 See LICENSE for details

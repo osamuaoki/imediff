@@ -31,7 +31,7 @@
 git-ime \- An interactive git commit split helper tool
 .SH "SYNOPSIS"
 .HP \w'\fBgit\-ime\fR\ 'u
-\fBgit\-ime\fR [\fB\-a\fR] [\fB\-\-auto\fR] [\fB\-n\fR] [\fB\-\-notag\fR] [\fB\-v\fR] [\fB\-\-verbose\fR] [\fB\-h\fR] [\fB\-\-help\fR]
+\fBgit\-ime\fR [\fB\-a\fR] [\fB\-\-auto\fR] [\fB\-d\fR] [\fB\-\-delete\fR] [\fB\-n\fR] [\fB\-\-notag\fR] [\fB\-v\fR] [\fB\-\-verbose\fR] [\fB\-h\fR] [\fB\-\-help\fR]
 .SH "DESCRIPTION"
 .PP
 This
@@ -97,6 +97,11 @@ The
 command is executed with verbose console outputs\&.
 .RE
 .PP
+\fB\-d\fR, \fB\-\-delete\fR
+.RS 4
+Delete all existing automatic tags (git\-ime\-*)\&.
+.RE
+.PP
 \fB\-n\fR, \fB\-\-notag\fR
 .RS 4
 Disable automatic tagging feature\&. Since the use of this option is desirable if this
@@ -128,5 +133,5 @@ Original author of this script\&.
 .RE
 .SH "COPYRIGHT"
 .br
-Copyright \(co 2018-2021 Osamu Aoki <osamu@debian\&.org>
+Copyright \(co 2018-2025 Osamu Aoki <osamu@debian\&.org>
 .br

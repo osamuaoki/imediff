@@ -7,7 +7,7 @@ Module diff3lib -- wrapper for diff3 (generic)
 Class SequenceMatcher3:
     A flexible class for comparing 3 of sequences of any type.
 
-Copyright (C) 2018--2024 Osamu Aoki <osamu@debian.org>
+Copyright (C) 2018--2025 Osamu Aoki <osamu@debian.org>
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as

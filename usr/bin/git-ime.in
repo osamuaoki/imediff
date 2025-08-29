@@ -3,7 +3,7 @@
 #
 # git-ime: Split changes on a file into multiple git commits
 #
-#   Copyright (c) 2015-2024 Osamu Aoki
+#   Copyright (c) 2015-2025 Osamu Aoki
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -48,6 +48,8 @@ DESCRIPTION: Split changes into multiple git commits
 
     --auto|-a
         force to auto-split for line-block-split by imediff
+    --delete|-d
+        remove all git-ime tags
     --debug|-D
         run imediff with --loglevel=DEBUG --logfile=.git/imediff.log
     --keep|-k
@@ -278,6 +280,10 @@ while true; do
 	case "$1" in
 	--auto | -a)
 		AUTO="Yes"
+		;;
+	--delete | -d)
+		git tag -d $(git tag|grep "^git-ime-")
+		exit
 		;;
 	--debug | -D)
 		DEBUG="--loglevel=DEBUG --logfile=.git/imediff.log"

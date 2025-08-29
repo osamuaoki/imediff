@@ -28,7 +28,7 @@
       <contrib>Original author of this script.</contrib>
     </author>
     <copyright>
-      <year>2018-2021</year>
+      <year>2018-2025</year>
       <holder>&dhusername; &dhemail;</holder>
     </copyright>
     &dhdate;
@@ -47,6 +47,8 @@
       <command>&dhpackage;</command>
       <arg><option>-a</option></arg>
       <arg><option>--auto</option></arg>
+      <arg><option>-d</option></arg>
+      <arg><option>--delete</option></arg>
       <arg><option>-n</option></arg>
       <arg><option>--notag</option></arg>
       <arg><option>-v</option></arg>
@@ -121,6 +123,15 @@ automatically and repeatedly to create a series of commits, instead.</para>
 
 <para>The <command>git ime</command> command is executed with verbose console
 outputs.</para>
+
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+      <term><option>-d</option></term> <term><option>--delete</option></term>
+        <listitem>
+
+<para>Delete all existing automatic tags (git-ime-*). </para>
 
         </listitem>
       </varlistentry>
