@@ -43,9 +43,7 @@ requires-python = ">=3.9"
 # This is either text indicating the license for the distribution, or a file
 # that contains the license
 # https://packaging.python.org/en/latest/specifications/core-metadata/#license
-
-## The following needed to be commented out to work with "twine check"
-license = {file = "LICENSE"}
+license = "GPL-2.0-or-later"
 
 # This field adds keywords for your project which will appear on the
 # project page. What does your project relate to?
@@ -83,9 +81,6 @@ classifiers = [  # Optional
   # Indicate who your project is intended for
   "Intended Audience :: Developers",
   "Topic :: Text Processing :: General",
-
-  # Pick your license as you wish
-  "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
 
   # Specify the Python versions you support here. In particular, ensure
   # that you indicate you support Python 3. These classifiers are *not*
