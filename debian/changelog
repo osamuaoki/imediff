@@ -1,3 +1,13 @@
+imediff (3.4.2-1) unstable; urgency=medium
+
+  * Fix Lintian tag: old-fsf-address-in-copyright-file
+  * Update LICENSE file
+  * Update project.license style
+  * List Python 3.14
+  * Allow rename to a new directory
+
+ -- Osamu Aoki <osamu@debian.org>  Mon, 30 Mar 2026 16:15:40 +0900
+
 imediff (3.4.1-1) unstable; urgency=medium
 
   * Add "git ime --delete" feature.
