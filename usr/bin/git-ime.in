@@ -126,7 +126,10 @@ split_by_file_loop() {
 			vecho "I: git add/commit $src (type)"
 			;;
 		C*) # copy (?? HOW to get this case??)
-			mkdir -p "${dst%/*}"
+			# ensure parent dir exists
+			if [ "${dst%/*}" != "$dest" ]; then
+				mkdir -p "${dst%/*}"
+			fi
 			cp -f "$src" "$dst"
 			git add $OPTQ "$dst"
 			git_commit_with_prefix "$dst (copy from $src)"
@@ -139,6 +142,10 @@ split_by_file_loop() {
 			fi
 			;;
 		R*) # rename
+			# ensure parent dir exists
+			if [ "${dst%/*}" != "$dest" ]; then
+				mkdir -p "${dst%/*}"
+			fi
 			git mv "$src" "$dst"
       git add $OPTQ "$dst"
 			git_commit_with_prefix "$dst (rename from $src)"
@@ -158,6 +165,7 @@ split_by_file_loop() {
 	vecho "I: split by file into $N_FLNMS commits ... done"
 }
 
+# changes on a same file path src == dst
 split_by_imediff_loop() {
 	vecho "I: split_by_imediff_loop"
 	vecho '------------------------------------------------------'
@@ -200,7 +208,10 @@ EOF
 		;;
 	C*) # copy
 		FLNM="$dst"
-		mkdir -p "${dst%/*}"
+		# ensure parent dir exists
+		if [ "${dst%/*}" != "$dest" ]; then
+			mkdir -p "${dst%/*}"
+		fi
 		cp -f "$src" "$dst"
 		git add $OPTQ "$FLNM"
 		git_commit_with_prefix "$dst (copy from $src)"
@@ -214,6 +225,10 @@ EOF
 		;;
 	R*) # rename
 		FLNM="$dst"
+		# ensure parent dir exists
+		if [ "${dst%/*}" != "$dest" ]; then
+			mkdir -p "${dst%/*}"
+		fi
 		git mv "$src" "$dst"
 		git add $OPTQ "$FLNM"
 		git_commit_with_prefix "$dst (rename from $src)"
